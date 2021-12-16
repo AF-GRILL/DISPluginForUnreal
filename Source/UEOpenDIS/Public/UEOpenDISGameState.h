@@ -18,6 +18,8 @@
 #include "GameFramework/GameStateBase.h"
 #include "UEOpenDISGameState.generated.h"
 
+class UOpenDISComponent;
+
 UENUM(BlueprintType)
 enum class EForceID : uint8
 {
@@ -58,8 +60,8 @@ USTRUCT(BlueprintType)
 struct FEntityID
 {
 	GENERATED_BODY()
-		
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+
+		UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		int32 Site;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		int32 Application;
@@ -90,7 +92,7 @@ struct FEntityID
 		return GetTypeHash(EntityID);
 	}
 
-	FString ToString() 
+	FString ToString()
 	{
 		return FString::FromInt(Site) + ":" + FString::FromInt(Application) + ':' + FString::FromInt(Entity);
 	}
@@ -100,8 +102,8 @@ USTRUCT(BlueprintType)
 struct FEventID
 {
 	GENERATED_BODY()
-	
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+
+		UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		int32 Site;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		int32 Application;
@@ -121,7 +123,7 @@ struct FEntityType
 {
 	GENERATED_BODY()
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		/** Kind of entity */
 		int32 EntityKind;
 
@@ -196,7 +198,7 @@ struct FArticulationParameters
 {
 	GENERATED_BODY()
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		int32 ParameterTypeDesignator;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		int32 ChangeIndicator;
@@ -222,7 +224,7 @@ struct FBurstDescriptor
 {
 	GENERATED_BODY()
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		FEntityType EntityType;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		int32 warhead;
@@ -247,7 +249,7 @@ struct FDeadReckoningParameters
 {
 	GENERATED_BODY()
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		uint8 DeadReckoningAlgorithm;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		TArray<uint8> OtherParameters;
@@ -270,8 +272,8 @@ struct FEntityStatePDU
 {
 	GENERATED_BODY()
 
-	//checked
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		//checked
+		UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		int32 PduType; // TODO: Make this an enum
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		FEntityID EntityID;
@@ -325,7 +327,7 @@ struct FFirePDU
 {
 	GENERATED_BODY()
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		int32 PduType; // TODO: Make this an enum
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		int32 fireMissionIndex; // TODO: Make this an enum
@@ -360,7 +362,7 @@ struct FRemoveEntityPDU
 {
 	GENERATED_BODY()
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		int32 PduType; // TODO: Make this an enum
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		FEntityID OriginatingEntityID;
@@ -381,7 +383,7 @@ struct FDetonationPDU
 {
 	GENERATED_BODY()
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		int32 PduType; // TODO: Make this an enum
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		FEntityID MunitionEntityID;
@@ -423,11 +425,11 @@ class UEOPENDIS_API AUEOpenDISGameState : public AGameStateBase
 {
 	GENERATED_BODY()
 
-public:	
+public:
 	UFUNCTION(BlueprintCallable, Category = "OpenDIS")
 		void ProcessDISPacket(int ByteArrayLength, TArray<uint8> InData, int& OutType);
 	UFUNCTION(BlueprintCallable, Category = "OpenDIS")
-		void AddDISEntityToMap(FEntityID EntityIDToAdd, AActor *EntityToAdd);
+		void AddDISEntityToMap(FEntityID EntityIDToAdd, AActor* EntityToAdd);
 	UFUNCTION(BlueprintCallable, Category = "OpenDIS")
 		bool RemoveDISEntityFromMap(FEntityID EntityIDToRemove);
 
@@ -443,17 +445,30 @@ public:
 protected:
 	virtual void BeginPlay() override;
 
+	UPROPERTY(BlueprintReadOnly)
+		TMap<FEntityType, TAssetSubclassOf<AActor>> DISClassMappings;
+	UPROPERTY(BlueprintReadOnly)
+		TMap<FEntityID, AActor*> DISActorMappings;
+	UPROPERTY(BlueprintReadOnly)
+		int32 ExerciseID;
+	UPROPERTY(BlueprintReadOnly)
+		int32 SiteID;
+	UPROPERTY(BlueprintReadOnly)
+		int32 ApplicationID;
+	UPROPERTY(BlueprintReadOnly)
+		FString IPAddress;
+	UPROPERTY(BlueprintReadOnly)
+		int32 Port;
+
 private:
-	//UFUNCTION(BlueprintCallable, Category = "OpenDIS | Unit Conversions")
+	UOpenDISComponent* GetAssociatedOpenDISComponent(FEntityID EntityIDIn);
+
 	void ConvertESPDU2Bytes(int EntityID, int Site, int Application, int Exercise, FEntityStatePDU EntityStatePDUIn, TArray<uint8>& BytesOut);
 	FEntityStatePDU ConvertESPDUtoBPStruct(DIS::EntityStatePdu& EntityStatePDUOut);
 	FFirePDU ConvertFirePDUtoBPStruct(DIS::FirePdu& FirePDUOut);
 	FDetonationPDU ConvertDetonationPDUtoBPStruct(DIS::DetonationPdu& DetPDUOut);
 	FRemoveEntityPDU ConvertRemoveEntityPDUtoBPStruct(DIS::RemoveEntityPdu& RemovePDUOut);
-	
+
 	DIS::Endian BigEndian = DIS::BIG;
 	const unsigned int PDU_TYPE_POSITION = 2;
-
-	TMap<FEntityType, TAssetSubclassOf<AActor>> DISClassMappings;
-	TMap<FEntityID, AActor*> DISActorMappings;
 };

@@ -1,8 +1,8 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "UEOpenDISGameState.h"
-#include "OpenDISComponent.h"
 #include "UEOpenDISRuntimeSettings.h"
+#include "OpenDISComponent.h"
 
 // Called when the game starts
 void AUEOpenDISGameState::BeginPlay()
@@ -13,13 +13,19 @@ void AUEOpenDISGameState::BeginPlay()
 	const UUEOpenDISRuntimeSettings* const Settings = UUEOpenDISRuntimeSettings::Get();
 	check(Settings);
 	//Initialize DISClassMappings from the loaded settings
-	for (FOpenDISEnumerationMappings DISMapping : Settings->DISClassMappings) 
+	for (FOpenDISEnumerationMappings DISMapping : Settings->DISClassMappings)
 	{
 		for (FEntityType EntityType : DISMapping.AssociatedDISEnumerations)
 		{
 			DISClassMappings.Add(EntityType, DISMapping.DISEntity);
 		}
 	}
+
+	ExerciseID = Settings->ExerciseID;
+	SiteID = Settings->SiteID;
+	ApplicationID = Settings->ApplicationID;
+	IPAddress = Settings->IPAddress;
+	Port = Settings->Port;
 }
 
 bool AUEOpenDISGameState::OpenReceiveSocket(FString InListenIP, int32 InListenPort)
@@ -71,157 +77,157 @@ void AUEOpenDISGameState::ProcessDISPacket(int ByteArrayLength, TArray<uint8> In
 		switch (pdu->getPduType())
 		{
 			//entity state
-			case 1:
+		case 1:
+		{
+			DIS::DataStream ds((char*)&InData[0], ByteArrayLength, BigEndian);
+			pdu->unmarshal(ds);
+			// TODO: Verify that EntityStatePDU is being handled correctly.
+			FEntityStatePDU entityStatePDU = ConvertESPDUtoBPStruct(static_cast<DIS::EntityStatePdu&>(*pdu));
+
+			//Find associated actor in the DISActorMappings map
+			AActor* associatedActor = *DISActorMappings.Find(entityStatePDU.EntityID);
+			if (associatedActor != nullptr)
 			{
-				//UE_LOG(LogTemp, Log, TEXT("This is an entity state pdu"));
-				DIS::DataStream ds((char*)&InData[0], ByteArrayLength, BigEndian);
-				pdu->unmarshal(ds);
-				// TODO: Verify that EntityStatePDU is being handled correctly.
-				FEntityStatePDU entityStatePDU = ConvertESPDUtoBPStruct(static_cast<DIS::EntityStatePdu&>(*pdu));
+				//If an actor was found, relay information to the associated component
+				UOpenDISComponent* DISComponent = (UOpenDISComponent*)associatedActor->FindComponentByClass(UOpenDISComponent::StaticClass());
 
-				//Find associated actor in the DISActorMappings map
-				AActor *associatedActor = *DISActorMappings.Find(entityStatePDU.EntityID);
-				if (associatedActor != nullptr)
+				if (DISComponent != nullptr)
 				{
-					//If an actor was found, relay information to the associated component
-					UOpenDISComponent* DISComponent = (UOpenDISComponent*)associatedActor->FindComponentByClass(UOpenDISComponent::StaticClass());
-
-					if (DISComponent != nullptr)
+					DISComponent->HandleEntityStatePDU(entityStatePDU);
+				}
+			}
+			else
+			{
+				//If an actor was not found -- check to see if there is an associated actor for the entity type
+				TAssetSubclassOf<AActor>* associatedSoftClassReference = DISClassMappings.Find(entityStatePDU.EntityType);
+				if (associatedSoftClassReference != nullptr)
+				{
+					//If so, spawn one and relay information to the associated component
+					UClass* associatedClass = associatedSoftClassReference->LoadSynchronous();
+					if (associatedClass != nullptr)
 					{
-						DISComponent->HandleEntityStatePDU(entityStatePDU);
+						AActor* spawnedActor = GetWorld()->SpawnActor(associatedClass);
+						UOpenDISComponent* DISComponent = (UOpenDISComponent*)spawnedActor->FindComponentByClass(UOpenDISComponent::StaticClass());
+						//Add actor to the map
+						AddDISEntityToMap(entityStatePDU.EntityID, spawnedActor);
+
+						if (DISComponent != nullptr)
+						{
+							DISComponent->HandleEntityStatePDU(entityStatePDU);
+						}
 					}
 				}
 				else
 				{
-					//If an actor was not found -- check to see if there is an associated actor for the entity type
-					TAssetSubclassOf<AActor> *associatedSoftClassReference = DISClassMappings.Find(entityStatePDU.EntityType);
-					if (associatedSoftClassReference != nullptr) 
-					{
-						//If so, spawn one and relay information to the associated component
-						UClass *associatedClass = associatedSoftClassReference->LoadSynchronous();
-						if (associatedClass != nullptr) 
-						{
-							AActor *spawnedActor = GetWorld()->SpawnActor(associatedClass);
-							UOpenDISComponent* DISComponent = (UOpenDISComponent*)associatedActor->FindComponentByClass(UOpenDISComponent::StaticClass());
-							//Add actor to the map
-							AddDISEntityToMap(entityStatePDU.EntityID, spawnedActor);
-
-							if (DISComponent != nullptr)
-							{
-								DISComponent->HandleEntityStatePDU(entityStatePDU);
-							}
-						}
-					}
-					else 
-					{
-						//Otherwise notify the user that no such mapping exists
-						GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Red, FString::Printf(TEXT("No mapping between an actor and the DIS enumeration %s exists!"), *entityStatePDU.EntityType.ToString()));
-					}
+					//Otherwise notify the user that no such mapping exists
+					GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Red, FString::Printf(TEXT("No mapping between an actor and the DIS enumeration %s exists!"), *entityStatePDU.EntityType.ToString()));
 				}
-
-				break;
 			}
-			//fire
-			case 2:
-			{
-				DIS::DataStream ds((char*)&InData[0], ByteArrayLength, BigEndian);
-				pdu->unmarshal(ds);
-				// TODO: Verify that FirePDU is being handled correctly.
-				FFirePDU firePDU = ConvertFirePDUtoBPStruct(static_cast<DIS::FirePdu&>(*pdu));
 
-				//Find associated actor in the DISActorMappings map
-				AActor* associatedActor = *DISActorMappings.Find(firePDU.MunitionEntityID);
-				if (associatedActor != nullptr)
-				{
-					//If an actor was found, relay information to the associated component
-					UOpenDISComponent* DISComponent = (UOpenDISComponent*)associatedActor->FindComponentByClass(UOpenDISComponent::StaticClass());
-
-					if (DISComponent != nullptr)
-					{
-						DISComponent->HandleFirePDU(firePDU);
-					}
-				}
-
-				break;
-			}
-			//detonation
-			case 3:
-			{
-				DIS::DataStream ds((char*)&InData[0], ByteArrayLength, BigEndian);
-				pdu->unmarshal(ds);
-				// TODO: Verify that DetonationPDU is being handled correctly.
-				FDetonationPDU detPDU = ConvertDetonationPDUtoBPStruct(static_cast<DIS::DetonationPdu&>(*pdu));
-
-				//Find associated actor in the DISActorMappings map
-				AActor *associatedActor = *DISActorMappings.Find(detPDU.MunitionEntityID);
-				if (associatedActor != nullptr)
-				{
-					//If an actor was found, relay information to the associated component
-					UOpenDISComponent* DISComponent = (UOpenDISComponent*)associatedActor->FindComponentByClass(UOpenDISComponent::StaticClass());
-
-					if (DISComponent != nullptr)
-					{
-						DISComponent->HandleDetonationPDU(detPDU);
-					}
-				}
-
-				break;
-			}
-			//remove entity
-			case 12:
-			{
-				DIS::DataStream ds((char*)&InData[0], ByteArrayLength, BigEndian);
-				pdu->unmarshal(ds);
-				// TODO: Verify that RemoveEntityPDU is being handled correctly.
-				// TODO: Ignore RemoveEntityPDU if it is not meant for our sim. Only the sim dictated in the pdu should handle the remove request.
-				FRemoveEntityPDU removeEntityPDU = ConvertRemoveEntityPDUtoBPStruct(static_cast<DIS::RemoveEntityPdu&>(*pdu));
-
-				//Find associated actor in the DISActorMappings map
-				AActor* associatedActor = *DISActorMappings.Find(removeEntityPDU.ReceivingEntityID);
-				if (associatedActor != nullptr) 
-				{
-					//If an actor was found, relay information to the associated component
-					UOpenDISComponent *DISComponent = (UOpenDISComponent*)associatedActor->FindComponentByClass(UOpenDISComponent::StaticClass());
-
-					if (DISComponent != nullptr) 
-					{
-						DISComponent->HandleRemoveEntityPDU(removeEntityPDU);
-					}
-				}
-
-				break;
-			}
-			//start/resume
-			case 13:
-			{
-				// TODO: Handle start/resume PDUs accordingly
-				break;
-			}
-			//stop/freeze
-			case 14:
-			{
-				// TODO: Handle stop/freeze PDUs accordingly
-				break;
-			}
-			//entity state update
-			case 67:
-			{
-				// TODO: Handle EntityStateUpdate PDUs accordingly
-				break;
-			}
-			default:
-			{
-				break;
-			}
+			break;
 		}
+		//fire
+		case 2:
+		{
+			DIS::DataStream ds((char*)&InData[0], ByteArrayLength, BigEndian);
+			pdu->unmarshal(ds);
+			// TODO: Verify that FirePDU is being handled correctly.
+			FFirePDU firePDU = ConvertFirePDUtoBPStruct(static_cast<DIS::FirePdu&>(*pdu));
 
+			//Get associated OpenDISComponent and relay information
+			UOpenDISComponent* DISComponent = GetAssociatedOpenDISComponent(firePDU.MunitionEntityID);
 
+			if (DISComponent != nullptr)
+			{
+				DISComponent->HandleFirePDU(firePDU);
+			}
+
+			break;
+		}
+		//detonation
+		case 3:
+		{
+			DIS::DataStream ds((char*)&InData[0], ByteArrayLength, BigEndian);
+			pdu->unmarshal(ds);
+			// TODO: Verify that DetonationPDU is being handled correctly.
+			FDetonationPDU detPDU = ConvertDetonationPDUtoBPStruct(static_cast<DIS::DetonationPdu&>(*pdu));
+
+			//Get associated OpenDISComponent and relay information
+			UOpenDISComponent* DISComponent = GetAssociatedOpenDISComponent(detPDU.MunitionEntityID);
+
+			if (DISComponent != nullptr)
+			{
+				DISComponent->HandleDetonationPDU(detPDU);
+			}
+
+			break;
+		}
+		//remove entity
+		case 12:
+		{
+			DIS::DataStream ds((char*)&InData[0], ByteArrayLength, BigEndian);
+			pdu->unmarshal(ds);
+			// TODO: Verify that RemoveEntityPDU is being handled correctly.
+			// TODO: Ignore RemoveEntityPDU if it is not meant for our sim. Only the sim dictated in the pdu should handle the remove request.
+			FRemoveEntityPDU removeEntityPDU = ConvertRemoveEntityPDUtoBPStruct(static_cast<DIS::RemoveEntityPdu&>(*pdu));
+
+			//Verify that we are the appropriate sim to handle the RemoveEntityPDU
+			if (removeEntityPDU.ReceivingEntityID.Site == SiteID && removeEntityPDU.ReceivingEntityID.Application == ApplicationID)
+			{
+				//Get associated OpenDISComponent and relay information
+				UOpenDISComponent* DISComponent = GetAssociatedOpenDISComponent(removeEntityPDU.ReceivingEntityID);
+
+				if (DISComponent != nullptr)
+				{
+					DISComponent->HandleRemoveEntityPDU(removeEntityPDU);
+				}
+			}
+			break;
+		}
+		//start/resume
+		case 13:
+		{
+			// TODO: Handle start/resume PDUs accordingly
+			break;
+		}
+		//stop/freeze
+		case 14:
+		{
+			// TODO: Handle stop/freeze PDUs accordingly
+			break;
+		}
+		//entity state update
+		case 67:
+		{
+			// TODO: Handle EntityStateUpdate PDUs accordingly
+			break;
+		}
+		default:
+		{
+			break;
+		}
+		}
 	}
 }
 
-void AUEOpenDISGameState::AddDISEntityToMap(FEntityID EntityIDToAdd, AActor *EntityToAdd) 
+UOpenDISComponent* AUEOpenDISGameState::GetAssociatedOpenDISComponent(FEntityID EntityIDIn)
 {
-	DISActorMappings.Add(EntityIDToAdd, EntityToAdd);	
+	UOpenDISComponent* DISComponent = nullptr;
+
+	//Find associated actor in the DISActorMappings map
+	AActor* associatedActor = *DISActorMappings.Find(EntityIDIn);
+	if (associatedActor != nullptr)
+	{
+		//If an actor was found, relay information to the associated component
+		DISComponent = (UOpenDISComponent*)associatedActor->FindComponentByClass(UOpenDISComponent::StaticClass());
+	}
+
+	return DISComponent;
+}
+
+void AUEOpenDISGameState::AddDISEntityToMap(FEntityID EntityIDToAdd, AActor* EntityToAdd)
+{
+	DISActorMappings.Add(EntityIDToAdd, EntityToAdd);
 }
 
 bool AUEOpenDISGameState::RemoveDISEntityFromMap(FEntityID EntityIDToRemove)

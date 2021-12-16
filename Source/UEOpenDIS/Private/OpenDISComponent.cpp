@@ -29,7 +29,7 @@ void UOpenDISComponent::TickComponent(float DeltaTime, ELevelTick TickType, FAct
 	if (PerformDeadReckoning)
 	{
 		//Check if dead reckoning is supported. Broadcast dead reckoning update if it is
-		if (DeadReckoning(mostRecentEntityStatePDU, DeltaTime, deadReckonedPDU)) 
+		if (DeadReckoning(mostRecentEntityStatePDU, DeltaTime, deadReckonedPDU))
 		{
 			OnDeadReckoningUpdate.Broadcast(deadReckonedPDU);
 		}
@@ -39,15 +39,15 @@ void UOpenDISComponent::TickComponent(float DeltaTime, ELevelTick TickType, FAct
 			PerformDeadReckoning = false;
 		}
 	}
-	
+
 	//Check if ground clamping is enabled
-	if (PerformGroundClamping) 
+	if (PerformGroundClamping)
 	{
 		FVector groundClampLocation;
 		FRotator groundClampRotation;
 
 		//If ground clamping is supported and a proper hit returned, update the actor's location/rotation
-		if (ApplyGroundClamping(groundClampLocation, groundClampRotation) && GetOwner() != nullptr)
+		if (ApplyGroundClamping(groundClampLocation, groundClampRotation))
 		{
 			GetOwner()->SetActorLocationAndRotation(groundClampLocation, groundClampRotation);
 		}
@@ -56,11 +56,19 @@ void UOpenDISComponent::TickComponent(float DeltaTime, ELevelTick TickType, FAct
 
 void UOpenDISComponent::HandleEntityStatePDU(FEntityStatePDU NewEntityStatePDU)
 {
+	//Check if the entity has been deactivated
+	if (NewEntityStatePDU.EntityAppearance == 1)
+	{
+		GetOwner()->Destroy();
+	}
+
 	latestPDUTimestamp = FDateTime::Now();
 	mostRecentEntityStatePDU = NewEntityStatePDU;
 
 	EntityType = NewEntityStatePDU.EntityType;
 	EntityID = NewEntityStatePDU.EntityID;
+
+	GetOwner()->SetLifeSpan(DISHeartbeat);
 
 	OnReceivedEntityStatePDU.Broadcast(NewEntityStatePDU);
 }
@@ -162,7 +170,7 @@ bool UOpenDISComponent::ApplyGroundClamping_Implementation(FVector& ClampLocatio
 
 	bool groundClampSuccessful = false;
 	//Verify the entity is of the ground domain and that it is not a munition
-	if (EntityType.Domain == 1 && EntityType.EntityKind != 2 && GetOwner() != nullptr)
+	if (EntityType.Domain == 1 && EntityType.EntityKind != 2)
 	{
 		FHitResult lineTraceHitResult;
 		// TODO: Get the ENU of the actor rather than the up vector to verify that the line trace is always going towards the terrain
@@ -185,7 +193,7 @@ bool UOpenDISComponent::ApplyGroundClamping_Implementation(FVector& ClampLocatio
 			groundClampSuccessful = true;
 		}
 	}
-	else 
+	else
 	{
 		PerformGroundClamping = false;
 	}

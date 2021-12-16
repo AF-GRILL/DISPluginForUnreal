@@ -56,6 +56,8 @@ public:
 		FDateTime latestPDUTimestamp;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DIS Info")
+		float DISHeartbeat = 30.0f;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DIS Info")
 		FEntityType EntityType;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DIS Info")
 		FEntityID EntityID;
