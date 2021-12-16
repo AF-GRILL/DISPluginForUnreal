@@ -191,6 +191,59 @@ void UUEOpenDIS_BPFL::ECEF2ENU2UERotESPDU(FEntityStatePDU EntityStatePDUIn, FRot
 	RotationOut.Roll = GetRollFromEuler(latitude, longitude, EntityStatePDUIn.EntityOrientation.Roll, EntityStatePDUIn.EntityOrientation.Pitch, EntityStatePDUIn.EntityOrientation.Yaw);
 }
 
+void UUEOpenDIS_BPFL::CalculateLatLonHeightFromEcefXYZ(const float EcefX, const float EcefY, const float EcefZ,
+	float& OutLatitudeDegrees, float& OutLongitudeDegrees, float& OutHeightMeters)
+{
+	constexpr double EarthSemiMajorRadiusMeters = 6378137;
+	constexpr double EarthSemiMinorRadiusMeters = 6356752.3142;
+
+	const double Longitude = FMath::RadiansToDegrees(FMath::Atan2(EcefY, EcefX));
+	// Latitude accurate to ~5 decimal places
+	const double Latitude = FMath::RadiansToDegrees(FMath::Atan((FMath::Square(EarthSemiMajorRadiusMeters) / FMath::Square(EarthSemiMinorRadiusMeters))*(EcefZ / FMath::Sqrt(FMath::Square(EcefX) + FMath::Square(EcefY)))));
+
+	const double EarthSemiMajorRadiusMetersSquare = FMath::Square(EarthSemiMajorRadiusMeters);
+	const double EarthSemiMinorRadiusMetersSquare = FMath::Square(EarthSemiMinorRadiusMeters);
+	const double DistFromXToY = FMath::Sqrt(FMath::Square(EcefX) + FMath::Square(EcefY));
+	const double CosLatitude = FMath::Cos(FMath::DegreesToRadians(Latitude));
+	const double SinLatitude = FMath::Sin(FMath::DegreesToRadians(Latitude));
+	const double Height = (DistFromXToY / CosLatitude) - (EarthSemiMajorRadiusMetersSquare / FMath::Sqrt(
+		(EarthSemiMajorRadiusMetersSquare * FMath::Square(CosLatitude)) + (EarthSemiMinorRadiusMetersSquare *
+			FMath::Square(SinLatitude))));
+
+	OutLatitudeDegrees = Latitude;
+	OutLongitudeDegrees = Longitude;
+	OutHeightMeters = Height;
+}
+
+void UUEOpenDIS_BPFL::CalculateEcefXYZFromLatLonHeight(const float LatitudeDegrees, const float LongitudeDegrees,
+	const float HeightMeters, float& OutEcefX, float& OutEcefY, float& OutEcefZ)
+{
+	constexpr double EarthSemiMajorRadiusMeters = 6378137;
+	constexpr double EarthSemiMinorRadiusMeters = 6356752.3142;
+
+	const double CosLatitude = FMath::Cos(FMath::DegreesToRadians(LatitudeDegrees));
+	const double SinLatitude = FMath::Sin(FMath::DegreesToRadians(LatitudeDegrees));
+	const double CosLongitude = FMath::Cos(FMath::DegreesToRadians(LongitudeDegrees));
+	const double SinLongitude = FMath::Sin(FMath::DegreesToRadians(LongitudeDegrees));
+	
+	const double XYBaseConversion = (EarthSemiMajorRadiusMeters / (FMath::Sqrt(FMath::Square(CosLatitude) + ((FMath::Square(EarthSemiMinorRadiusMeters) / FMath::Square(EarthSemiMajorRadiusMeters)) * FMath::Square(SinLatitude))))) + HeightMeters;
+	const double ZBaseConversion = (EarthSemiMinorRadiusMeters / (((FMath::Sqrt(FMath::Square(CosLatitude) * (FMath::Square(EarthSemiMajorRadiusMeters) / FMath::Square(EarthSemiMinorRadiusMeters)) + FMath::Square(SinLatitude)))))) + HeightMeters;
+
+	DIS::Vector3Double Location;
+
+	const double EcefX = XYBaseConversion * CosLatitude * CosLongitude;
+	const double EcefY = XYBaseConversion * CosLatitude * SinLongitude;
+	const double EcefZ = ZBaseConversion * SinLatitude;
+
+	Location.setX(EcefX);
+	Location.setY(EcefY);
+	Location.setZ(EcefZ);
+
+	OutEcefX = EcefX;
+	OutEcefY = EcefY;
+	OutEcefZ = EcefZ;
+}
+
 FMatrix UUEOpenDIS_BPFL::CreateNCrossXMatrix(FVector NVector)
 {
 	const auto NMatrix = FMatrix(FPlane(0, -NVector.Z, NVector.Y, 0),

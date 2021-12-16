@@ -73,13 +73,37 @@ public:
 		static void ECEF2ENU2UERotESPDU(FEntityStatePDU EntityStatePDUIn, FRotator& RotationOut);
 
 	/**
+	 * Converts DIS X, Y, Z coordinates (ECEF) to Latitude, Longitude, and Height (LLH)
+	 * @param EcefX - The X ECEF location
+	 * @param EcefY - The Y ECEF location
+	 * @param EcefZ - The Z ECEF location
+	 * @param OutLatitudeDegrees - The converted latitude in degrees
+	 * @param OutLongitudeDegrees - The converted longitude in degrees
+	 * @param OutHeightMeters - The converted height in meters
+	 */
+	UFUNCTION(BlueprintCallable, Category = "OpenDIS|Unit Conversions")
+		static void CalculateLatLonHeightFromEcefXYZ(const float EcefX, const float EcefY, const float EcefZ, float& OutLatitudeDegrees, float& OutLongitudeDegrees, float& OutHeightMeters);
+
+	/**
+	 * Converts Latitude, Longitude, and Height (LLH) to DIS X, Y, Z coordinates (ECEF)
+	 * @param LatitudeDegrees - The latitude in degrees
+	 * @param LongitudeDegrees - The longitude in degrees
+	 * @param HeightMeters - The height in meters
+	 * @param OutEcefX - The converted X ECEF location
+	 * @param OutEcefY - The converted Y ECEF location
+	 * @param OutEcefZ - The converted Z ECEF location
+	 */
+	UFUNCTION(BlueprintCallable, Category = "OpenDIS|Unit Conversions")
+		static void CalculateEcefXYZFromLatLonHeight(const float LatitudeDegrees, const float LongitudeDegrees, const float HeightMeters, float& OutEcefX, float& OutEcefY, float& OutEcefZ);
+
+	/**
 	 * Rotates the vector VectorToRotate around given axis AxisVector by Theta radians
 	 * @param VectorToRotate - The target vector to rotate
 	 * @param ThetaRadians - The desired amount to rotation in radians
 	 * @param AxisVector - The vector indicating the axis of rotation
 	 * @param OutRotatedVector - The resultant rotated vector
 	 */
-	UFUNCTION(BlueprintCallable, Category = "OpenDIS | Unit Conversions")
+	UFUNCTION(BlueprintCallable, Category = "OpenDIS|Unit Conversions")
 		static void RotateVectorAroundAxisByRadians(FVector VectorToRotate, float ThetaRadians, FVector AxisVector, FVector& OutRotatedVector);
 
 	/**
@@ -89,7 +113,7 @@ public:
 	 * @param AxisVector - The vector indicating the axis of rotation
 	 * @param OutRotatedVector - The resultant rotated vector
 	 */
-	UFUNCTION(BlueprintCallable, Category = "OpenDIS | Unit Conversions")
+	UFUNCTION(BlueprintCallable, Category = "OpenDIS|Unit Conversions")
 		static void RotateVectorAroundAxisByDegrees(FVector VectorToRotate, float ThetaDegrees, FVector AxisVector, FVector& OutRotatedVector);
 
 	/**
@@ -104,7 +128,7 @@ public:
 	 * @param OutY - The y axis (right) vector with the heading and pitch applied
 	 * @param OutZ - the z axis (up) vector with the heading and pitch applied
 	 */
-	UFUNCTION(BlueprintCallable, Category = "OpenDIS | Unit Conversions")
+	UFUNCTION(BlueprintCallable, Category = "OpenDIS|Unit Conversions")
 		static void ApplyHeadingPitchRollToNorthEastDownVector(const float HeadingDegrees, const float PitchDegrees, const float RollDegrees, const FVector NorthVector, const FVector EastVector, const FVector DownVector, FVector& OutX, FVector& OutY, FVector& OutZ);
 
 	/**
@@ -115,7 +139,7 @@ public:
 	 * @param EastVector - The local vector pointing north at the given latitude and longitude
 	 * @param DownVector - The local vector pointing away from the center of the Earth at the given latitude and longitude
 	 */
-	UFUNCTION(BlueprintCallable, Category = "OpenDIS | Unit Conversions")
+	UFUNCTION(BlueprintCallable, Category = "OpenDIS|Unit Conversions")
 		static void CalculateNorthEastDownVectorsFromLatLon(const float LatitudeDegrees, const float LongitudeDegrees, FVector& NorthVector, FVector& EastVector, FVector& DownVector);
 
 	/**
@@ -129,7 +153,7 @@ public:
 	 * @param ThetaDegrees - The rotation about the Y axis in degrees
 	 * @param PhiDegrees - The rotation about the X axis in degrees
 	 */
-	UFUNCTION(BlueprintCallable, Category = "OpenDIS | Unit Conversions")
+	UFUNCTION(BlueprintCallable, Category = "OpenDIS|Unit Conversions")
 		static void CalculatePsiThetaPhiDegreesFromHeadingPitchRollDegreesAtLatLon(const float HeadingDegrees, const float PitchDegrees, const float RollDegrees, const float LatitudeDegrees, const float LongitudeDegrees, float& PsiDegrees, float& ThetaDegrees, float& PhiDegrees);
 
 	/**
@@ -143,7 +167,7 @@ public:
 	 * @param ThetaRadians - The rotation about the Y axis in radians
 	 * @param PhiRadians - The rotation about the X axis in radians
 	 */
-	UFUNCTION(BlueprintCallable, Category = "OpenDIS | Unit Conversions")
+	UFUNCTION(BlueprintCallable, Category = "OpenDIS|Unit Conversions")
 		static void CalculatePsiThetaPhiRadiansFromHeadingPitchRollRadiansAtLatLon(const float HeadingRadians, const float PitchRadians, const float RollRadians, const float LatitudeDegrees, const float LongitudeDegrees, float& PsiRadians, float& ThetaRadians, float& PhiRadians);
 
 	/**
@@ -157,7 +181,7 @@ public:
 	 * @param ThetaRadians - The rotation about the Y axis in radians
 	 * @param PhiRadians - The rotation about the X axis in radians
 	 */
-	UFUNCTION(BlueprintCallable, Category = "OpenDIS | Unit Conversions")
+	UFUNCTION(BlueprintCallable, Category = "OpenDIS|Unit Conversions")
 		static void CalculatePsiThetaPhiRadiansFromHeadingPitchRollDegreesAtLatLon(const float HeadingDegrees, const float PitchDegrees, const float RollDegrees, const float LatitudeDegrees, const float LongitudeDegrees, float& PsiRadians, float& ThetaRadians, float& PhiRadians);
 
 	/**
@@ -171,7 +195,7 @@ public:
 	 * @param ThetaDegrees - The rotation about the Y axis in degrees
 	 * @param PhiDegrees - The rotation about the X axis in degrees
 	 */
-	UFUNCTION(BlueprintCallable, Category = "OpenDIS | Unit Conversions")
+	UFUNCTION(BlueprintCallable, Category = "OpenDIS|Unit Conversions")
 		static void CalculatePsiThetaPhiDegreesFromHeadingPitchRollRadiansAtLatLon(const float HeadingRadians, const float PitchRadians, const float RollRadians, const float LatitudeDegrees, const float LongitudeDegrees, float& PsiDegrees, float& ThetaDegrees, float& PhiDegrees);
 
 	/**
@@ -185,7 +209,7 @@ public:
 	 * @param PitchDegrees - The degrees rotated about the local Y axis (front tip up and down)
 	 * @param RollDegrees - The degrees rotated about the local X axis (tilt left and right)
 	 */
-	UFUNCTION(BlueprintCallable, Category = "OpenDIS | Unit Conversions")
+	UFUNCTION(BlueprintCallable, Category = "OpenDIS|Unit Conversions")
 		static void CalculateHeadingPitchRollDegreesFromPsiThetaPhiDegreesAtLatLon(const float PsiDegrees, const float ThetaDegrees, const float PhiDegrees, const float LatitudeDegrees, const float LongitudeDegrees, float& HeadingDegrees, float& PitchDegrees, float& RollDegrees);
 
 	/**
@@ -199,7 +223,7 @@ public:
 	 * @param PitchRadians - The radians rotated about the local Y axis (front tip up and down)
 	 * @param RollRadians - The radians rotated about the local X axis (tilt left and right)
 	 */
-	UFUNCTION(BlueprintCallable, Category = "OpenDIS | Unit Conversions")
+	UFUNCTION(BlueprintCallable, Category = "OpenDIS|Unit Conversions")
 		static void CalculateHeadingPitchRollRadiansFromPsiThetaPhiRadiansAtLatLon(const float PsiRadians, const float ThetaRadians, const float PhiRadians, const float LatitudeDegrees, const float LongitudeDegrees, float& HeadingRadians, float& PitchRadians, float& RollRadians);
 
 	/**
@@ -213,7 +237,7 @@ public:
 	 * @param PitchDegrees - The degrees rotated about the local Y axis (front tip up and down)
 	 * @param RollDegrees - The degrees rotated about the local X axis (tilt left and right)
 	 */
-	UFUNCTION(BlueprintCallable, Category = "OpenDIS | Unit Conversions")
+	UFUNCTION(BlueprintCallable, Category = "OpenDIS|Unit Conversions")
 		static void CalculateHeadingPitchRollDegreesFromPsiThetaPhiRadiansAtLatLon(const float PsiRadians, const float ThetaRadians, const float PhiRadians, const float LatitudeDegrees, const float LongitudeDegrees, float& HeadingDegrees, float& PitchDegrees, float& RollDegrees);
 
 	/**
@@ -227,6 +251,6 @@ public:
 	 * @param PitchRadians - The radians rotated about the local Y axis (front tip up and down)
 	 * @param RollRadians - The radians rotated about the local X axis (tilt left and right)
 	 */
-	UFUNCTION(BlueprintCallable, Category = "OpenDIS | Unit Conversions")
+	UFUNCTION(BlueprintCallable, Category = "OpenDIS|Unit Conversions")
 		static void CalculateHeadingPitchRollRadiansFromPsiThetaPhiDegreesAtLatLon(const float PsiDegrees, const float ThetaDegrees, const float PhiDegrees, const float LatitudeDegrees, const float LongitudeDegrees, float& HeadingRadians, float& PitchRadians, float& RollRadians);
 };
