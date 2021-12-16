@@ -4,10 +4,9 @@
 #include "UEOpenDISRuntimeSettings.h"
 #include "OpenDISComponent.h"
 
-// Called when the game starts
-void AUEOpenDISGameState::BeginPlay()
+AUEOpenDISGameState::AUEOpenDISGameState() 
 {
-	Super::BeginPlay();
+	UDPWrapper = CreateDefaultSubobject<UUDPComponent>(TEXT("UDP Component"));
 
 	//Load settings from the OpenDIS ProjectSettings
 	const UUEOpenDISRuntimeSettings* const Settings = UUEOpenDISRuntimeSettings::Get();
@@ -24,40 +23,56 @@ void AUEOpenDISGameState::BeginPlay()
 	ExerciseID = Settings->ExerciseID;
 	SiteID = Settings->SiteID;
 	ApplicationID = Settings->ApplicationID;
-	IPAddress = Settings->IPAddress;
-	Port = Settings->Port;
+
+	//Initialize settings for the UDP Wrapper
+	UDPWrapper->Settings.bShouldAutoOpenSend = Settings->AutoConnectSend;
+	UDPWrapper->Settings.SendIP = Settings->SendIPAddress;
+	UDPWrapper->Settings.SendPort = Settings->SendPort;
+	UDPWrapper->Settings.bShouldAutoOpenReceive = Settings->AutoConnectReceive;
+	UDPWrapper->Settings.ReceiveIP = Settings->ReceiveIPAddress;
+	UDPWrapper->Settings.ReceivePort = Settings->ReceivePort;
+}
+
+// Called when the game starts
+void AUEOpenDISGameState::BeginPlay()
+{
+	Super::BeginPlay();
 }
 
 bool AUEOpenDISGameState::OpenReceiveSocket(FString InListenIP, int32 InListenPort)
 {
-	// TODO: Implement opening receive socket for UDP
-	// May want to handle actual UDP related stuff in a separate class
-
-	return false;
+	return UDPWrapper->OpenReceiveSocket(InListenIP, InListenPort);
 }
 
-bool AUEOpenDISGameState::OpenSendSocket(FString InIP, int32 InPort)
+bool AUEOpenDISGameState::OpenSendSocket(FString InSendIP, int32 InSendPort)
 {
-	// TODO: Implement opening send socket for UDP
-	// May want to handle actual UDP related stuff in a separate class
-
-	return false;
+	return UDPWrapper->OpenSendSocket(InSendIP, InSendPort);
 }
 
 bool AUEOpenDISGameState::CloseReceiveSocket()
 {
-	// TODO: Implement closing receive socket for UDP
-	// May want to handle actual UDP related stuff in a separate class
-
-	return false;
+	return UDPWrapper->CloseReceiveSocket();
 }
 
 bool AUEOpenDISGameState::CloseSendSocket()
 {
-	// TODO: Implement closing send socket for UDP
-	// May want to handle actual UDP related stuff in a separate class
+	return UDPWrapper->CloseSendSocket();
+}
 
-	return false;
+void AUEOpenDISGameState::GetUDPSendInformation(bool& CurrentlyConnected, FString& SendIPAddress, int32& SendPort, bool& AutoConnectSend)
+{
+	CurrentlyConnected = UDPWrapper->Settings.bIsSendOpen;
+	SendIPAddress = UDPWrapper->Settings.SendIP;
+	SendPort = UDPWrapper->Settings.SendPort;
+	AutoConnectSend = UDPWrapper->Settings.bShouldAutoOpenSend;
+}
+
+void AUEOpenDISGameState::GetUDPReceiveInformation(bool& CurrentlyConnected, FString& ReceiveIPAddress, int32& ReceivePort, bool& AutoConnectReceive)
+{
+	CurrentlyConnected = UDPWrapper->Settings.bIsSendOpen;
+	ReceiveIPAddress = UDPWrapper->Settings.ReceiveIP;
+	ReceivePort = UDPWrapper->Settings.ReceivePort;
+	AutoConnectReceive = UDPWrapper->Settings.bShouldAutoOpenReceive;
 }
 
 void AUEOpenDISGameState::ProcessDISPacket(int ByteArrayLength, TArray<uint8> InData, int& OutType)
@@ -168,7 +183,6 @@ void AUEOpenDISGameState::ProcessDISPacket(int ByteArrayLength, TArray<uint8> In
 			DIS::DataStream ds((char*)&InData[0], ByteArrayLength, BigEndian);
 			pdu->unmarshal(ds);
 			// TODO: Verify that RemoveEntityPDU is being handled correctly.
-			// TODO: Ignore RemoveEntityPDU if it is not meant for our sim. Only the sim dictated in the pdu should handle the remove request.
 			FRemoveEntityPDU removeEntityPDU = ConvertRemoveEntityPDUtoBPStruct(static_cast<DIS::RemoveEntityPdu&>(*pdu));
 
 			//Verify that we are the appropriate sim to handle the RemoveEntityPDU

@@ -13,6 +13,9 @@
 #include <dis6/DetonationPdu.h>
 #include <dis6/RemoveEntityPdu.h>
 
+//UDP headers
+#include "UDPComponent.h"
+
 //default headers
 #include "CoreMinimal.h"
 #include "GameFramework/GameStateBase.h"
@@ -426,6 +429,8 @@ class UEOPENDIS_API AUEOpenDISGameState : public AGameStateBase
 	GENERATED_BODY()
 
 public:
+	AUEOpenDISGameState();
+
 	UFUNCTION(BlueprintCallable, Category = "OpenDIS")
 		void ProcessDISPacket(int ByteArrayLength, TArray<uint8> InData, int& OutType);
 	UFUNCTION(BlueprintCallable, Category = "OpenDIS")
@@ -433,14 +438,19 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "OpenDIS")
 		bool RemoveDISEntityFromMap(FEntityID EntityIDToRemove);
 
-	UFUNCTION(BlueprintCallable, Category = "OpenDIS | UDP")
+	UFUNCTION(BlueprintCallable, Category = "OpenDIS|UDP")
 		bool OpenReceiveSocket(FString InListenIP, int32 InListenPort);
-	UFUNCTION(BlueprintCallable, Category = "OpenDIS | UDP")
+	UFUNCTION(BlueprintCallable, Category = "OpenDIS|UDP")
 		bool OpenSendSocket(FString InIP, int32 InPort);
-	UFUNCTION(BlueprintCallable, Category = "OpenDIS | UDP")
+	UFUNCTION(BlueprintCallable, Category = "OpenDIS|UDP")
 		bool CloseReceiveSocket();
-	UFUNCTION(BlueprintCallable, Category = "OpenDIS | UDP")
+	UFUNCTION(BlueprintCallable, Category = "OpenDIS|UDP")
 		bool CloseSendSocket();
+
+	UFUNCTION(BlueprintPure, Category = "OpenDIS|UDP")
+		void GetUDPSendInformation(bool& CurrentlyConnected, FString& SendIPAddress, int32& SendPort, bool& AutoConnectSend);
+	UFUNCTION(BlueprintPure, Category = "OpenDIS|UDP")
+		void GetUDPReceiveInformation(bool& CurrentlyConnected, FString& ReceiveIPAddress, int32& ReceivePort, bool& AutoConnectReceive);
 
 protected:
 	virtual void BeginPlay() override;
@@ -455,10 +465,9 @@ protected:
 		int32 SiteID;
 	UPROPERTY(BlueprintReadOnly)
 		int32 ApplicationID;
+
 	UPROPERTY(BlueprintReadOnly)
-		FString IPAddress;
-	UPROPERTY(BlueprintReadOnly)
-		int32 Port;
+		UUDPComponent* UDPWrapper;
 
 private:
 	UOpenDISComponent* GetAssociatedOpenDISComponent(FEntityID EntityIDIn);
