@@ -179,9 +179,8 @@ bool UOpenDISComponent::ApplyGroundClamping_Implementation(FVector& ClampLocatio
 		FVector aboveActorStartLocation = (GetOwner()->GetActorUpVector() * 100000) + actorLocation;
 
 		FCollisionQueryParams queryParams = FCollisionQueryParams(FName("Ground Clamping"), false, GetOwner());
-
 		//Find colliding point above/below the actor
-		if (GetWorld()->LineTraceSingleByChannel(lineTraceHitResult, aboveActorStartLocation, endLocation, GoundClampingCollisionChannel, queryParams))
+		if (GetWorld()->LineTraceSingleByChannel(lineTraceHitResult, aboveActorStartLocation, endLocation, UEngineTypes::ConvertToCollisionChannel(GoundClampingCollisionChannel), queryParams))
 		{
 			ClampLocation = lineTraceHitResult.Location;
 			//Calculate what the new forward and right vectors should be based on the impact normal

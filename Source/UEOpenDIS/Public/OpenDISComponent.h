@@ -66,7 +66,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DIS Settings")
 		bool PerformGroundClamping = false;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DIS Settings")
-		TEnumAsByte<ECollisionChannel> GoundClampingCollisionChannel = ECollisionChannel::ECC_Visibility;
+		TEnumAsByte<ETraceTypeQuery> GoundClampingCollisionChannel = UEngineTypes::ConvertToTraceType(ECollisionChannel::ECC_Visibility);
 
 protected:
 	// Called when the game starts
