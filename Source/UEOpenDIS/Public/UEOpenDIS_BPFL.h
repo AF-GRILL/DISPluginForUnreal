@@ -63,13 +63,13 @@ public:
 	static double GetPitchFromEulerDouble(double Lat, double Lon, float Psi, float Theta);
 	static double GetRollFromEulerDouble(double Lat, double Lon, float Psi, float Theta, float Phi);
 
-	UFUNCTION(BlueprintCallable, Category = "OpenDIS | Unit Conversions")
+	UFUNCTION(BlueprintCallable, Category = "OpenDIS|Unit Conversions")
 		static void EulerToENU(float LatInRad, float LonInRad, float Psi, float Theta, float Phi, FRotator& TaitBryanAnglesOut);
-	UFUNCTION(BlueprintCallable, Category = "OpenDIS | Unit Conversions")
+	UFUNCTION(BlueprintCallable, Category = "OpenDIS|Unit Conversions")
 		static void ECEF2UE4LocationESPDU(FEntityStatePDU EntityStatePDUIn, FVector& LocationOut);
-	UFUNCTION(BlueprintCallable, Category = "OpenDIS | Unit Conversions")
+	UFUNCTION(BlueprintCallable, Category = "OpenDIS|Unit Conversions")
 		static void ECEF2LongLatHeightESPDU(FEntityStatePDU EntityStatePDUIn, FVector& LonLatHeight);
-	UFUNCTION(BlueprintCallable, Category = "OpenDIS | Unit Conversions")
+	UFUNCTION(BlueprintCallable, Category = "OpenDIS|Unit Conversions")
 		static void ECEF2ENU2UERotESPDU(FEntityStatePDU EntityStatePDUIn, FRotator& RotationOut);
 
 	/**

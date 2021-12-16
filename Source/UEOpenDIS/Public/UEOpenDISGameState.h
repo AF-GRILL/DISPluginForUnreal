@@ -433,13 +433,13 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "OpenDIS")
 		bool RemoveDISEntityFromMap(FEntityID EntityIDToRemove);
 
-	UFUNCTION(BlueprintCallable, Category = "OpenDIS | UDP")
+	UFUNCTION(BlueprintCallable, Category = "OpenDIS|UDP")
 		bool OpenReceiveSocket(FString InListenIP, int32 InListenPort);
-	UFUNCTION(BlueprintCallable, Category = "OpenDIS | UDP")
+	UFUNCTION(BlueprintCallable, Category = "OpenDIS|UDP")
 		bool OpenSendSocket(FString InIP, int32 InPort);
-	UFUNCTION(BlueprintCallable, Category = "OpenDIS | UDP")
+	UFUNCTION(BlueprintCallable, Category = "OpenDIS|UDP")
 		bool CloseReceiveSocket();
-	UFUNCTION(BlueprintCallable, Category = "OpenDIS | UDP")
+	UFUNCTION(BlueprintCallable, Category = "OpenDIS|UDP")
 		bool CloseSendSocket();
 
 protected:
