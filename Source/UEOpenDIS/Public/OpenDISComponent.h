@@ -12,19 +12,19 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FReceivedDetonationPDU, FDetonationP
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FReceivedFirePDU, FFirePDU, FirePDU);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FReceivedRemoveEntityPDU, FRemoveEntityPDU, RemoveEntityPDU);
 
-UCLASS( Blueprintable, ClassGroup = (Custom), meta=(BlueprintSpawnableComponent) )
+UCLASS(Blueprintable, ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
 class UEOPENDIS_API UOpenDISComponent : public UActorComponent
 {
 	GENERATED_BODY()
 
 	bool DeadReckoning(FEntityStatePDU EntityPDUToDeadReckon, float DeltaTime, FEntityStatePDU& DeadReckonedEntityPDU);
 
-	FRotator GetRotationForDeadReckoning(FEntityStatePDU EntityPDUToDeadReckon, float DeltaTime);	
+	FRotator GetRotationForDeadReckoning(FEntityStatePDU EntityPDUToDeadReckon, float DeltaTime);
 
 	virtual bool ApplyGroundClamping_Implementation(FVector& ClampLocation, FRotator& ClampRotation);
-	
 
-public:	
+
+public:
 	// Sets default values for this component's properties
 	UOpenDISComponent();
 
@@ -39,14 +39,14 @@ public:
 	UPROPERTY(BlueprintAssignable, Category = "Event")
 		FReceivedEntityStatePDU OnDeadReckoningUpdate;
 	UPROPERTY(BlueprintAssignable, Category = "Event")
-		FReceivedEntityStatePDU OnReceivedEntityStatePDU;	
+		FReceivedEntityStatePDU OnReceivedEntityStatePDU;
 	UPROPERTY(BlueprintAssignable, Category = "Event")
 		FReceivedDetonationPDU OnReceivedDetonationPDU;
 	UPROPERTY(BlueprintAssignable, Category = "Event")
 		FReceivedFirePDU OnReceivedFirePDU;
 	UPROPERTY(BlueprintAssignable, Category = "Event")
 		FReceivedRemoveEntityPDU OnReceivedRemoveEntityPDU;
-	
+
 	UFUNCTION(BlueprintNativeEvent)
 		bool ApplyGroundClamping(FVector& ClampLocation, FRotator& ClampRotation);
 
@@ -73,6 +73,6 @@ protected:
 	virtual void BeginPlay() override;
 
 private:
-	FEntityStatePDU deadReckonedPDU;	
-	
+	FEntityStatePDU deadReckonedPDU;
+
 };

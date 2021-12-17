@@ -22,6 +22,7 @@
 #include "UEOpenDISGameState.generated.h"
 
 class UOpenDISComponent;
+class ADISEntity_Base;
 
 UENUM(BlueprintType)
 enum class EForceID : uint8
@@ -432,9 +433,9 @@ public:
 	AUEOpenDISGameState();
 
 	UFUNCTION(BlueprintCallable, Category = "OpenDIS")
-		void ProcessDISPacket(int ByteArrayLength, TArray<uint8> InData, int& OutType);
+		void ProcessDISPacket(TArray<uint8> InData);
 	UFUNCTION(BlueprintCallable, Category = "OpenDIS")
-		void AddDISEntityToMap(FEntityID EntityIDToAdd, AActor* EntityToAdd);
+		void AddDISEntityToMap(FEntityID EntityIDToAdd, ADISEntity_Base* EntityToAdd);
 	UFUNCTION(BlueprintCallable, Category = "OpenDIS")
 		bool RemoveDISEntityFromMap(FEntityID EntityIDToRemove);
 
@@ -446,6 +447,8 @@ public:
 		bool CloseReceiveSocket();
 	UFUNCTION(BlueprintCallable, Category = "OpenDIS|UDP")
 		bool CloseSendSocket();
+	UFUNCTION(BlueprintCallable, Category = "OpenDIS|UDP")
+		void ConvertESPDU2Bytes(int EntityID, int Site, int Application, int Exercise, FEntityStatePDU EntityStatePDUIn, TArray<uint8>& BytesOut);
 
 	UFUNCTION(BlueprintPure, Category = "OpenDIS|UDP")
 		void GetUDPSendInformation(bool& CurrentlyConnected, FString& SendIPAddress, int32& SendPort, bool& AutoConnectSend);
@@ -455,10 +458,15 @@ public:
 protected:
 	virtual void BeginPlay() override;
 
+	UFUNCTION()
+		void HandleOnReceivedUDPBytes(const TArray<uint8>& Bytes, const FString& IPAddress);
+	UFUNCTION()
+		void HandleOnDISEntityDestroyed(AActor* DestroyedActor);
+
 	UPROPERTY(BlueprintReadOnly)
-		TMap<FEntityType, TAssetSubclassOf<AActor>> DISClassMappings;
+		TMap<FEntityType, TAssetSubclassOf<ADISEntity_Base>> DISClassMappings;
 	UPROPERTY(BlueprintReadOnly)
-		TMap<FEntityID, AActor*> DISActorMappings;
+		TMap<FEntityID, ADISEntity_Base*> DISActorMappings;
 	UPROPERTY(BlueprintReadOnly)
 		int32 ExerciseID;
 	UPROPERTY(BlueprintReadOnly)
@@ -466,13 +474,12 @@ protected:
 	UPROPERTY(BlueprintReadOnly)
 		int32 ApplicationID;
 
-	UPROPERTY(BlueprintReadOnly)
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 		UUDPComponent* UDPWrapper;
 
 private:
 	UOpenDISComponent* GetAssociatedOpenDISComponent(FEntityID EntityIDIn);
 
-	void ConvertESPDU2Bytes(int EntityID, int Site, int Application, int Exercise, FEntityStatePDU EntityStatePDUIn, TArray<uint8>& BytesOut);
 	FEntityStatePDU ConvertESPDUtoBPStruct(DIS::EntityStatePdu& EntityStatePDUOut);
 	FFirePDU ConvertFirePDUtoBPStruct(DIS::FirePdu& FirePDUOut);
 	FDetonationPDU ConvertDetonationPDUtoBPStruct(DIS::DetonationPdu& DetPDUOut);

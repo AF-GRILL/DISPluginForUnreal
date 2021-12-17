@@ -19,7 +19,6 @@ void UOpenDISComponent::BeginPlay()
 	Super::BeginPlay();
 }
 
-
 // Called every frame
 void UOpenDISComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {

@@ -138,7 +138,7 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FUDPSocketStateSignature, int32, Por
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FUDPSocketSendStateSignature, int32, BoundPort);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FUDPMessageSignature, const TArray<uint8>&, Bytes, const FString&, IPAddress);
 
-UCLASS(ClassGroup = "Networking")
+UCLASS(ClassGroup = "Networking", meta = (BlueprintSpawnableComponent))
 class UEOPENDIS_API UUDPComponent : public UActorComponent
 {
 	GENERATED_BODY()

@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "UObject/Object.h"
 #include "UEOpenDISGameState.h"
+#include "DISEntity_Base.h"
 #include "UEOpenDISRuntimeSettings.generated.h"
 
 USTRUCT()
@@ -13,7 +14,7 @@ struct FOpenDISEnumerationMappings
 	GENERATED_BODY()
 
 	UPROPERTY(EditAnywhere, Category = "OpenDISMappings")
-		TAssetSubclassOf<AActor> DISEntity;
+		TAssetSubclassOf<ADISEntity_Base> DISEntity;
 
 	UPROPERTY(EditAnywhere, Category = "OpenDISMappings")
 		TArray<FEntityType> AssociatedDISEnumerations;

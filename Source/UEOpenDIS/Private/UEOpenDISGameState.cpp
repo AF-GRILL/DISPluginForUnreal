@@ -3,8 +3,9 @@
 #include "UEOpenDISGameState.h"
 #include "UEOpenDISRuntimeSettings.h"
 #include "OpenDISComponent.h"
+#include "DISEntity_Base.h"
 
-AUEOpenDISGameState::AUEOpenDISGameState() 
+AUEOpenDISGameState::AUEOpenDISGameState()
 {
 	UDPWrapper = CreateDefaultSubobject<UUDPComponent>(TEXT("UDP Component"));
 
@@ -37,6 +38,24 @@ AUEOpenDISGameState::AUEOpenDISGameState()
 void AUEOpenDISGameState::BeginPlay()
 {
 	Super::BeginPlay();
+
+	UDPWrapper->OnReceivedBytes.AddDynamic(this, &AUEOpenDISGameState::HandleOnReceivedUDPBytes);
+}
+
+void AUEOpenDISGameState::HandleOnReceivedUDPBytes(const TArray<uint8>& Bytes, const FString& IPAddress)
+{
+	ProcessDISPacket(Bytes);
+}
+
+void AUEOpenDISGameState::HandleOnDISEntityDestroyed(AActor* DestroyedActor)
+{
+	//Remove the actor from the dis entity mapping
+	UOpenDISComponent* DISComponent = (UOpenDISComponent*)DestroyedActor->FindComponentByClass(UOpenDISComponent::StaticClass());
+
+	if (DISComponent != nullptr) 
+	{
+		RemoveDISEntityFromMap(DISComponent->EntityID);
+	}
 }
 
 bool AUEOpenDISGameState::OpenReceiveSocket(FString InListenIP, int32 InListenPort)
@@ -75,10 +94,12 @@ void AUEOpenDISGameState::GetUDPReceiveInformation(bool& CurrentlyConnected, FSt
 	AutoConnectReceive = UDPWrapper->Settings.bShouldAutoOpenReceive;
 }
 
-void AUEOpenDISGameState::ProcessDISPacket(int ByteArrayLength, TArray<uint8> InData, int& OutType)
+void AUEOpenDISGameState::ProcessDISPacket(TArray<uint8> InData)
 {
+	int bytesArrayLength = InData.Num();
+
 	//UE_LOG(LogTemp, Log, TEXT("trying to process"));
-	if (ByteArrayLength < 1)
+	if (bytesArrayLength < 1)
 	{
 		return;
 	}
@@ -94,17 +115,17 @@ void AUEOpenDISGameState::ProcessDISPacket(int ByteArrayLength, TArray<uint8> In
 			//entity state
 		case 1:
 		{
-			DIS::DataStream ds((char*)&InData[0], ByteArrayLength, BigEndian);
+			DIS::DataStream ds((char*)&InData[0], bytesArrayLength, BigEndian);
 			pdu->unmarshal(ds);
 			// TODO: Verify that EntityStatePDU is being handled correctly.
 			FEntityStatePDU entityStatePDU = ConvertESPDUtoBPStruct(static_cast<DIS::EntityStatePdu&>(*pdu));
 
 			//Find associated actor in the DISActorMappings map
-			AActor* associatedActor = *DISActorMappings.Find(entityStatePDU.EntityID);
+			ADISEntity_Base** associatedActor = DISActorMappings.Find(entityStatePDU.EntityID);
 			if (associatedActor != nullptr)
 			{
 				//If an actor was found, relay information to the associated component
-				UOpenDISComponent* DISComponent = (UOpenDISComponent*)associatedActor->FindComponentByClass(UOpenDISComponent::StaticClass());
+				UOpenDISComponent* DISComponent = (UOpenDISComponent*)(*associatedActor)->FindComponentByClass(UOpenDISComponent::StaticClass());
 
 				if (DISComponent != nullptr)
 				{
@@ -114,14 +135,16 @@ void AUEOpenDISGameState::ProcessDISPacket(int ByteArrayLength, TArray<uint8> In
 			else
 			{
 				//If an actor was not found -- check to see if there is an associated actor for the entity type
-				TAssetSubclassOf<AActor>* associatedSoftClassReference = DISClassMappings.Find(entityStatePDU.EntityType);
+				TAssetSubclassOf<ADISEntity_Base>* associatedSoftClassReference = DISClassMappings.Find(entityStatePDU.EntityType);
 				if (associatedSoftClassReference != nullptr)
 				{
 					//If so, spawn one and relay information to the associated component
 					UClass* associatedClass = associatedSoftClassReference->LoadSynchronous();
 					if (associatedClass != nullptr)
 					{
-						AActor* spawnedActor = GetWorld()->SpawnActor(associatedClass);
+						ADISEntity_Base* spawnedActor = GetWorld()->SpawnActor<ADISEntity_Base>(associatedClass);
+						spawnedActor->OnDestroyed.AddDynamic(this, &AUEOpenDISGameState::HandleOnDISEntityDestroyed);
+
 						UOpenDISComponent* DISComponent = (UOpenDISComponent*)spawnedActor->FindComponentByClass(UOpenDISComponent::StaticClass());
 						//Add actor to the map
 						AddDISEntityToMap(entityStatePDU.EntityID, spawnedActor);
@@ -135,7 +158,7 @@ void AUEOpenDISGameState::ProcessDISPacket(int ByteArrayLength, TArray<uint8> In
 				else
 				{
 					//Otherwise notify the user that no such mapping exists
-					GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Red, FString::Printf(TEXT("No mapping between an actor and the DIS enumeration %s exists!"), *entityStatePDU.EntityType.ToString()));
+					UE_LOG(LogTemp, Warning, TEXT("No mapping exists between an actor and the DIS enumeration of: %s"), *entityStatePDU.EntityType.ToString());
 				}
 			}
 
@@ -144,7 +167,7 @@ void AUEOpenDISGameState::ProcessDISPacket(int ByteArrayLength, TArray<uint8> In
 		//fire
 		case 2:
 		{
-			DIS::DataStream ds((char*)&InData[0], ByteArrayLength, BigEndian);
+			DIS::DataStream ds((char*)&InData[0], bytesArrayLength, BigEndian);
 			pdu->unmarshal(ds);
 			// TODO: Verify that FirePDU is being handled correctly.
 			FFirePDU firePDU = ConvertFirePDUtoBPStruct(static_cast<DIS::FirePdu&>(*pdu));
@@ -162,7 +185,7 @@ void AUEOpenDISGameState::ProcessDISPacket(int ByteArrayLength, TArray<uint8> In
 		//detonation
 		case 3:
 		{
-			DIS::DataStream ds((char*)&InData[0], ByteArrayLength, BigEndian);
+			DIS::DataStream ds((char*)&InData[0], bytesArrayLength, BigEndian);
 			pdu->unmarshal(ds);
 			// TODO: Verify that DetonationPDU is being handled correctly.
 			FDetonationPDU detPDU = ConvertDetonationPDUtoBPStruct(static_cast<DIS::DetonationPdu&>(*pdu));
@@ -180,7 +203,7 @@ void AUEOpenDISGameState::ProcessDISPacket(int ByteArrayLength, TArray<uint8> In
 		//remove entity
 		case 12:
 		{
-			DIS::DataStream ds((char*)&InData[0], ByteArrayLength, BigEndian);
+			DIS::DataStream ds((char*)&InData[0], bytesArrayLength, BigEndian);
 			pdu->unmarshal(ds);
 			// TODO: Verify that RemoveEntityPDU is being handled correctly.
 			FRemoveEntityPDU removeEntityPDU = ConvertRemoveEntityPDUtoBPStruct(static_cast<DIS::RemoveEntityPdu&>(*pdu));
@@ -229,17 +252,17 @@ UOpenDISComponent* AUEOpenDISGameState::GetAssociatedOpenDISComponent(FEntityID 
 	UOpenDISComponent* DISComponent = nullptr;
 
 	//Find associated actor in the DISActorMappings map
-	AActor* associatedActor = *DISActorMappings.Find(EntityIDIn);
+	ADISEntity_Base** associatedActor = DISActorMappings.Find(EntityIDIn);
 	if (associatedActor != nullptr)
 	{
 		//If an actor was found, relay information to the associated component
-		DISComponent = (UOpenDISComponent*)associatedActor->FindComponentByClass(UOpenDISComponent::StaticClass());
+		DISComponent = (UOpenDISComponent*)(*associatedActor)->FindComponentByClass(UOpenDISComponent::StaticClass());
 	}
 
 	return DISComponent;
 }
 
-void AUEOpenDISGameState::AddDISEntityToMap(FEntityID EntityIDToAdd, AActor* EntityToAdd)
+void AUEOpenDISGameState::AddDISEntityToMap(FEntityID EntityIDToAdd, ADISEntity_Base* EntityToAdd)
 {
 	DISActorMappings.Add(EntityIDToAdd, EntityToAdd);
 }
