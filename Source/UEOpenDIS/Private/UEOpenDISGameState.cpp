@@ -98,7 +98,6 @@ void AUEOpenDISGameState::ProcessDISPacket(TArray<uint8> InData)
 {
 	int bytesArrayLength = InData.Num();
 
-	//UE_LOG(LogTemp, Log, TEXT("trying to process"));
 	if (bytesArrayLength < 1)
 	{
 		return;

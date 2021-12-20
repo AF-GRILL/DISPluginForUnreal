@@ -424,6 +424,8 @@ struct FDetonationPDU
 	}
 };
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FSpawnedNewDISEntity, ADISEntity_Base*, NewDISEntity);
+
 UCLASS(Blueprintable)
 class UEOPENDIS_API AUEOpenDISGameState : public AGameStateBase
 {
@@ -431,6 +433,10 @@ class UEOPENDIS_API AUEOpenDISGameState : public AGameStateBase
 
 public:
 	AUEOpenDISGameState();
+
+	/** Spawned New DIS Entity */
+	UPROPERTY(BlueprintAssignable, Category = "Events")
+		FSpawnedNewDISEntity OnSpawnedNewDISEntity;
 
 	UFUNCTION(BlueprintCallable, Category = "OpenDIS")
 		void ProcessDISPacket(TArray<uint8> InData);

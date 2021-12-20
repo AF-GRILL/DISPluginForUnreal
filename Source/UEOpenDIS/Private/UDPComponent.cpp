@@ -223,7 +223,6 @@ bool FUDPWrapper::OpenReceiveSocket(const FString& InIP, const int32 InListenPor
 
 	FIPv4Address Addr;
 	FIPv4Address::Parse(CurrentUDPSettings.ReceiveIP, Addr);
-
 	//Create Socket
 	FIPv4Endpoint Endpoint(Addr, CurrentUDPSettings.ReceivePort);
 
@@ -232,6 +231,12 @@ bool FUDPWrapper::OpenReceiveSocket(const FString& InIP, const int32 InListenPor
 		.AsReusable()
 		.BoundToEndpoint(Endpoint)
 		.WithReceiveBufferSize(CurrentUDPSettings.BufferSize);
+
+	if (ReceiverSocket == nullptr) 
+	{
+		UE_LOG(LogTemp, Error, TEXT("Failed to bind to %s:%s! Setup of receive socket failed."), *CurrentUDPSettings.ReceiveIP, *FString::FromInt(CurrentUDPSettings.ReceivePort));
+		return false;
+	}
 
 	FTimespan ThreadWaitTime = FTimespan::FromMilliseconds(100);
 	FString ThreadName = FString::Printf(TEXT("UDP RECEIVER-FUDPWrapper"));

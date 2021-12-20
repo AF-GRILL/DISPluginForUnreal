@@ -55,9 +55,10 @@ void UOpenDISComponent::TickComponent(float DeltaTime, ELevelTick TickType, FAct
 
 void UOpenDISComponent::HandleEntityStatePDU(FEntityStatePDU NewEntityStatePDU)
 {
-	//Check if the entity has been deactivated
-	if (NewEntityStatePDU.EntityAppearance == 1)
+	//Check if the entity has been deactivated -- Entity is deactivated if the 23rd bit of the Entity Appearance value is set
+	if (NewEntityStatePDU.EntityAppearance & (1 << 23))
 	{
+		UE_LOG(LogTemp, Warning, TEXT("%s Entity Appearance is set to deactivated, deleting entity..."), *NewEntityStatePDU.Marking);
 		GetOwner()->Destroy();
 	}
 
