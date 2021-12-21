@@ -4,8 +4,10 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
-#include "UEOpenDISGameState.h"
+#include "DISEnumsAndStructs.h"
 #include "OpenDISComponent.generated.h"
+
+DECLARE_LOG_CATEGORY_EXTERN(LogOpenDISComponent, Log, All);
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FReceivedEntityStatePDU, FEntityStatePDU, EntityStatePDU);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FReceivedDetonationPDU, FDetonationPDU, DetonationPDU);

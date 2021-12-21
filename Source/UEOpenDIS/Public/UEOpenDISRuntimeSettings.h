@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "UObject/Object.h"
-#include "UEOpenDISGameState.h"
+#include "DISEnumsAndStructs.h"
 #include "DISEntity_Base.h"
 #include "UEOpenDISRuntimeSettings.generated.h"
 

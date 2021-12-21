@@ -1,8 +1,9 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
-
 #include "OpenDISComponent.h"
 #include "Kismet/KismetMathLibrary.h"
+
+DEFINE_LOG_CATEGORY(LogOpenDISComponent);
 
 // Sets default values for this component's properties
 UOpenDISComponent::UOpenDISComponent()
@@ -58,7 +59,7 @@ void UOpenDISComponent::HandleEntityStatePDU(FEntityStatePDU NewEntityStatePDU)
 	//Check if the entity has been deactivated -- Entity is deactivated if the 23rd bit of the Entity Appearance value is set
 	if (NewEntityStatePDU.EntityAppearance & (1 << 23))
 	{
-		UE_LOG(LogTemp, Warning, TEXT("%s Entity Appearance is set to deactivated, deleting entity..."), *NewEntityStatePDU.Marking);
+		UE_LOG(LogOpenDISComponent, Log, TEXT("%s Entity Appearance is set to deactivated, deleting entity..."), *NewEntityStatePDU.Marking);
 		GetOwner()->Destroy();
 	}
 
