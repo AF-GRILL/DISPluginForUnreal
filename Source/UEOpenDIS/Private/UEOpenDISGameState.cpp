@@ -49,12 +49,19 @@ void AUEOpenDISGameState::HandleOnReceivedUDPBytes(const TArray<uint8>& Bytes, c
 
 void AUEOpenDISGameState::HandleOnDISEntityDestroyed(AActor* DestroyedActor)
 {
-	//Remove the actor from the dis entity mapping
-	UOpenDISComponent* DISComponent = (UOpenDISComponent*)DestroyedActor->FindComponentByClass(UOpenDISComponent::StaticClass());
+	bool anyRemoved = false;
 
-	if (DISComponent != nullptr) 
+	//Remove the actor from the dis entity mapping
+	UOpenDISComponent* DISComponent = DestroyedActor->FindComponentByClass<UOpenDISComponent>();
+
+	if (DISComponent != nullptr)
 	{
-		RemoveDISEntityFromMap(DISComponent->EntityID);
+		anyRemoved = RemoveDISEntityFromMap(DISComponent->EntityID);
+	}
+
+	if (!anyRemoved)
+	{
+		UE_LOG(LogTemp, Error, TEXT("Failed to remove %s from the Entity Map!"), *DestroyedActor->GetName());
 	}
 }
 
@@ -121,10 +128,11 @@ void AUEOpenDISGameState::ProcessDISPacket(TArray<uint8> InData)
 
 			//Find associated actor in the DISActorMappings map
 			ADISEntity_Base** associatedActor = DISActorMappings.Find(entityStatePDU.EntityID);
-			if (associatedActor != nullptr)
+			if (associatedActor != nullptr && *associatedActor != nullptr)
 			{
 				//If an actor was found, relay information to the associated component
-				UOpenDISComponent* DISComponent = (UOpenDISComponent*)(*associatedActor)->FindComponentByClass(UOpenDISComponent::StaticClass());
+				//Leaving this way rather than getting component of ADISEntity_Base in case we go to a more agnostic approach for classes able to be used
+				UOpenDISComponent* DISComponent = (*associatedActor)->FindComponentByClass<UOpenDISComponent>();
 
 				if (DISComponent != nullptr)
 				{
@@ -144,7 +152,9 @@ void AUEOpenDISGameState::ProcessDISPacket(TArray<uint8> InData)
 						ADISEntity_Base* spawnedActor = GetWorld()->SpawnActor<ADISEntity_Base>(associatedClass);
 						spawnedActor->OnDestroyed.AddDynamic(this, &AUEOpenDISGameState::HandleOnDISEntityDestroyed);
 
-						UOpenDISComponent* DISComponent = (UOpenDISComponent*)spawnedActor->FindComponentByClass(UOpenDISComponent::StaticClass());
+						//Get DIS Component of the newly spawned actor
+						//Leaving this way rather than getting component of ADISEntity_Base in case we go to a more agnostic approach for classes able to be used
+						UOpenDISComponent* DISComponent = spawnedActor->FindComponentByClass<UOpenDISComponent>();
 						//Add actor to the map
 						AddDISEntityToMap(entityStatePDU.EntityID, spawnedActor);
 
@@ -207,6 +217,8 @@ void AUEOpenDISGameState::ProcessDISPacket(TArray<uint8> InData)
 			// TODO: Verify that RemoveEntityPDU is being handled correctly.
 			FRemoveEntityPDU removeEntityPDU = ConvertRemoveEntityPDUtoBPStruct(static_cast<DIS::RemoveEntityPdu&>(*pdu));
 
+			UE_LOG(LogTemp, Warning, TEXT("Remove received"));
+
 			//Verify that we are the appropriate sim to handle the RemoveEntityPDU
 			if (removeEntityPDU.ReceivingEntityID.Site == SiteID && removeEntityPDU.ReceivingEntityID.Application == ApplicationID)
 			{
@@ -217,6 +229,10 @@ void AUEOpenDISGameState::ProcessDISPacket(TArray<uint8> InData)
 				{
 					DISComponent->HandleRemoveEntityPDU(removeEntityPDU);
 				}
+			}
+			else {
+
+				UE_LOG(LogTemp, Warning, TEXT("Not meant for us"));
 			}
 			break;
 		}
@@ -252,10 +268,11 @@ UOpenDISComponent* AUEOpenDISGameState::GetAssociatedOpenDISComponent(FEntityID 
 
 	//Find associated actor in the DISActorMappings map
 	ADISEntity_Base** associatedActor = DISActorMappings.Find(EntityIDIn);
-	if (associatedActor != nullptr)
+	if (associatedActor != nullptr && *associatedActor != nullptr)
 	{
 		//If an actor was found, relay information to the associated component
-		DISComponent = (UOpenDISComponent*)(*associatedActor)->FindComponentByClass(UOpenDISComponent::StaticClass());
+		//Leaving this way rather than getting component of ADISEntity_Base in case we go to a more agnostic approach for classes able to be used
+		DISComponent = (*associatedActor)->FindComponentByClass<UOpenDISComponent>();
 	}
 
 	return DISComponent;
