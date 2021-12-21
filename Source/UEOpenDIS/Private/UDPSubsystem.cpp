@@ -14,11 +14,11 @@ void UUDPSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 	check(ProjectSettings);
 
 	Settings.bShouldAutoOpenSend = ProjectSettings->AutoConnectSend;
-	Settings.SendIP = ProjectSettings->SendIPAddress;
-	Settings.SendPort = ProjectSettings->SendPort;
+	Settings.SendIP = ProjectSettings->AutoSendIPAddress;
+	Settings.SendPort = ProjectSettings->AutoSendPort;
 	Settings.bShouldAutoOpenReceive = ProjectSettings->AutoConnectReceive;
-	Settings.ReceiveIP = ProjectSettings->ReceiveIPAddress;
-	Settings.ReceivePort = ProjectSettings->ReceivePort;
+	Settings.ReceiveIP = ProjectSettings->AutoReceiveIPAddress;
+	Settings.ReceivePort = ProjectSettings->AutoReceivePort;
 
 	if (Settings.bShouldAutoOpenSend)
 	{
