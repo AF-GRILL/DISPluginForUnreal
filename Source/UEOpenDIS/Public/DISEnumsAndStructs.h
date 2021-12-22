@@ -51,12 +51,90 @@ enum class EForceID : uint8
 	Neutral10 UMETA(DisplayName = "Neutral10")
 };
 
+UENUM(BlueprintType)
+enum class EPDUType : uint8
+{
+	None,
+	EntityState,
+	Fire,
+	Detonation,
+	Collision,
+	ServiceRequest,
+	ResupplyOffer,
+	RessuplyReceived,
+	ResupplyCancel,
+	RepairComplete,
+	RepairResponse,
+	CreateEntity,
+	RemoveEntity,
+	Start_Resume,
+	Stop_Freeze,
+	Acknowledge,
+	ActionRequest,
+	ActionResponse,
+	DataQuery,
+	SetData,
+	Data,
+	EventReport,
+	Comment,
+	ElectromagneticEmission,
+	Designator,
+	Transmitter,
+	Signal,
+	Receiver,
+	IFF,
+	UnderwaterAcoustic,
+	SupplementalEmission_EntityState,
+	IntercomSignal,
+	IntercomControl,
+	AggregateState,
+	IsGroupOf,
+	TransferOwnership,
+	IsPartOf,
+	MinefieldState,
+	MinefieldQuery,
+	MinefieldData,
+	MinefieldResponseNegativeAcknowledgement,
+	EnvironmentalProcess,
+	GriddedData,
+	PointObjectState,
+	LinearObjectState,
+	ArealObjectState,
+	TimeSpacePositionInformation,
+	Appearance,
+	ArticulatedParts,
+	LEFire,
+	LEDetonate,
+	CreateEntity_R,
+	RemoveEntity_R,
+	Start_Resume_R,
+	Stop_Freeze_R,
+	Acknowledge_R,
+	ActionRequest_R,
+	ActionResponse_R,
+	DataQuery_R,
+	SetData_R,
+	Data_R,
+	EventReport_R,
+	Comment_R_Message,
+	Record_R,
+	SetRecord_R,
+	RecordQuery_R,
+	Collision_Elastic,
+	EntityStateUpdate,
+	DirectedEnergyFire,
+	EntityDamageStatus,
+	InformationOperationsAction,
+	InformationOperationsReport,
+	Attribute
+};
+
 USTRUCT(BlueprintType)
 struct FEntityID
 {
 	GENERATED_BODY()
 
-		UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		int32 Site;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		int32 Application;
@@ -98,7 +176,7 @@ struct FEventID
 {
 	GENERATED_BODY()
 
-		UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		int32 Site;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		int32 Application;
@@ -118,7 +196,7 @@ struct FEntityType
 {
 	GENERATED_BODY()
 
-		UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		/** Kind of entity */
 		int32 EntityKind;
 
@@ -193,7 +271,7 @@ struct FArticulationParameters
 {
 	GENERATED_BODY()
 
-		UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		int32 ParameterTypeDesignator;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		int32 ChangeIndicator;
@@ -219,23 +297,23 @@ struct FBurstDescriptor
 {
 	GENERATED_BODY()
 
-		UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		FEntityType EntityType;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		int32 warhead;
+		int32 Warhead;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		int32 fuse;
+		int32 Fuse;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		int32 quantity;
+		int32 Quantity;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		int32 rate;
+		int32 Rate;
 
 	FBurstDescriptor()
 	{
-		warhead = 0;
-		fuse = 0;
-		quantity = 0;
-		rate = 0;
+		Warhead = 0;
+		Fuse = 0;
+		Quantity = 0;
+		Rate = 0;
 	}
 };
 
@@ -244,7 +322,7 @@ struct FDeadReckoningParameters
 {
 	GENERATED_BODY()
 
-		UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		uint8 DeadReckoningAlgorithm;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		TArray<uint8> OtherParameters;
@@ -267,9 +345,8 @@ struct FEntityStatePDU
 {
 	GENERATED_BODY()
 
-		//checked
-		UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		int32 PduType; // TODO: Make this an enum
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		EPDUType PduType;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		FEntityID EntityID;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
@@ -304,7 +381,7 @@ struct FEntityStatePDU
 	FEntityStatePDU()
 	{
 		//checked
-		PduType = 1;
+		PduType = EPDUType::EntityState;
 		ForceID = EForceID::Other;
 		Marking = FString("");
 		EntityLocation = FVector(0, 0, 0);
@@ -322,33 +399,33 @@ struct FFirePDU
 {
 	GENERATED_BODY()
 
-		UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		int32 PduType; // TODO: Make this an enum
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		int32 fireMissionIndex; // TODO: Make this an enum
+		EPDUType PduType;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		int32 FireMissionIndex;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		FEntityID MunitionEntityID;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		float range;
+		float Range;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		FVector velocity;
+		FVector Velocity;
 	UPROPERTY()
-		TArray<double> locationDouble;
+		TArray<double> LocationDouble;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		FVector location;
+		FVector Location;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		FEventID eventID;
+		FEventID EventID;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		FBurstDescriptor burstDescriptor;
+		FBurstDescriptor BurstDescriptor;
 
 	FFirePDU()
 	{
-		PduType = 2;
-		fireMissionIndex = 0;
-		range = 0.0;
-		locationDouble.Init(0, 3);
-		location = FVector(0, 0, 0);
-		velocity = FVector(0, 0, 0);
+		PduType = EPDUType::Fire;
+		FireMissionIndex = 0;
+		Range = 0.0;
+		LocationDouble.Init(0, 3);
+		Location = FVector(0, 0, 0);
+		Velocity = FVector(0, 0, 0);
 	}
 };
 
@@ -357,8 +434,8 @@ struct FRemoveEntityPDU
 {
 	GENERATED_BODY()
 
-		UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		int32 PduType; // TODO: Make this an enum
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		EPDUType PduType;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		FEntityID OriginatingEntityID;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
@@ -368,7 +445,7 @@ struct FRemoveEntityPDU
 
 	FRemoveEntityPDU()
 	{
-		PduType = 12;
+		PduType = EPDUType::RemoveEntity;
 		RequestID = 0;
 	}
 };
@@ -378,39 +455,38 @@ struct FDetonationPDU
 {
 	GENERATED_BODY()
 
-		UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		int32 PduType; // TODO: Make this an enum
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		EPDUType PduType;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		FEntityID MunitionEntityID;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		FEventID eventID;
+		FEventID EventID;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		FVector velocity;
+		FVector Velocity;
 	UPROPERTY()
-		TArray<double> locationDouble;
+		TArray<double> LocationDouble;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		FVector location;
+		FVector Location;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		FBurstDescriptor burstDescriptor;
+		FBurstDescriptor BurstDescriptor;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		FVector locationInEntityCoords;
+		FVector LocationInEntityCoords;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		uint8 detonationResult;
+		uint8 DetonationResult;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		int32 NumberOfArticulationParameters;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		int32 pad;
+		int32 Pad;
 
 	FDetonationPDU()
 	{
-		PduType = 3;
-		velocity = FVector(0, 0, 0);
-		locationDouble.Init(0, 3);
-		location = FVector(0, 0, 0);
-		locationInEntityCoords = FVector(0, 0, 0);
-		detonationResult = 0U;
+		PduType = EPDUType::Detonation;
+		Velocity = FVector(0, 0, 0);
+		LocationDouble.Init(0, 3);
+		Location = FVector(0, 0, 0);
+		LocationInEntityCoords = FVector(0, 0, 0);
+		DetonationResult = 0U;
 		NumberOfArticulationParameters = 0;
-		pad = 0;
-
+		Pad = 0;
 	}
 };

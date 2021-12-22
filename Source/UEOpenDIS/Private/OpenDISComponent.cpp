@@ -40,8 +40,8 @@ void UOpenDISComponent::TickComponent(float DeltaTime, ELevelTick TickType, FAct
 		}
 	}
 
-	//Check if ground clamping is enabled
-	if (PerformGroundClamping)
+	//Check if ground clamping is enabled and that the entity is not static
+	if (PerformGroundClamping && mostRecentEntityStatePDU.DeadReckoningParameters.DeadReckoningAlgorithm != 1)
 	{
 		FVector groundClampLocation;
 		FRotator groundClampRotation;
@@ -72,6 +72,19 @@ void UOpenDISComponent::HandleEntityStatePDU(FEntityStatePDU NewEntityStatePDU)
 	GetOwner()->SetLifeSpan(DISHeartbeat);
 
 	OnReceivedEntityStatePDU.Broadcast(NewEntityStatePDU);
+
+	//Check if ground clamping is enabled and that the entity is static
+	if (PerformGroundClamping && mostRecentEntityStatePDU.DeadReckoningParameters.DeadReckoningAlgorithm == 1)
+	{
+		FVector groundClampLocation;
+		FRotator groundClampRotation;
+
+		//If ground clamping is supported and a proper hit returned, update the actor's location/rotation
+		if (ApplyGroundClamping(groundClampLocation, groundClampRotation))
+		{
+			GetOwner()->SetActorLocationAndRotation(groundClampLocation, groundClampRotation);
+		}
+	}
 }
 
 void UOpenDISComponent::HandleFirePDU(FFirePDU FirePDUIn)
@@ -166,8 +179,6 @@ bool UOpenDISComponent::ApplyGroundClamping_Implementation(FVector& ClampLocatio
 	// TODO: Only perform ground clamping on entities that are being received from the network.
 	// I don't think we would want to perform ground clamping on entities that we own/are sending.
 	// Or do we want to leave this up to the user and if they have 'PerformGroundClamping' enabled.
-
-	// TODO: Only perform ground clamping once for static objects that will never move.
 
 	bool groundClampSuccessful = false;
 	//Verify the entity is of the ground domain and that it is not a munition

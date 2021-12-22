@@ -1,9 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
-#include "UDPSubsystem.h"
 #include "PDUProcessor.h"
-
-DEFINE_LOG_CATEGORY(LogPDUProcessorSubsystem);
+#include "UDPSubsystem.h"
 
 void UPDUProcessor::Initialize(FSubsystemCollectionBase& Collection)
 {
@@ -39,14 +37,13 @@ void UPDUProcessor::ProcessDISPacket(TArray<uint8> InData)
 	if (pdu)
 	{
 		//for list of enums for pdu type refer to siso ref 010 2015, ANNEX A
-		switch (pdu->getPduType())
+		switch (static_cast<EPDUType>(pdu->getPduType()))
 		{
 			//entity state
-		case 1:
+		case EPDUType::EntityState:
 		{
 			DIS::DataStream ds((char*)&InData[0], bytesArrayLength, BigEndian);
 			pdu->unmarshal(ds);
-			// TODO: Verify that EntityStatePDU is being handled correctly.
 			FEntityStatePDU entityStatePDU = ConvertESPDUtoBPStruct(static_cast<DIS::EntityStatePdu&>(*pdu));
 
 			OnEntityStatePDUProcessed.Broadcast(entityStatePDU);
@@ -54,11 +51,10 @@ void UPDUProcessor::ProcessDISPacket(TArray<uint8> InData)
 			break;
 		}
 		//fire
-		case 2:
+		case EPDUType::Fire:
 		{
 			DIS::DataStream ds((char*)&InData[0], bytesArrayLength, BigEndian);
 			pdu->unmarshal(ds);
-			// TODO: Verify that FirePDU is being handled correctly.
 			FFirePDU firePDU = ConvertFirePDUtoBPStruct(static_cast<DIS::FirePdu&>(*pdu));
 
 			OnFirePDUProcessed.Broadcast(firePDU);
@@ -66,11 +62,10 @@ void UPDUProcessor::ProcessDISPacket(TArray<uint8> InData)
 			break;
 		}
 		//detonation
-		case 3:
+		case EPDUType::Detonation:
 		{
 			DIS::DataStream ds((char*)&InData[0], bytesArrayLength, BigEndian);
 			pdu->unmarshal(ds);
-			// TODO: Verify that DetonationPDU is being handled correctly.
 			FDetonationPDU detPDU = ConvertDetonationPDUtoBPStruct(static_cast<DIS::DetonationPdu&>(*pdu));
 
 			OnDetonationPDUProcessed.Broadcast(detPDU);
@@ -78,11 +73,10 @@ void UPDUProcessor::ProcessDISPacket(TArray<uint8> InData)
 			break;
 		}
 		//remove entity
-		case 12:
+		case EPDUType::RemoveEntity:
 		{
 			DIS::DataStream ds((char*)&InData[0], bytesArrayLength, BigEndian);
 			pdu->unmarshal(ds);
-			// TODO: Verify that RemoveEntityPDU is being handled correctly.
 			FRemoveEntityPDU removeEntityPDU = ConvertRemoveEntityPDUtoBPStruct(static_cast<DIS::RemoveEntityPdu&>(*pdu));
 
 			OnRemoveEntityPDUProcessed.Broadcast(removeEntityPDU);
@@ -90,26 +84,25 @@ void UPDUProcessor::ProcessDISPacket(TArray<uint8> InData)
 			break;
 		}
 		//start/resume
-		case 13:
+		case EPDUType::Start_Resume:
 		{
 			// TODO: Handle start/resume PDUs accordingly
 			break;
 		}
 		//stop/freeze
-		case 14:
+		case EPDUType::Stop_Freeze:
 		{
 			// TODO: Handle stop/freeze PDUs accordingly
 			break;
 		}
 		//entity state update
-		case 67:
+		case EPDUType::EntityStateUpdate:
 		{
 			// TODO: Handle EntityStateUpdate PDUs accordingly
 			break;
 		}
 		default:
 		{
-			//UE_LOG(LogPDUProcessorSubsystem, Warning, TEXT("Received PDU packet for an unimplemented PDU type!"));
 			break;
 		}
 		}
@@ -119,16 +112,19 @@ void UPDUProcessor::ProcessDISPacket(TArray<uint8> InData)
 void UPDUProcessor::ConvertESPDU2Bytes(int EntityID, int Site, int Application, int Exercise, FEntityStatePDU EntityStatePDUIn, TArray<uint8>& BytesOut)
 {
 	DIS::DataStream buffer(BigEndian);
+
 	//protocol and exercise
 	DIS::EntityStatePdu tempEntity;
 	tempEntity.setProtocolVersion(6);
 	tempEntity.setExerciseID(Exercise);
+
 	//entity id
 	DIS::EntityID tempID;
 	tempID.setSite(Site);
 	tempID.setApplication(Application);
 	tempID.setEntity(EntityID);
 	tempEntity.setEntityID(tempID);
+
 	//entity type
 	DIS::EntityType tempType;
 	tempType.setCategory(EntityStatePDUIn.EntityType.Category);
@@ -139,6 +135,7 @@ void UPDUProcessor::ConvertESPDU2Bytes(int EntityID, int Site, int Application, 
 	tempType.setSpecific(EntityStatePDUIn.EntityType.Specific);
 	tempType.setSubcategory(EntityStatePDUIn.EntityType.Subcategory);
 	tempEntity.setEntityType(tempType);
+
 	//dead reckoning
 	DIS::DeadReckoningParameter drp;
 	drp.setDeadReckoningAlgorithm(4);
@@ -152,23 +149,27 @@ void UPDUProcessor::ConvertESPDU2Bytes(int EntityID, int Site, int Application, 
 	tempFloat.setZ(EntityStatePDUIn.DeadReckoningParameters.EntityLinearAcceleration.Z);
 	drp.setEntityLinearAcceleration(tempFloat);
 	tempEntity.setDeadReckoningParameters(drp);
-	//location FIX TO USE DOUBLE LATER, USING FLOAT FOR SIMPLE TESTING
+
+	// TODO: location FIX TO USE DOUBLE LATER, USING FLOAT FOR SIMPLE TESTING
 	DIS::Vector3Double tempDouble;
 	tempDouble.setX(EntityStatePDUIn.EntityLocation[0]);
 	tempDouble.setY(EntityStatePDUIn.EntityLocation[1]);
 	tempDouble.setZ(EntityStatePDUIn.EntityLocation[2]);
 	tempEntity.setEntityLocation(tempDouble);
+
 	//rotation
 	DIS::Orientation tempOri;
 	tempOri.setPhi(0.0);
 	tempOri.setPsi(0.0);
 	tempOri.setTheta(0.0);
 	tempEntity.setEntityOrientation(tempOri);
+
 	//marking
 	DIS::Marking tempMarking;
 	tempMarking.setCharacterSet(1);
 	tempMarking.setByStringCharacters(TCHAR_TO_ANSI(*EntityStatePDUIn.Marking));
 	tempEntity.setMarking(tempMarking);
+
 	//marshal
 	tempEntity.marshal(buffer);
 	TArray<uint8> tempBytes;
@@ -177,12 +178,14 @@ void UPDUProcessor::ConvertESPDU2Bytes(int EntityID, int Site, int Application, 
 		tempBytes[i] = buffer[i];
 	}
 	buffer.clear();
+
 	BytesOut = tempBytes;
 }
 
 FEntityStatePDU UPDUProcessor::ConvertESPDUtoBPStruct(DIS::EntityStatePdu& EntityStatePDUOut)
 {
 	FEntityStatePDU entityStatePDU;
+
 	DIS::Vector3Double& position = EntityStatePDUOut.getEntityLocation();
 	DIS::Orientation& rotation = EntityStatePDUOut.getEntityOrientation();
 	const DIS::EntityID EntityID = EntityStatePDUOut.getEntityID();
@@ -192,8 +195,6 @@ FEntityStatePDU UPDUProcessor::ConvertESPDUtoBPStruct(DIS::EntityStatePdu& Entit
 	entityStatePDU.EntityLocationDouble[0] = position.getX();
 	entityStatePDU.EntityLocationDouble[1] = position.getY();
 	entityStatePDU.EntityLocationDouble[2] = position.getZ();
-
-	//checked
 
 	//entity id
 	entityStatePDU.EntityID.Site = EntityID.getSite();
@@ -217,7 +218,7 @@ FEntityStatePDU UPDUProcessor::ConvertESPDUtoBPStruct(DIS::EntityStatePdu& Entit
 
 	//Dead reckoning
 	entityStatePDU.DeadReckoningParameters.DeadReckoningAlgorithm = EntityStatePDUOut.getDeadReckoningParameters().getDeadReckoningAlgorithm();
-	//figure out how to get the character buffer of 15 8bits and put it into tarray of 15 elements each with 8bits
+	// TODO: figure out how to get the character buffer of 15 8bits and put it into tarray of 15 elements each with 8bits
 	//returnStruct.DeadReckoningParameters.OtherParameters = espdu.getDeadReckoningParameters().getOtherParameters();
 	entityStatePDU.DeadReckoningParameters.EntityLinearAcceleration[0] = EntityStatePDUOut.getDeadReckoningParameters().getEntityLinearAcceleration().getX();
 	entityStatePDU.DeadReckoningParameters.EntityLinearAcceleration[1] = EntityStatePDUOut.getDeadReckoningParameters().getEntityLinearAcceleration().getY();
@@ -229,7 +230,7 @@ FEntityStatePDU UPDUProcessor::ConvertESPDUtoBPStruct(DIS::EntityStatePdu& Entit
 	//single vars
 	entityStatePDU.ForceID = static_cast<EForceID>(EntityStatePDUOut.getForceId());
 	entityStatePDU.Marking = FString(EntityStatePDUOut.getMarking().getCharacters());
-	entityStatePDU.PduType = EntityStatePDUOut.getPduType();
+	//entityStatePDU.PduType = EntityStatePDUOut.getPduType();
 	entityStatePDU.EntityAppearance = EntityStatePDUOut.getEntityAppearance();
 	entityStatePDU.NumberOfArticulationParameters = EntityStatePDUOut.getNumberOfArticulationParameters();
 	entityStatePDU.Capabilities = EntityStatePDUOut.getCapabilities();
@@ -251,8 +252,8 @@ FFirePDU UPDUProcessor::ConvertFirePDUtoBPStruct(DIS::FirePdu& FirePDUOut)
 	FFirePDU firePDU;
 
 	//single vars
-	firePDU.fireMissionIndex = FirePDUOut.getFireMissionIndex();
-	firePDU.range = FirePDUOut.getRange();
+	firePDU.FireMissionIndex = FirePDUOut.getFireMissionIndex();
+	firePDU.Range = FirePDUOut.getRange();
 
 	//MunitionEntityID
 	firePDU.MunitionEntityID.Site = FirePDUOut.getMunitionID().getSite();
@@ -260,37 +261,37 @@ FFirePDU UPDUProcessor::ConvertFirePDUtoBPStruct(DIS::FirePdu& FirePDUOut)
 	firePDU.MunitionEntityID.Entity = FirePDUOut.getMunitionID().getEntity();
 
 	//velocity
-	firePDU.velocity[0] = FirePDUOut.getVelocity().getX();
-	firePDU.velocity[1] = FirePDUOut.getVelocity().getY();
-	firePDU.velocity[2] = FirePDUOut.getVelocity().getZ();
+	firePDU.Velocity[0] = FirePDUOut.getVelocity().getX();
+	firePDU.Velocity[1] = FirePDUOut.getVelocity().getY();
+	firePDU.Velocity[2] = FirePDUOut.getVelocity().getZ();
 
 	//location
-	firePDU.location[0] = FirePDUOut.getLocationInWorldCoordinates().getX();
-	firePDU.location[1] = FirePDUOut.getLocationInWorldCoordinates().getY();
-	firePDU.location[2] = FirePDUOut.getLocationInWorldCoordinates().getZ();
+	firePDU.Location[0] = FirePDUOut.getLocationInWorldCoordinates().getX();
+	firePDU.Location[1] = FirePDUOut.getLocationInWorldCoordinates().getY();
+	firePDU.Location[2] = FirePDUOut.getLocationInWorldCoordinates().getZ();
 
 	//locationDouble
-	firePDU.locationDouble[0] = FirePDUOut.getLocationInWorldCoordinates().getX();
-	firePDU.locationDouble[1] = FirePDUOut.getLocationInWorldCoordinates().getY();
-	firePDU.locationDouble[2] = FirePDUOut.getLocationInWorldCoordinates().getZ();
+	firePDU.LocationDouble[0] = FirePDUOut.getLocationInWorldCoordinates().getX();
+	firePDU.LocationDouble[1] = FirePDUOut.getLocationInWorldCoordinates().getY();
+	firePDU.LocationDouble[2] = FirePDUOut.getLocationInWorldCoordinates().getZ();
 
 	//event id
-	firePDU.eventID.Site = FirePDUOut.getEventID().getSite();
-	firePDU.eventID.Application = FirePDUOut.getEventID().getApplication();
-	firePDU.eventID.EventID = FirePDUOut.getEventID().getEventNumber();
+	firePDU.EventID.Site = FirePDUOut.getEventID().getSite();
+	firePDU.EventID.Application = FirePDUOut.getEventID().getApplication();
+	firePDU.EventID.EventID = FirePDUOut.getEventID().getEventNumber();
 
 	//burst descriptor
-	firePDU.burstDescriptor.warhead = FirePDUOut.getBurstDescriptor().getWarhead();
-	firePDU.burstDescriptor.fuse = FirePDUOut.getBurstDescriptor().getFuse();
-	firePDU.burstDescriptor.rate = FirePDUOut.getBurstDescriptor().getRate();
-	firePDU.burstDescriptor.quantity = FirePDUOut.getBurstDescriptor().getQuantity();
-	firePDU.burstDescriptor.EntityType.EntityKind = FirePDUOut.getBurstDescriptor().getMunition().getEntityKind();
-	firePDU.burstDescriptor.EntityType.Domain = FirePDUOut.getBurstDescriptor().getMunition().getDomain();
-	firePDU.burstDescriptor.EntityType.Country = FirePDUOut.getBurstDescriptor().getMunition().getCountry();
-	firePDU.burstDescriptor.EntityType.Category = FirePDUOut.getBurstDescriptor().getMunition().getCategory();
-	firePDU.burstDescriptor.EntityType.Subcategory = FirePDUOut.getBurstDescriptor().getMunition().getSubcategory();
-	firePDU.burstDescriptor.EntityType.Specific = FirePDUOut.getBurstDescriptor().getMunition().getSpecific();
-	firePDU.burstDescriptor.EntityType.Extra = FirePDUOut.getBurstDescriptor().getMunition().getExtra();
+	firePDU.BurstDescriptor.Warhead = FirePDUOut.getBurstDescriptor().getWarhead();
+	firePDU.BurstDescriptor.Fuse = FirePDUOut.getBurstDescriptor().getFuse();
+	firePDU.BurstDescriptor.Rate = FirePDUOut.getBurstDescriptor().getRate();
+	firePDU.BurstDescriptor.Quantity = FirePDUOut.getBurstDescriptor().getQuantity();
+	firePDU.BurstDescriptor.EntityType.EntityKind = FirePDUOut.getBurstDescriptor().getMunition().getEntityKind();
+	firePDU.BurstDescriptor.EntityType.Domain = FirePDUOut.getBurstDescriptor().getMunition().getDomain();
+	firePDU.BurstDescriptor.EntityType.Country = FirePDUOut.getBurstDescriptor().getMunition().getCountry();
+	firePDU.BurstDescriptor.EntityType.Category = FirePDUOut.getBurstDescriptor().getMunition().getCategory();
+	firePDU.BurstDescriptor.EntityType.Subcategory = FirePDUOut.getBurstDescriptor().getMunition().getSubcategory();
+	firePDU.BurstDescriptor.EntityType.Specific = FirePDUOut.getBurstDescriptor().getMunition().getSpecific();
+	firePDU.BurstDescriptor.EntityType.Extra = FirePDUOut.getBurstDescriptor().getMunition().getExtra();
 
 	return firePDU;
 }
@@ -305,47 +306,47 @@ FDetonationPDU UPDUProcessor::ConvertDetonationPDUtoBPStruct(DIS::DetonationPdu&
 	detonationPDU.MunitionEntityID.Entity = DetPDUOut.getMunitionID().getEntity();
 
 	//event id
-	detonationPDU.eventID.Site = DetPDUOut.getEventID().getSite();
-	detonationPDU.eventID.Application = DetPDUOut.getEventID().getApplication();
-	detonationPDU.eventID.EventID = DetPDUOut.getEventID().getEventNumber();
+	detonationPDU.EventID.Site = DetPDUOut.getEventID().getSite();
+	detonationPDU.EventID.Application = DetPDUOut.getEventID().getApplication();
+	detonationPDU.EventID.EventID = DetPDUOut.getEventID().getEventNumber();
 
 	//velocity
-	detonationPDU.velocity[0] = DetPDUOut.getVelocity().getX();
-	detonationPDU.velocity[1] = DetPDUOut.getVelocity().getY();
-	detonationPDU.velocity[2] = DetPDUOut.getVelocity().getZ();
+	detonationPDU.Velocity[0] = DetPDUOut.getVelocity().getX();
+	detonationPDU.Velocity[1] = DetPDUOut.getVelocity().getY();
+	detonationPDU.Velocity[2] = DetPDUOut.getVelocity().getZ();
 
 	//location
-	detonationPDU.location[0] = DetPDUOut.getLocationInWorldCoordinates().getX();
-	detonationPDU.location[1] = DetPDUOut.getLocationInWorldCoordinates().getY();
-	detonationPDU.location[2] = DetPDUOut.getLocationInWorldCoordinates().getZ();
+	detonationPDU.Location[0] = DetPDUOut.getLocationInWorldCoordinates().getX();
+	detonationPDU.Location[1] = DetPDUOut.getLocationInWorldCoordinates().getY();
+	detonationPDU.Location[2] = DetPDUOut.getLocationInWorldCoordinates().getZ();
 
 	//locationDouble
-	detonationPDU.locationDouble[0] = DetPDUOut.getLocationInWorldCoordinates().getX();
-	detonationPDU.locationDouble[1] = DetPDUOut.getLocationInWorldCoordinates().getY();
-	detonationPDU.locationDouble[2] = DetPDUOut.getLocationInWorldCoordinates().getZ();
+	detonationPDU.LocationDouble[0] = DetPDUOut.getLocationInWorldCoordinates().getX();
+	detonationPDU.LocationDouble[1] = DetPDUOut.getLocationInWorldCoordinates().getY();
+	detonationPDU.LocationDouble[2] = DetPDUOut.getLocationInWorldCoordinates().getZ();
 
 	//location
-	detonationPDU.locationInEntityCoords[0] = DetPDUOut.getLocationInEntityCoordinates().getX();
-	detonationPDU.locationInEntityCoords[1] = DetPDUOut.getLocationInEntityCoordinates().getY();
-	detonationPDU.locationInEntityCoords[2] = DetPDUOut.getLocationInEntityCoordinates().getZ();
+	detonationPDU.LocationInEntityCoords[0] = DetPDUOut.getLocationInEntityCoordinates().getX();
+	detonationPDU.LocationInEntityCoords[1] = DetPDUOut.getLocationInEntityCoordinates().getY();
+	detonationPDU.LocationInEntityCoords[2] = DetPDUOut.getLocationInEntityCoordinates().getZ();
 
 	//burst descriptor
-	detonationPDU.burstDescriptor.warhead = DetPDUOut.getBurstDescriptor().getWarhead();
-	detonationPDU.burstDescriptor.fuse = DetPDUOut.getBurstDescriptor().getFuse();
-	detonationPDU.burstDescriptor.rate = DetPDUOut.getBurstDescriptor().getRate();
-	detonationPDU.burstDescriptor.quantity = DetPDUOut.getBurstDescriptor().getQuantity();
-	detonationPDU.burstDescriptor.EntityType.EntityKind = DetPDUOut.getBurstDescriptor().getMunition().getEntityKind();
-	detonationPDU.burstDescriptor.EntityType.Domain = DetPDUOut.getBurstDescriptor().getMunition().getDomain();
-	detonationPDU.burstDescriptor.EntityType.Country = DetPDUOut.getBurstDescriptor().getMunition().getCountry();
-	detonationPDU.burstDescriptor.EntityType.Category = DetPDUOut.getBurstDescriptor().getMunition().getCategory();
-	detonationPDU.burstDescriptor.EntityType.Subcategory = DetPDUOut.getBurstDescriptor().getMunition().getSubcategory();
-	detonationPDU.burstDescriptor.EntityType.Specific = DetPDUOut.getBurstDescriptor().getMunition().getSpecific();
-	detonationPDU.burstDescriptor.EntityType.Extra = DetPDUOut.getBurstDescriptor().getMunition().getExtra();
+	detonationPDU.BurstDescriptor.Warhead = DetPDUOut.getBurstDescriptor().getWarhead();
+	detonationPDU.BurstDescriptor.Fuse = DetPDUOut.getBurstDescriptor().getFuse();
+	detonationPDU.BurstDescriptor.Rate = DetPDUOut.getBurstDescriptor().getRate();
+	detonationPDU.BurstDescriptor.Quantity = DetPDUOut.getBurstDescriptor().getQuantity();
+	detonationPDU.BurstDescriptor.EntityType.EntityKind = DetPDUOut.getBurstDescriptor().getMunition().getEntityKind();
+	detonationPDU.BurstDescriptor.EntityType.Domain = DetPDUOut.getBurstDescriptor().getMunition().getDomain();
+	detonationPDU.BurstDescriptor.EntityType.Country = DetPDUOut.getBurstDescriptor().getMunition().getCountry();
+	detonationPDU.BurstDescriptor.EntityType.Category = DetPDUOut.getBurstDescriptor().getMunition().getCategory();
+	detonationPDU.BurstDescriptor.EntityType.Subcategory = DetPDUOut.getBurstDescriptor().getMunition().getSubcategory();
+	detonationPDU.BurstDescriptor.EntityType.Specific = DetPDUOut.getBurstDescriptor().getMunition().getSpecific();
+	detonationPDU.BurstDescriptor.EntityType.Extra = DetPDUOut.getBurstDescriptor().getMunition().getExtra();
 
 	//single vars
-	detonationPDU.detonationResult = DetPDUOut.getDetonationResult();
+	detonationPDU.DetonationResult = DetPDUOut.getDetonationResult();
 	detonationPDU.NumberOfArticulationParameters = DetPDUOut.getNumberOfArticulationParameters();
-	detonationPDU.pad = DetPDUOut.getPad();
+	detonationPDU.Pad = DetPDUOut.getPad();
 
 	return detonationPDU;
 }

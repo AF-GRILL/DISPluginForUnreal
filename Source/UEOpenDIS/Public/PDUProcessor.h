@@ -8,8 +8,6 @@
 #include "Subsystems/GameInstanceSubsystem.h"
 #include "PDUProcessor.generated.h"
 
-DECLARE_LOG_CATEGORY_EXTERN(LogPDUProcessorSubsystem, Log, All);
-
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FEntityStatePDUProcessed, FEntityStatePDU, EntityStatePDU);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FDetonationPDUProcessed, FDetonationPDU, DetonationPDU);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FFirePDUProcessed, FFirePDU, FirePDU);
