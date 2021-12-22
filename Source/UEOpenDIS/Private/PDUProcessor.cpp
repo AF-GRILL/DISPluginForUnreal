@@ -109,6 +109,7 @@ void UPDUProcessor::ProcessDISPacket(TArray<uint8> InData)
 	}
 }
 
+// TODO: Implement additional PDU conversions to bytes to support sending of more types.
 void UPDUProcessor::ConvertESPDU2Bytes(int EntityID, int Site, int Application, int Exercise, FEntityStatePDU EntityStatePDUIn, TArray<uint8>& BytesOut)
 {
 	DIS::DataStream buffer(BigEndian);

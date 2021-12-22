@@ -40,6 +40,7 @@ void UOpenDISComponent::TickComponent(float DeltaTime, ELevelTick TickType, FAct
 		}
 	}
 
+	// TODO: Verify that the dead reckoning algorithm comparison to 1 is being done appropriately (make sure it shouldn't be bitwise)
 	//Check if ground clamping is enabled and that the entity is not static
 	if (PerformGroundClamping && mostRecentEntityStatePDU.DeadReckoningParameters.DeadReckoningAlgorithm != 1)
 	{
@@ -73,6 +74,7 @@ void UOpenDISComponent::HandleEntityStatePDU(FEntityStatePDU NewEntityStatePDU)
 
 	OnReceivedEntityStatePDU.Broadcast(NewEntityStatePDU);
 
+	// TODO: Verify that the dead reckoning algorithm comparison to 1 is being done appropriately (make sure it shouldn't be bitwise)
 	//Check if ground clamping is enabled and that the entity is static
 	if (PerformGroundClamping && mostRecentEntityStatePDU.DeadReckoningParameters.DeadReckoningAlgorithm == 1)
 	{
