@@ -110,7 +110,7 @@ void UPDUProcessor::ProcessDISPacket(TArray<uint8> InData)
 }
 
 // TODO: Implement additional PDU conversions to bytes to support sending of more types.
-void UPDUProcessor::ConvertESPDU2Bytes(int EntityID, int Site, int Application, int Exercise, FEntityStatePDU EntityStatePDUIn, TArray<uint8>& BytesOut)
+void UPDUProcessor::ConvertESPDU2Bytes(int Exercise, FEntityStatePDU EntityStatePDUIn, TArray<uint8>& BytesOut)
 {
 	DIS::DataStream buffer(BigEndian);
 
@@ -121,9 +121,9 @@ void UPDUProcessor::ConvertESPDU2Bytes(int EntityID, int Site, int Application, 
 
 	//entity id
 	DIS::EntityID tempID;
-	tempID.setSite(Site);
-	tempID.setApplication(Application);
-	tempID.setEntity(EntityID);
+	tempID.setSite(EntityStatePDUIn.EntityID.Site);
+	tempID.setApplication(EntityStatePDUIn.EntityID.Application);
+	tempID.setEntity(EntityStatePDUIn.EntityID.Entity);
 	tempEntity.setEntityID(tempID);
 
 	//entity type

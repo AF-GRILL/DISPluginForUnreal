@@ -7,6 +7,11 @@
 #include "GameFramework/Pawn.h"
 #include "DISEntity_Base.generated.h"
 
+/**
+ * A DISEntity_Base is the base class that is used for the UEOpenDIS plugin.
+ * It contains base components for handling OpenDIS functionality and is utilized by
+ * the UEOpenDIS plugin to handle entity management.
+ */
 UCLASS(Blueprintable)
 class UEOPENDIS_API ADISEntity_Base : public APawn
 {

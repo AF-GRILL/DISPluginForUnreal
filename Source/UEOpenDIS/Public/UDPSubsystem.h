@@ -68,7 +68,6 @@ struct FUDPSettings
 };
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FUDPSocketStateSignature, int32, Port);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FUDPSocketSendStateSignature, int32, BoundPort);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FUDPMessageSignature, const TArray<uint8>&, Bytes, const FString&, IPAddress);
 
 UCLASS(ClassGroup = "Networking", meta = (BlueprintSpawnableComponent))
@@ -82,42 +81,78 @@ public:
 	virtual void Deinitialize() override;
 	// End USubsystem
 
-	/** On message received on receive socket from Ip address */
+	/** Called after bytes are received by a bound UDP socket.
+	Passes the received message in bytes and the IP address that received the message as parameters. */
 	UPROPERTY(BlueprintAssignable, Category = "UDP Events")
 		FUDPMessageSignature OnReceivedBytes;
 
-	/** Callback when we start listening on the udp receive socket*/
+	/** Called after a new receive UDP socket is opened.
+	Passes the bound port as a parameter. */
 	UPROPERTY(BlueprintAssignable, Category = "UDP Events")
 		FUDPSocketStateSignature OnReceiveSocketOpened;
 
-	/** Called after receiving socket has been closed. */
+	/** Called after a receive UDP socket has been closed.
+	Passes the bound port as a parameter. */
 	UPROPERTY(BlueprintAssignable, Category = "UDP Events")
 		FUDPSocketStateSignature OnReceiveSocketClosed;
 
-	/** Called when the send socket is ready to use; optionally open your receive socket to bound send port here */
+	/** Called after a sned UDP socket has been opened.
+	Passes the bound port as a parameter. */
 	UPROPERTY(BlueprintAssignable, Category = "UDP Events")
-		FUDPSocketSendStateSignature OnSendSocketOpened;
+		FUDPSocketStateSignature OnSendSocketOpened;
 
-	/** Called when the send socket has been closed */
+	/** Called after a send UDP socket has been closed.
+	Passes the bound port as a parameter. */
 	UPROPERTY(BlueprintAssignable, Category = "UDP Events")
 		FUDPSocketStateSignature OnSendSocketClosed;
 
-	/** Defining UDP sending and receiving Ips, ports, and other defaults*/
+	/** Defining UDP sending and receiving Ips, ports, and other defaults */
 	FUDPSettings Settings;
 
+	/**
+	 * Opens a new UDP send socket at the given IP address and port. Closes an opened connection if there was one prior to creating a new one.
+	 * Returns whether or not the opening of the socket was successful.
+	 * @param InIP - The IP address to send UDP packets to.
+	 * @param InPort - The port to send UDP packets on.
+	 */
 	UFUNCTION(BlueprintCallable, Category = "OpenDIS|UDP")
 		bool OpenSendSocket(const FString& InIP = TEXT("127.0.0.1"), const int32 InPort = 3000);
+	/**
+	 * Closes the opened send socket.
+	 * Returns whether or not the send socket was closed successfully. If none are opened, returns true.
+	 */
 	UFUNCTION(BlueprintCallable, Category = "OpenDIS|UDP")
 		bool CloseSendSocket();
+	/**
+	 * Opens a new UDP receive socket at the given IP address and port. Closes an opened connection if there was one prior to creating a new one.
+	 * Returns whether or not the opening of the socket was successful.
+	 * @param InIP - The IP address to receive UDP packets from. Pass in '0.0.0.0' if all connections desired.
+	 * @param InPort - The port to receive UDP packets on.
+	 */
 	UFUNCTION(BlueprintCallable, Category = "OpenDIS|UDP")
 		bool OpenReceiveSocket(const FString& InListenIP = TEXT("0.0.0.0"), const int32 InListenPort = 3001);
+	/**
+	 * Closes the opened receive socket.
+	 * Returns whether or not the receive socket was closed successfully. If none are opened, returns true.
+	 */
 	UFUNCTION(BlueprintCallable, Category = "OpenDIS|UDP")
 		bool CloseReceiveSocket();
+	/**
+	 * Sends bytes over the opened send socket.
+	 * Returns whether or not the sending was successful.
+	 * @param Bytes - The bytes to send over UDP.
+	 */
 	UFUNCTION(BlueprintCallable, Category = "OpenDIS|UDP")
 		bool EmitBytes(const TArray<uint8>& Bytes);
 
+	/**
+	 * Gets all information relating to the current receive settings.
+	 */
 	UFUNCTION(BlueprintPure, Category = "OpenDIS|UDP")
 		void GetUDPReceiveSettings(bool& CurrentlyConnected, FString& ReceiveIPAddress, int32& ReceivePort, bool& AutoConnectReceive);
+	/**
+	 * Gets all information relating to the current send settings.
+	 */
 	UFUNCTION(BlueprintPure, Category = "OpenDIS|UDP")
 		void GetUDPSendSettings(bool& CurrentlyConnected, FString& SendIPAddress, int32& SendPort, bool& AutoConnectSend);
 
