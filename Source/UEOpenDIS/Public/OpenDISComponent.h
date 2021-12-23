@@ -56,6 +56,8 @@ public:
 		FEntityStatePDU mostRecentEntityStatePDU;
 	UPROPERTY(BlueprintReadWrite)
 		FDateTime latestPDUTimestamp;
+	UPROPERTY(BlueprintReadWrite)
+		bool SpawnedFromNetwork = false;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DIS Info")
 		float DISHeartbeat = 30.0f;

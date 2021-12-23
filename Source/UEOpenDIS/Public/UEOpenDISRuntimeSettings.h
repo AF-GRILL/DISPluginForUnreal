@@ -55,7 +55,7 @@ public:
 		Meta = (DisplayName = "Auto Connect Send", Tooltip = "Whether or not sending UDP packets should be auto connected."))
 		bool AutoConnectSend = false;
 	UPROPERTY(GlobalConfig, EditAnywhere, Category = "OpenDIS Networking|Connection",
-		Meta = (DisplayName = "Auto Send IP Address", Tooltip = "The local IP address of this machine to use if Auto Connect Send is enabled."))
+		Meta = (DisplayName = "Auto Send IP Address", Tooltip = "The IP address to send UDP packets to if Auto Connect Send is enabled."))
 		FString AutoSendIPAddress = "127.0.0.1";
 	UPROPERTY(GlobalConfig, EditAnywhere, Category = "OpenDIS Networking|Connection",
 		Meta = (DisplayName = "Auto Send Port", Tooltip = "The Port to use for sending UDP packets if Auto Connect Send is enabled. Valid Port ranges are from 1024 to 65535."))

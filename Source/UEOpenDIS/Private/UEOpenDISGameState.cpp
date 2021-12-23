@@ -99,6 +99,7 @@ void AUEOpenDISGameState::HandleEntityStatePDU(FEntityStatePDU EntityStatePDUIn)
 
 				if (DISComponent != nullptr)
 				{
+					DISComponent->SpawnedFromNetwork = true;
 					DISComponent->HandleEntityStatePDU(EntityStatePDUIn);
 				}
 			}
