@@ -30,20 +30,6 @@ void UOpenDISComponent::TickComponent(float DeltaTime, ELevelTick TickType, FAct
 	{
 		OnDeadReckoningUpdate.Broadcast(deadReckonedPDU);
 	}
-
-	//Check if the entity is not static -- If so, perform ground clamping
-	if (mostRecentEntityStatePDU.DeadReckoningParameters.DeadReckoningAlgorithm != 1)
-	{
-		FVector groundClampLocation;
-		FRotator groundClampRotation;
-
-		//If ground clamping is supported/enabled and a proper hit returned, update the actor's location/rotation
-		if (ApplyGroundClamping(groundClampLocation, groundClampRotation))
-		{
-			// TODO: Rather than setting location, broadcast a ground clamp event with an updated ESPDU with the new location/rotation
-			GetOwner()->SetActorLocationAndRotation(groundClampLocation, groundClampRotation);
-		}
-	}
 }
 
 void UOpenDISComponent::HandleEntityStatePDU(FEntityStatePDU NewEntityStatePDU)
@@ -64,20 +50,6 @@ void UOpenDISComponent::HandleEntityStatePDU(FEntityStatePDU NewEntityStatePDU)
 	GetOwner()->SetLifeSpan(DISHeartbeat);
 
 	OnReceivedEntityStatePDU.Broadcast(NewEntityStatePDU);
-
-	//Check if the entity is static -- If so, perform ground clamping
-	if (mostRecentEntityStatePDU.DeadReckoningParameters.DeadReckoningAlgorithm == 1)
-	{
-		FVector groundClampLocation;
-		FRotator groundClampRotation;
-
-		//If ground clamping is supported/enabled and a proper hit returned, update the actor's location/rotation
-		if (ApplyGroundClamping(groundClampLocation, groundClampRotation))
-		{
-			// TODO: Rather than setting location, broadcast a ground clamp event with an updated ESPDU with the new location/rotation
-			GetOwner()->SetActorLocationAndRotation(groundClampLocation, groundClampRotation);
-		}
-	}
 }
 
 void UOpenDISComponent::HandleFirePDU(FFirePDU FirePDUIn)
@@ -99,7 +71,7 @@ bool UOpenDISComponent::DeadReckoning(FEntityStatePDU EntityPDUToDeadReckon, flo
 {
 	//Check if dead reckoning should be performed and if the entity is owned by another sim on the network
 	//If not, then don't do dead reckoning
-	if (!(PerformDeadReckoning && SpawnedFromNetwork)) 
+	if (!(PerformDeadReckoning && SpawnedFromNetwork))
 	{
 		PerformDeadReckoning = false;
 		return false;
@@ -171,19 +143,19 @@ FRotator UOpenDISComponent::GetRotationForDeadReckoning(FEntityStatePDU EntityPD
 	return EntityPDUToDeadReckon.EntityOrientation;
 }
 
-bool UOpenDISComponent::ApplyGroundClamping_Implementation(FVector& ClampLocation, FRotator& ClampRotation)
+bool UOpenDISComponent::SimpleGroundClamping(FVector EntityClampDirection, FVector& ClampLocation, FRotator& ClampRotation)
 {
 	bool groundClampSuccessful = false;
 
-	//Verify that ground clamping should be performed, that the entity is owned by another sim on the network,
-	//the entity is of the ground domain, and that it is not a munition
-	if (PerformGroundClamping && SpawnedFromNetwork && EntityType.Domain == 1 && EntityType.EntityKind != 2)
+	//Verify that the entity is of the ground domain, and that it is not a munition
+	if (EntityType.Domain == 1 && EntityType.EntityKind != 2)
 	{
+		EntityClampDirection.Normalize();
+
 		FHitResult lineTraceHitResult;
-		// TODO: Get the ENU of the actor rather than the up vector to verify that the line trace is always going towards the terrain
 		FVector actorLocation = GetOwner()->GetActorLocation();
-		FVector endLocation = (GetOwner()->GetActorUpVector() * -100000) + actorLocation;
-		FVector aboveActorStartLocation = (GetOwner()->GetActorUpVector() * 100000) + actorLocation;
+		FVector endLocation = (EntityClampDirection * 100000) + actorLocation;
+		FVector aboveActorStartLocation = (EntityClampDirection * -100000) + actorLocation;
 
 		FCollisionQueryParams queryParams = FCollisionQueryParams(FName("Ground Clamping"), false, GetOwner());
 
@@ -199,10 +171,6 @@ bool UOpenDISComponent::ApplyGroundClamping_Implementation(FVector& ClampLocatio
 
 			groundClampSuccessful = true;
 		}
-	}
-	else
-	{
-		PerformGroundClamping = false;
 	}
 
 	return groundClampSuccessful;
