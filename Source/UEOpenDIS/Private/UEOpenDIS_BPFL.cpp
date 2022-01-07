@@ -2,7 +2,6 @@
 
 
 #include "UEOpenDIS_BPFL.h"
-#include <glm/gtx/quaternion.hpp>
 
 float UUEOpenDIS_BPFL::GetHeadingFromEuler(float Lat, float Lon, float Psi, float Theta)
 {
@@ -191,8 +190,8 @@ void UUEOpenDIS_BPFL::ECEF2ENU2UERotESPDU(FEntityStatePDU EntityStatePDUIn, FRot
 	RotationOut.Roll = GetRollFromEuler(latitude, longitude, EntityStatePDUIn.EntityOrientation.Roll, EntityStatePDUIn.EntityOrientation.Pitch, EntityStatePDUIn.EntityOrientation.Yaw);
 }
 
-void UUEOpenDIS_BPFL::CalculateLatLonHeightFromEcefXYZ(const float EcefX, const float EcefY, const float EcefZ,
-	float& OutLatitudeDegrees, float& OutLongitudeDegrees, float& OutHeightMeters)
+void UUEOpenDIS_BPFL::CalculateLatLonHeightFromEcefXYZ(const double EcefX, const double EcefY, const double EcefZ,
+	double& OutLatitudeDegrees, double& OutLongitudeDegrees, double& OutHeightMeters)
 {
 	constexpr double EarthSemiMajorRadiusMeters = 6378137;
 	constexpr double EarthSemiMinorRadiusMeters = 6356752.3142;
@@ -215,17 +214,32 @@ void UUEOpenDIS_BPFL::CalculateLatLonHeightFromEcefXYZ(const float EcefX, const 
 	OutHeightMeters = Height;
 }
 
-void UUEOpenDIS_BPFL::CalculateEcefXYZFromLatLonHeight(const float LatitudeDegrees, const float LongitudeDegrees,
-	const float HeightMeters, float& OutEcefX, float& OutEcefY, float& OutEcefZ)
+void UUEOpenDIS_BPFL::CalculateLatLonHeightFromEcefXYZ(const float EcefX, const float EcefY, const float EcefZ,
+                                                       float& OutLatitudeDegrees, float& OutLongitudeDegrees, float& OutHeightMeters)
+{
+	double OutLatitudeDegreesDouble, OutLongitudeDegreesDouble, OutHeightMetersDouble;
+	CalculateLatLonHeightFromEcefXYZ(static_cast<double>(EcefX), static_cast<double>(EcefY), static_cast<double>(EcefZ), OutLatitudeDegreesDouble, OutLongitudeDegreesDouble, OutHeightMetersDouble);
+
+	OutLatitudeDegrees = OutLatitudeDegreesDouble;
+	OutLongitudeDegrees = OutLongitudeDegreesDouble;
+	OutHeightMeters = OutHeightMetersDouble;
+}
+
+void UUEOpenDIS_BPFL::CalculateEcefXYZFromLatLonHeight(const double LatitudeDegrees, const double LongitudeDegrees,
+	const double HeightMeters, double& OutEcefX, double& OutEcefY, double& OutEcefZ)
 {
 	constexpr double EarthSemiMajorRadiusMeters = 6378137;
 	constexpr double EarthSemiMinorRadiusMeters = 6356752.3142;
 
-	const double CosLatitude = FMath::Cos(FMath::DegreesToRadians(LatitudeDegrees));
+	/*const double CosLatitude = FMath::Cos(FMath::DegreesToRadians(LatitudeDegrees));
 	const double SinLatitude = FMath::Sin(FMath::DegreesToRadians(LatitudeDegrees));
 	const double CosLongitude = FMath::Cos(FMath::DegreesToRadians(LongitudeDegrees));
+	const double SinLongitude = FMath::Sin(FMath::DegreesToRadians(LongitudeDegrees));*/
+	const double CosLatitude = glm::cos(glm::radians(LatitudeDegrees));
+	const double SinLatitude = glm::sin(glm::radians(LatitudeDegrees));
+	const double CosLongitude = FMath::Cos(FMath::DegreesToRadians(LongitudeDegrees));
 	const double SinLongitude = FMath::Sin(FMath::DegreesToRadians(LongitudeDegrees));
-	
+
 	const double XYBaseConversion = (EarthSemiMajorRadiusMeters / (FMath::Sqrt(FMath::Square(CosLatitude) + ((FMath::Square(EarthSemiMinorRadiusMeters) / FMath::Square(EarthSemiMajorRadiusMeters)) * FMath::Square(SinLatitude))))) + HeightMeters;
 	const double ZBaseConversion = (EarthSemiMinorRadiusMeters / (((FMath::Sqrt(FMath::Square(CosLatitude) * (FMath::Square(EarthSemiMajorRadiusMeters) / FMath::Square(EarthSemiMinorRadiusMeters)) + FMath::Square(SinLatitude)))))) + HeightMeters;
 
@@ -244,6 +258,18 @@ void UUEOpenDIS_BPFL::CalculateEcefXYZFromLatLonHeight(const float LatitudeDegre
 	OutEcefZ = EcefZ;
 }
 
+void UUEOpenDIS_BPFL::CalculateEcefXYZFromLatLonHeight(const float LatitudeDegrees, const float LongitudeDegrees,
+                                                       const float HeightMeters, float& OutEcefX, float& OutEcefY, float& OutEcefZ)
+{
+	double OutEcefXDouble, OutEcefYDouble, OutEcefZDouble;
+	CalculateEcefXYZFromLatLonHeight(static_cast<double>(LatitudeDegrees), static_cast<double>(LongitudeDegrees), static_cast<double>(HeightMeters), OutEcefXDouble, OutEcefYDouble, OutEcefZDouble);
+
+	OutEcefX = OutEcefXDouble;
+	OutEcefY = OutEcefYDouble;
+	OutEcefZ = OutEcefZDouble;
+}
+
+
 FMatrix UUEOpenDIS_BPFL::CreateNCrossXMatrix(FVector NVector)
 {
 	const auto NMatrix = FMatrix(FPlane(0, -NVector.Z, NVector.Y, 0),
@@ -253,6 +279,11 @@ FMatrix UUEOpenDIS_BPFL::CreateNCrossXMatrix(FVector NVector)
 	);
 
 	return NMatrix;
+}
+
+glm::dmat3x3 UUEOpenDIS_BPFL::CreateNCrossXMatrix(glm::dvec3 NVector)
+{
+	return glm::dmat3x3(0, -NVector.z, NVector.y, NVector.z, 0, -NVector.x, -NVector.y, NVector.x, 0);
 }
 
 void UUEOpenDIS_BPFL::CreateRotationMatrix(const FVector AxisVector, const float ThetaRadians, FMatrix& OutRotationMatrix)
@@ -279,17 +310,53 @@ void UUEOpenDIS_BPFL::CreateRotationMatrix(const FVector AxisVector, const float
 	OutRotationMatrix += ScaledTranspose + Identity + ScaledNCrossX;
 }
 
+void UUEOpenDIS_BPFL::CreateRotationMatrix(glm::dvec3 AxisVector, double ThetaRadians, glm::dmat3x3& OutRotationMatrix)
+{
+	const double CosTheta = glm::cos(ThetaRadians);
+	const double SinTheta = glm::sin(ThetaRadians);
+
+	const auto N = AxisVector;
+	const auto NMat = glm::dmat3(N, glm::dvec3(0), glm::dvec3(0));
+
+	const auto NTransposeN = NMat * glm::transpose(NMat);
+	const auto NCrossN = CreateNCrossXMatrix(N);
+
+	OutRotationMatrix = ((1 - CosTheta) * NTransposeN) + (CosTheta * glm::identity<glm::dmat3x3>()) + (SinTheta * NCrossN);
+}
+
 // TODO: Separate this into it's own function and an additional function for applying roll
-void UUEOpenDIS_BPFL::ApplyHeadingPitchToNorthEastDownVector(const float Heading, const float Pitch,
+void UUEOpenDIS_BPFL::ApplyHeadingPitchToNorthEastDownVector(const float HeadingDegrees, const float PitchDegrees,
 	const FVector NorthVector, const FVector EastVector, const FVector DownVector, FVector& OutX, FVector& OutY, FVector& OutZ)
 {
-	ApplyHeadingPitchRollToNorthEastDownVector(Heading, Pitch, 0, NorthVector, EastVector, DownVector, OutX, OutY, OutZ);
+	// Rotate the X and Y vectors around the Z vector by the Heading
+	RotateVectorAroundAxisByDegrees(OutX, HeadingDegrees, OutZ, OutX);
+	RotateVectorAroundAxisByDegrees(OutY, HeadingDegrees, OutZ, OutY);
+
+	// Rotate the X and Z vectors around the Y vector by the Pitch
+	RotateVectorAroundAxisByDegrees(OutX, PitchDegrees, OutY, OutX);
+	RotateVectorAroundAxisByDegrees(OutZ, PitchDegrees, OutY, OutZ);
 }
 
 // TODO: Implement this
-void UUEOpenDIS_BPFL::ApplyRollToNorthEastDownVector(const float Roll, const FVector East,
-	const FVector North, const FVector Up, FVector& OutX, FVector& OutY, FVector& OutZ)
+void UUEOpenDIS_BPFL::ApplyRollToNorthEastDownVector(const float RollDegrees, const FVector North,
+	const FVector East, const FVector Down, FVector& OutX, FVector& OutY, FVector& OutZ)
 {
+	// Rotate the Y and Z vectors around the X vector by the Roll
+	RotateVectorAroundAxisByDegrees(OutY, RollDegrees, OutX, OutY);
+	RotateVectorAroundAxisByDegrees(OutZ, RollDegrees, OutX, OutZ);
+}
+
+void UUEOpenDIS_BPFL::RotateVectorAroundAxisByRadians(glm::dvec3 VectorToRotate, double ThetaRadians, glm::dvec3 AxisVector, glm::dvec3& OutRotatedVector)
+{
+	auto RotationMatrix = glm::dmat3x3();
+	CreateRotationMatrix(AxisVector, ThetaRadians, RotationMatrix);
+	OutRotatedVector = RotationMatrix * AxisVector;
+}
+
+void UUEOpenDIS_BPFL::RotateVectorAroundAxisByDegrees(glm::dvec3 VectorToRotate, float ThetaDegrees,
+	glm::dvec3 AxisVector, glm::dvec3& OutRotatedVector)
+{
+	RotateVectorAroundAxisByRadians(VectorToRotate, glm::radians(ThetaDegrees), AxisVector, OutRotatedVector);
 }
 
 void UUEOpenDIS_BPFL::RotateVectorAroundAxisByRadians(FVector VectorToRotate, float ThetaRadians, FVector AxisVector,
@@ -317,25 +384,17 @@ void UUEOpenDIS_BPFL::ApplyHeadingPitchRollToNorthEastDownVector(const float Hea
 	OutY = EastVector;
 	OutZ = DownVector;
 
-	// Rotate the X and Y vectors around the Z vector by the Heading
-	RotateVectorAroundAxisByDegrees(OutX, HeadingDegrees, OutZ, OutX);
-	RotateVectorAroundAxisByDegrees(OutY, HeadingDegrees, OutZ, OutY);
+	ApplyHeadingPitchToNorthEastDownVector(HeadingDegrees, PitchDegrees, OutX, OutY, OutZ, OutX, OutY, OutZ);
 
-	// Rotate the X and Z vectors around the Y vector by the Pitch
-	RotateVectorAroundAxisByDegrees(OutX, PitchDegrees, OutY, OutX);
-	RotateVectorAroundAxisByDegrees(OutZ, PitchDegrees, OutY, OutZ);
-
-	// Rotate the Y and Z vectors around the X vector by the Roll
-	RotateVectorAroundAxisByDegrees(OutY, RollDegrees, OutX, OutY);
-	RotateVectorAroundAxisByDegrees(OutZ, RollDegrees, OutX, OutZ);
+	ApplyRollToNorthEastDownVector(RollDegrees, OutX, OutY, OutZ, OutX, OutY, OutZ);
 }
 
 void UUEOpenDIS_BPFL::CalculateNorthEastDownVectorsFromLatLon(const float LatitudeDegrees, const float LongitudeDegrees,
 	FVector& NorthVector, FVector& EastVector, FVector& DownVector)
 {
-	NorthVector = FVector(0, 0, 1);
-	EastVector = FVector(0, 1, 0);
-	DownVector = FVector(-1, 0, 0);
+	NorthVector = FVector::ZAxisVector;
+	EastVector = FVector::YAxisVector;
+	DownVector = -FVector::XAxisVector;
 
 	RotateVectorAroundAxisByDegrees(EastVector, LongitudeDegrees, NorthVector, EastVector);
 	RotateVectorAroundAxisByDegrees(DownVector, LongitudeDegrees, NorthVector, DownVector);
@@ -344,9 +403,17 @@ void UUEOpenDIS_BPFL::CalculateNorthEastDownVectorsFromLatLon(const float Latitu
 	RotateVectorAroundAxisByDegrees(DownVector, LatitudeDegrees, -EastVector, DownVector);
 }
 
+void UUEOpenDIS_BPFL::CalculateLatLongFromNorthEastDownVectors(const FVector NorthVector, const FVector EastVector,
+	const FVector DownVector, float& LatitudeDegrees, float& LongitudeDegrees)
+{
+	LongitudeDegrees = FMath::RadiansToDegrees(FMath::Acos(FVector::DotProduct(FVector::YAxisVector, EastVector) / EastVector.Size()));
+	LatitudeDegrees = FMath::RadiansToDegrees(FMath::Acos(FVector::DotProduct(FVector::ZAxisVector, NorthVector) / NorthVector.Size()));
+	
+}
+
 void UUEOpenDIS_BPFL::CalculatePsiThetaPhiDegreesFromHeadingPitchRollDegreesAtLatLon(const float HeadingDegrees,
-	const float PitchDegrees, const float RollDegrees, const float LatitudeDegrees, const float LongitudeDegrees, float& PsiDegrees,
-	float& ThetaDegrees, float& PhiDegrees)
+                                                                                     const float PitchDegrees, const float RollDegrees, const float LatitudeDegrees, const float LongitudeDegrees, float& PsiDegrees,
+                                                                                     float& ThetaDegrees, float& PhiDegrees)
 {
 	FVector EastVector, NorthVector, DownVector;
 	CalculateNorthEastDownVectorsFromLatLon(LatitudeDegrees, LongitudeDegrees, NorthVector, EastVector, DownVector);
@@ -387,7 +454,7 @@ void UUEOpenDIS_BPFL::CalculatePsiThetaPhiDegreesFromHeadingPitchRollRadiansAtLa
 	const float HeadingRadians, const float PitchRadians, const float RollRadians, const float LatitudeDegrees,
 	const float LongitudeDegrees, float& PsiDegrees, float& ThetaDegrees, float& PhiDegrees)
 {
-	CalculatePsiThetaPhiRadiansFromHeadingPitchRollDegreesAtLatLon(FMath::RadiansToDegrees(HeadingRadians), FMath::RadiansToDegrees(PitchRadians), FMath::RadiansToDegrees(RollRadians), LatitudeDegrees, LongitudeDegrees, PsiDegrees, ThetaDegrees, PhiDegrees);
+	CalculatePsiThetaPhiDegreesFromHeadingPitchRollDegreesAtLatLon(FMath::RadiansToDegrees(HeadingRadians), FMath::RadiansToDegrees(PitchRadians), FMath::RadiansToDegrees(RollRadians), LatitudeDegrees, LongitudeDegrees, PsiDegrees, ThetaDegrees, PhiDegrees);
 }
 
 void UUEOpenDIS_BPFL::CalculateHeadingPitchRollDegreesFromPsiThetaPhiDegreesAtLatLon(const float PsiDegrees, const float ThetaDegrees,
@@ -428,7 +495,7 @@ void UUEOpenDIS_BPFL::CalculateHeadingPitchRollRadiansFromPsiThetaPhiDegreesAtLa
 	float& HeadingRadians, float& PitchRadians, float& RollRadians)
 {
 	float HeadingDegrees, PitchDegrees, RollDegrees;
-	CalculateHeadingPitchRollDegreesFromPsiThetaPhiRadiansAtLatLon(PsiDegrees, ThetaDegrees, PhiDegrees, LatitudeDegrees, LongitudeDegrees, HeadingDegrees, PitchDegrees, RollDegrees);
+	CalculateHeadingPitchRollDegreesFromPsiThetaPhiDegreesAtLatLon(PsiDegrees, ThetaDegrees, PhiDegrees, LatitudeDegrees, LongitudeDegrees, HeadingDegrees, PitchDegrees, RollDegrees);
 	HeadingRadians = FMath::DegreesToRadians(HeadingDegrees);
 	PitchRadians = FMath::DegreesToRadians(PitchDegrees);
 	RollRadians = FMath::DegreesToRadians(RollDegrees);

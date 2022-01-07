@@ -338,8 +338,17 @@ FEntityStatePDU AUEOpenDISGameState::ConvertESPDUtoBPStruct(DIS::EntityStatePdu&
 
 	//Dead reckoning
 	entityStatePDU.DeadReckoningParameters.DeadReckoningAlgorithm = EntityStatePDUOut.getDeadReckoningParameters().getDeadReckoningAlgorithm();
-	//figure out how to get the character buffer of 15 8bits and put it into tarray of 15 elements each with 8bits
-	//returnStruct.DeadReckoningParameters.OtherParameters = espdu.getDeadReckoningParameters().getOtherParameters();
+	const unsigned char* OtherParameters = reinterpret_cast<uint8_t*>(EntityStatePDUOut.getDeadReckoningParameters().getOtherParameters());
+	TArray<uint8> RawOtherParams = TArray<uint8>(OtherParameters, 15);
+	// TODO: Move to helper function and add error checking
+	FDeadReckoningOtherParameters OutDeadReckoningOtherParameters;
+	OutDeadReckoningOtherParameters.DrParametersType = static_cast<int>(RawOtherParams[0]);
+	OutDeadReckoningOtherParameters.Parameter1 = static_cast<int>(RawOtherParams[1] << 8 | RawOtherParams[2]);
+	OutDeadReckoningOtherParameters.Parameter2 = static_cast<float>(RawOtherParams[3] << 24 | RawOtherParams[4] << 16 | RawOtherParams[5] << 8 | RawOtherParams[6]);
+	OutDeadReckoningOtherParameters.Parameter3 = static_cast<float>(RawOtherParams[7] << 24 | RawOtherParams[8] << 16 | RawOtherParams[9] << 8 | RawOtherParams[10]);
+	OutDeadReckoningOtherParameters.Parameter4 = static_cast<float>(RawOtherParams[11] << 24 | RawOtherParams[12] << 16 | RawOtherParams[13] << 8 | RawOtherParams[14]);
+
+	entityStatePDU.DeadReckoningParameters.OtherParameters = OutDeadReckoningOtherParameters;
 	entityStatePDU.DeadReckoningParameters.EntityLinearAcceleration[0] = EntityStatePDUOut.getDeadReckoningParameters().getEntityLinearAcceleration().getX();
 	entityStatePDU.DeadReckoningParameters.EntityLinearAcceleration[1] = EntityStatePDUOut.getDeadReckoningParameters().getEntityLinearAcceleration().getY();
 	entityStatePDU.DeadReckoningParameters.EntityLinearAcceleration[2] = EntityStatePDUOut.getDeadReckoningParameters().getEntityLinearAcceleration().getZ();

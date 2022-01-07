@@ -245,6 +245,33 @@ struct FBurstDescriptor
 };
 
 USTRUCT(BlueprintType)
+struct FDeadReckoningOtherParameters
+{
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		int DrParametersType;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		int Parameter1;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		float Parameter2;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		float Parameter3;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		float Parameter4;
+
+	FDeadReckoningOtherParameters()
+	{
+		DrParametersType = 0;
+		Parameter1 = 0;
+		Parameter2 = 0.f;
+		Parameter3 = 0.f;
+		Parameter4 = 0.f;
+
+	}
+};
+
+USTRUCT(BlueprintType)
 struct FDeadReckoningParameters
 {
 	GENERATED_BODY()
@@ -252,7 +279,7 @@ struct FDeadReckoningParameters
 		UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		uint8 DeadReckoningAlgorithm;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		TArray<uint8> OtherParameters;
+		FDeadReckoningOtherParameters OtherParameters;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		FVector EntityLinearAcceleration;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
@@ -261,7 +288,6 @@ struct FDeadReckoningParameters
 	FDeadReckoningParameters()
 	{
 		DeadReckoningAlgorithm = 0U;
-		OtherParameters.Init(0, 15);
 		EntityLinearAcceleration = FVector(0, 0, 0);
 		EntityAngularVelocity = FVector(0, 0, 0);
 	}
