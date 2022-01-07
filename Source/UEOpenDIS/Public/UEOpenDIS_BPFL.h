@@ -6,7 +6,6 @@
 #include <glm/gtx/quaternion.hpp>
 #include "CoreMinimal.h"
 #include "Kismet/BlueprintFunctionLibrary.h"
-#include "UEOpenDISGameState.h"
 #include "UEOpenDIS_BPFL.generated.h"
 
 /**

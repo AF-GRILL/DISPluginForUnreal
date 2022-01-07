@@ -1,8 +1,9 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
-
 #include "OpenDISComponent.h"
 #include "Kismet/KismetMathLibrary.h"
+
+DEFINE_LOG_CATEGORY(LogOpenDISComponent);
 
 // Sets default values for this component's properties
 UOpenDISComponent::UOpenDISComponent()
@@ -19,46 +20,24 @@ void UOpenDISComponent::BeginPlay()
 	Super::BeginPlay();
 }
 
-
 // Called every frame
 void UOpenDISComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
-	//Check if dead reckoning should be performed
-	if (PerformDeadReckoning)
+	//Check if dead reckoning is supported/enabled. Broadcast dead reckoning update if it is
+	if (DeadReckoning(mostRecentEntityStatePDU, DeltaTime, deadReckonedPDU))
 	{
-		//Check if dead reckoning is supported. Broadcast dead reckoning update if it is
-		if (DeadReckoning(mostRecentEntityStatePDU, DeltaTime, deadReckonedPDU))
-		{
-			OnDeadReckoningUpdate.Broadcast(deadReckonedPDU);
-		}
-		else
-		{
-			//Turn dead reckoning off if it is not supported
-			PerformDeadReckoning = false;
-		}
-	}
-
-	//Check if ground clamping is enabled
-	if (PerformGroundClamping)
-	{
-		FVector groundClampLocation;
-		FRotator groundClampRotation;
-
-		//If ground clamping is supported and a proper hit returned, update the actor's location/rotation
-		if (ApplyGroundClamping(groundClampLocation, groundClampRotation))
-		{
-			GetOwner()->SetActorLocationAndRotation(groundClampLocation, groundClampRotation);
-		}
+		OnDeadReckoningUpdate.Broadcast(deadReckonedPDU);
 	}
 }
 
 void UOpenDISComponent::HandleEntityStatePDU(FEntityStatePDU NewEntityStatePDU)
 {
-	//Check if the entity has been deactivated
-	if (NewEntityStatePDU.EntityAppearance == 1)
+	//Check if the entity has been deactivated -- Entity is deactivated if the 23rd bit of the Entity Appearance value is set
+	if (NewEntityStatePDU.EntityAppearance & (1 << 23))
 	{
+		UE_LOG(LogOpenDISComponent, Log, TEXT("%s Entity Appearance is set to deactivated, deleting entity..."), *NewEntityStatePDU.Marking);
 		GetOwner()->Destroy();
 	}
 
@@ -90,12 +69,16 @@ void UOpenDISComponent::HandleRemoveEntityPDU(FRemoveEntityPDU RemoveEntityPDUIn
 
 bool UOpenDISComponent::DeadReckoning(FEntityStatePDU EntityPDUToDeadReckon, float DeltaTime, FEntityStatePDU& DeadReckonedEntityPDU)
 {
+	//Check if dead reckoning should be performed and if the entity is owned by another sim on the network
+	//If not, then don't do dead reckoning
+	if (!(PerformDeadReckoning && SpawnedFromNetwork))
+	{
+		PerformDeadReckoning = false;
+		return false;
+	}
+
 	DeadReckonedEntityPDU = EntityPDUToDeadReckon;
 	bool supported = true;
-
-	// TODO: Only perform dead reckoning on entities that are being received from the network.
-	// I don't think we would want to perform dead reckoning on entities that we own/are sending.
-	// Or do we want to leave this up to the user and if they have 'PerformDeadReckoning' enabled.
 
 	switch (EntityPDUToDeadReckon.DeadReckoningParameters.DeadReckoningAlgorithm) {
 	case 1:
@@ -160,23 +143,19 @@ FRotator UOpenDISComponent::GetRotationForDeadReckoning(FEntityStatePDU EntityPD
 	return EntityPDUToDeadReckon.EntityOrientation;
 }
 
-bool UOpenDISComponent::ApplyGroundClamping_Implementation(FVector& ClampLocation, FRotator& ClampRotation)
+bool UOpenDISComponent::SimpleGroundClamping(FVector EntityClampDirection, FVector& ClampLocation, FRotator& ClampRotation)
 {
-	// TODO: Only perform ground clamping on entities that are being received from the network.
-	// I don't think we would want to perform ground clamping on entities that we own/are sending.
-	// Or do we want to leave this up to the user and if they have 'PerformGroundClamping' enabled.
-
-	// TODO: Only perform ground clamping once for static objects that will never move.
-
 	bool groundClampSuccessful = false;
-	//Verify the entity is of the ground domain and that it is not a munition
+
+	//Verify that the entity is of the ground domain, and that it is not a munition
 	if (EntityType.Domain == 1 && EntityType.EntityKind != 2)
 	{
+		EntityClampDirection.Normalize();
+
 		FHitResult lineTraceHitResult;
-		// TODO: Get the ENU of the actor rather than the up vector to verify that the line trace is always going towards the terrain
 		FVector actorLocation = GetOwner()->GetActorLocation();
-		FVector endLocation = (GetOwner()->GetActorUpVector() * -100000) + actorLocation;
-		FVector aboveActorStartLocation = (GetOwner()->GetActorUpVector() * 100000) + actorLocation;
+		FVector endLocation = (EntityClampDirection * 100000) + actorLocation;
+		FVector aboveActorStartLocation = (EntityClampDirection * -100000) + actorLocation;
 
 		FCollisionQueryParams queryParams = FCollisionQueryParams(FName("Ground Clamping"), false, GetOwner());
 		//Find colliding point above/below the actor
@@ -191,10 +170,6 @@ bool UOpenDISComponent::ApplyGroundClamping_Implementation(FVector& ClampLocatio
 
 			groundClampSuccessful = true;
 		}
-	}
-	else
-	{
-		PerformGroundClamping = false;
 	}
 
 	return groundClampSuccessful;
