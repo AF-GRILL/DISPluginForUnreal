@@ -52,6 +52,35 @@ void UOpenDISComponent::HandleEntityStatePDU(FEntityStatePDU NewEntityStatePDU)
 	OnReceivedEntityStatePDU.Broadcast(NewEntityStatePDU);
 }
 
+void UOpenDISComponent::HandleEntityStateUpdatePDU(FEntityStateUpdatePDU NewEntityStateUpdatePDU)
+{
+	//Check if the entity has been deactivated -- Entity is deactivated if the 23rd bit of the Entity Appearance value is set
+	if (NewEntityStateUpdatePDU.EntityAppearance & (1 << 23))
+	{
+		UE_LOG(LogOpenDISComponent, Log, TEXT("%s Entity Appearance is set to deactivated, deleting entity..."), *NewEntityStateUpdatePDU.EntityID.ToString());
+		GetOwner()->Destroy();
+	}
+
+	//Only modify the fields that are shared between the Entity State PDU and Entity State Update PDU. This will cover if the entity has received a full-up Entity State PDU already.
+	mostRecentEntityStatePDU.EntityID = NewEntityStateUpdatePDU.EntityID;
+	mostRecentEntityStatePDU.EntityLocationDouble = NewEntityStateUpdatePDU.EntityLocationDouble;
+	mostRecentEntityStatePDU.EntityLocation = NewEntityStateUpdatePDU.EntityLocation;
+	mostRecentEntityStatePDU.EntityOrientation = NewEntityStateUpdatePDU.EntityOrientation;
+	mostRecentEntityStatePDU.EntityLinearVelocity = NewEntityStateUpdatePDU.EntityLinearVelocity;
+	mostRecentEntityStatePDU.NumberOfArticulationParameters = NewEntityStateUpdatePDU.NumberOfArticulationParameters;
+	mostRecentEntityStatePDU.EntityAppearance = NewEntityStateUpdatePDU.EntityAppearance;
+	mostRecentEntityStatePDU.ArticulationParameters = NewEntityStateUpdatePDU.ArticulationParameters;
+
+	latestPDUTimestamp = FDateTime::Now();
+	mostRecentEntityStatePDU = NewEntityStateUpdatePDU;
+
+	EntityID = NewEntityStateUpdatePDU.EntityID;
+
+	GetOwner()->SetLifeSpan(DISHeartbeat);
+
+	OnReceivedEntityStateUpdatePDU.Broadcast(NewEntityStateUpdatePDU);
+}
+
 void UOpenDISComponent::HandleFirePDU(FFirePDU FirePDUIn)
 {
 	OnReceivedFirePDU.Broadcast(FirePDUIn);

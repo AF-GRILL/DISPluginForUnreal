@@ -9,6 +9,7 @@
 #include "PDUProcessor.generated.h"
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FEntityStatePDUProcessed, FEntityStatePDU, EntityStatePDU);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FEntityStateUpdatePDUProcessed, FEntityStateUpdatePDU, EntityStateUpdatePDU);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FDetonationPDUProcessed, FDetonationPDU, DetonationPDU);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FFirePDUProcessed, FFirePDU, FirePDU);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FRemoveEntityPDUProcessed, FRemoveEntityPDU, RemoveEntityPDU);
@@ -46,6 +47,12 @@ public:
 	UPROPERTY(BlueprintAssignable, Category = "PDU Processor Events")
 		FEntityStatePDUProcessed OnEntityStatePDUProcessed;
 	/**
+	 * Called after an Entity State Update PDU is processed.
+	 * Passes the Entity State Update PDU as a parameter.
+	 */
+	UPROPERTY(BlueprintAssignable, Category = "PDU Processor Events")
+		FEntityStateUpdatePDUProcessed OnEntityStateUpdatePDUProcessed;
+	/**
 	 * Called after a Detonation PDU is processed.
 	 * Passes the Detonation PDU as a parameter.
 	 */
@@ -69,10 +76,11 @@ protected:
 		void HandleOnReceivedUDPBytes(const TArray<uint8>& Bytes, const FString& IPAddress);
 
 private:
-	FEntityStatePDU ConvertESPDUtoBPStruct(DIS::EntityStatePdu& EntityStatePDUOut);
-	FFirePDU ConvertFirePDUtoBPStruct(DIS::FirePdu& FirePDUOut);
-	FDetonationPDU ConvertDetonationPDUtoBPStruct(DIS::DetonationPdu& DetPDUOut);
-	FRemoveEntityPDU ConvertRemoveEntityPDUtoBPStruct(DIS::RemoveEntityPdu& RemovePDUOut);
+	FEntityStatePDU ConvertESPDUtoBPStruct(DIS::EntityStatePdu& EntityStatePDUIn);
+	FEntityStateUpdatePDU ConvertEntityStateUpdatePDUtoBPStruct(DIS::EntityStateUpdatePdu& EntityStateUpdatePDUIn);
+	FFirePDU ConvertFirePDUtoBPStruct(DIS::FirePdu& FirePDUIn);
+	FDetonationPDU ConvertDetonationPDUtoBPStruct(DIS::DetonationPdu& DetPDUIn);
+	FRemoveEntityPDU ConvertRemoveEntityPDUtoBPStruct(DIS::RemoveEntityPdu& RemovePDUIn);
 
 	DIS::Endian BigEndian = DIS::BIG;
 	const unsigned int PDU_TYPE_POSITION = 2;

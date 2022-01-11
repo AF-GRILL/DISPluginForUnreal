@@ -11,6 +11,7 @@
 #include <dis6/FirePdu.h>
 #include <dis6/DetonationPdu.h>
 #include <dis6/RemoveEntityPdu.h>
+#include <dis6/EntityStateUpdatePdu.h>
 
 #include "CoreMinimal.h"
 #include "DISEnumsAndStructs.generated.h"
@@ -54,7 +55,7 @@ enum class EForceID : uint8
 UENUM(BlueprintType)
 enum class EPDUType : uint8
 {
-	None,
+	Other,
 	EntityState,
 	Fire,
 	Detonation,
@@ -372,7 +373,6 @@ struct FEntityStatePDU
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		int32 Capabilities;
 
-	//unchecked
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		FEntityType AlternativeEntityType;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
@@ -391,6 +391,64 @@ struct FEntityStatePDU
 		EntityAppearance = 0;
 		NumberOfArticulationParameters = 0;
 		Capabilities = 0;
+	}
+};
+
+USTRUCT(BlueprintType)
+struct FEntityStateUpdatePDU
+{
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		EPDUType PduType;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		FEntityID EntityID;
+	UPROPERTY()
+		TArray<double> EntityLocationDouble;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		FVector EntityLocation;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		FRotator EntityOrientation;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		FVector EntityLinearVelocity;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		int32 NumberOfArticulationParameters;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		int32 EntityAppearance;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		int32 Padding;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		int32 Padding1;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		FArticulationParameters ArticulationParameters;
+
+	FEntityStateUpdatePDU()
+	{
+		//checked
+		PduType = EPDUType::EntityStateUpdate;
+		EntityLocation = FVector(0, 0, 0);
+		EntityOrientation = FRotator(0, 0, 0);
+		EntityLocationDouble.Init(0, 3);
+		EntityLinearVelocity = FVector(0, 0, 0);
+		EntityAppearance = 0;
+		NumberOfArticulationParameters = 0;
+	}
+
+	operator FEntityStatePDU() const 
+	{
+		FEntityStatePDU newEntityStatePDU;
+
+		newEntityStatePDU.EntityID = EntityID;
+		newEntityStatePDU.EntityLocationDouble = EntityLocationDouble;
+		newEntityStatePDU.EntityLocation = EntityLocation;
+		newEntityStatePDU.EntityOrientation = EntityOrientation;
+		newEntityStatePDU.EntityLinearVelocity = EntityLinearVelocity;
+		newEntityStatePDU.NumberOfArticulationParameters = NumberOfArticulationParameters;
+		newEntityStatePDU.EntityAppearance = EntityAppearance;
+		newEntityStatePDU.ArticulationParameters = ArticulationParameters;
+
+		return newEntityStatePDU;
 	}
 };
 
