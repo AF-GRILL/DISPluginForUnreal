@@ -12,6 +12,8 @@
 #include <dis6/DetonationPdu.h>
 #include <dis6/RemoveEntityPdu.h>
 #include <dis6/EntityStateUpdatePdu.h>
+#include <dis6/StartResumePdu.h>
+#include <dis6/StopFreezePdu.h>
 
 #include "CoreMinimal.h"
 #include "DISEnumsAndStructs.generated.h"
@@ -128,6 +130,37 @@ enum class EPDUType : uint8
 	InformationOperationsAction,
 	InformationOperationsReport,
 	Attribute
+};
+
+UENUM(BlueprintType)
+enum class EReason : uint8
+{
+	Other,
+	Recess,
+	Termination,
+	SystemFailure,
+	SecurityViolation,
+	EntityReconstruction,
+	StopForReset,
+	StopForRestart,
+	AbortTrainingReturnToTacticalOperations
+};
+
+USTRUCT(BlueprintType)
+struct FClockTime
+{
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		int Hour;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		int64 TimePastHour;
+
+	FClockTime()
+	{
+		Hour = 0;
+		TimePastHour = 0;
+	}
 };
 
 USTRUCT(BlueprintType)
@@ -546,5 +579,47 @@ struct FDetonationPDU
 		DetonationResult = 0U;
 		NumberOfArticulationParameters = 0;
 		Pad = 0;
+	}
+};
+
+USTRUCT(BlueprintType)
+struct FStartResumePDU
+{
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		FClockTime RealWorldTime;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		FClockTime SimulationTime;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		int64 RequestID;
+
+	FStartResumePDU() 
+	{
+		RequestID = 0;
+	}
+};
+
+USTRUCT(BlueprintType)
+struct FStopFreezePDU
+{
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		FClockTime RealWorldTime;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		EReason Reason;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		int32 FrozenBehavior;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		int32 Padding;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		int64 RequestID;
+
+	FStopFreezePDU() 
+	{
+		Reason = EReason::Other;
+		FrozenBehavior = 0;
+		RequestID = 0;
 	}
 };

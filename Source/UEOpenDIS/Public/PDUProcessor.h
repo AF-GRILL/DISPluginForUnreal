@@ -13,6 +13,8 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FEntityStateUpdatePDUProcessed, FEnt
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FDetonationPDUProcessed, FDetonationPDU, DetonationPDU);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FFirePDUProcessed, FFirePDU, FirePDU);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FRemoveEntityPDUProcessed, FRemoveEntityPDU, RemoveEntityPDU);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FStartResumePDUProcessed, FStartResumePDU, StartResumePDU);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FStopFreezePDUProcessed, FStopFreezePDU, StopFreezePDU);
 
 UCLASS()
 class UEOPENDIS_API UPDUProcessor : public UGameInstanceSubsystem
@@ -70,17 +72,31 @@ public:
 	 */
 	UPROPERTY(BlueprintAssignable, Category = "PDU Processor Events")
 		FRemoveEntityPDUProcessed OnRemoveEntityPDUProcessed;
+	/**
+	 * Called after a Start/Resume PDU is processed.
+	 * Passes the Start Resume PDU as a parameter.
+	 */
+	UPROPERTY(BlueprintAssignable, Category = "PDU Processor Events")
+		FStartResumePDUProcessed OnStartResumePDUProcessed;
+	/**
+	 * Called after a Stop/Freeze PDU is processed.
+	 * Passes the Stop Freeze PDU as a parameter.
+	 */
+	UPROPERTY(BlueprintAssignable, Category = "PDU Processor Events")
+		FStopFreezePDUProcessed OnStopFreezePDUProcessed;
 
 protected:
 	UFUNCTION()
 		void HandleOnReceivedUDPBytes(const TArray<uint8>& Bytes, const FString& IPAddress);
 
 private:
-	FEntityStatePDU ConvertESPDUtoBPStruct(DIS::EntityStatePdu& EntityStatePDUIn);
-	FEntityStateUpdatePDU ConvertEntityStateUpdatePDUtoBPStruct(DIS::EntityStateUpdatePdu& EntityStateUpdatePDUIn);
-	FFirePDU ConvertFirePDUtoBPStruct(DIS::FirePdu& FirePDUIn);
-	FDetonationPDU ConvertDetonationPDUtoBPStruct(DIS::DetonationPdu& DetPDUIn);
-	FRemoveEntityPDU ConvertRemoveEntityPDUtoBPStruct(DIS::RemoveEntityPdu& RemovePDUIn);
+	FEntityStatePDU ConvertESPDUtoBPStruct(DIS::EntityStatePdu* EntityStatePDUIn);
+	FEntityStateUpdatePDU ConvertEntityStateUpdatePDUtoBPStruct(DIS::EntityStateUpdatePdu* EntityStateUpdatePDUIn);
+	FFirePDU ConvertFirePDUtoBPStruct(DIS::FirePdu* FirePDUIn);
+	FDetonationPDU ConvertDetonationPDUtoBPStruct(DIS::DetonationPdu* DetPDUIn);
+	FRemoveEntityPDU ConvertRemoveEntityPDUtoBPStruct(DIS::RemoveEntityPdu* RemovePDUIn);
+	FStartResumePDU ConvertStartResumePDUtoBPStruct(DIS::StartResumePdu* StartResumePDUIn);
+	FStopFreezePDU ConvertStopFreezePDUtoBPStruct(DIS::StopFreezePdu* StopFreezePDUIn);
 
 	DIS::Endian BigEndian = DIS::BIG;
 	const unsigned int PDU_TYPE_POSITION = 2;
