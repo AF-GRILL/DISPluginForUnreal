@@ -39,7 +39,6 @@ void UPDUProcessor::ProcessDISPacket(TArray<uint8> InData)
 		//For list of enums for PDU type refer to SISO-REF-010-2015, ANNEX A
 		switch (static_cast<EPDUType>(pdu->getPduType()))
 		{
-		//entity state
 		case EPDUType::EntityState:
 		{
 			DIS::DataStream ds((char*)&InData[0], bytesArrayLength, BigEndian);
@@ -50,7 +49,6 @@ void UPDUProcessor::ProcessDISPacket(TArray<uint8> InData)
 
 			break;
 		}
-		//fire
 		case EPDUType::Fire:
 		{
 			DIS::DataStream ds((char*)&InData[0], bytesArrayLength, BigEndian);
@@ -61,7 +59,6 @@ void UPDUProcessor::ProcessDISPacket(TArray<uint8> InData)
 
 			break;
 		}
-		//detonation
 		case EPDUType::Detonation:
 		{
 			DIS::DataStream ds((char*)&InData[0], bytesArrayLength, BigEndian);
@@ -72,7 +69,6 @@ void UPDUProcessor::ProcessDISPacket(TArray<uint8> InData)
 
 			break;
 		}
-		//remove entity
 		case EPDUType::RemoveEntity:
 		{
 			DIS::DataStream ds((char*)&InData[0], bytesArrayLength, BigEndian);
@@ -83,7 +79,6 @@ void UPDUProcessor::ProcessDISPacket(TArray<uint8> InData)
 
 			break;
 		}
-		//start/resume
 		case EPDUType::Start_Resume:
 		{
 			DIS::DataStream ds((char*)&InData[0], bytesArrayLength, BigEndian);
@@ -94,7 +89,6 @@ void UPDUProcessor::ProcessDISPacket(TArray<uint8> InData)
 
 			break;
 		}
-		//stop/freeze
 		case EPDUType::Stop_Freeze:
 		{
 			DIS::DataStream ds((char*)&InData[0], bytesArrayLength, BigEndian);
@@ -105,7 +99,6 @@ void UPDUProcessor::ProcessDISPacket(TArray<uint8> InData)
 
 			break;
 		}
-		//entity state update
 		case EPDUType::EntityStateUpdate:
 		{
 			DIS::DataStream ds((char*)&InData[0], bytesArrayLength, BigEndian);
