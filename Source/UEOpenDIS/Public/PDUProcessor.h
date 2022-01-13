@@ -90,7 +90,7 @@ protected:
 		void HandleOnReceivedUDPBytes(const TArray<uint8>& Bytes, const FString& IPAddress);
 
 private:
-	FEntityStatePDU ConvertESPDUtoBPStruct(DIS::EntityStatePdu* EntityStatePDUIn);
+	FEntityStatePDU ConvertEntityStatePDUtoBPStruct(DIS::EntityStatePdu* EntityStatePDUIn);
 	FEntityStateUpdatePDU ConvertEntityStateUpdatePDUtoBPStruct(DIS::EntityStateUpdatePdu* EntityStateUpdatePDUIn);
 	FFirePDU ConvertFirePDUtoBPStruct(DIS::FirePdu* FirePDUIn);
 	FDetonationPDU ConvertDetonationPDUtoBPStruct(DIS::DetonationPdu* DetPDUIn);

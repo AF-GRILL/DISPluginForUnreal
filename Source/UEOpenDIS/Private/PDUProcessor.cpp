@@ -44,7 +44,7 @@ void UPDUProcessor::ProcessDISPacket(TArray<uint8> InData)
 		{
 			DIS::DataStream ds((char*)&InData[0], bytesArrayLength, BigEndian);
 			pdu->unmarshal(ds);
-			FEntityStatePDU entityStatePDU = ConvertESPDUtoBPStruct(static_cast<DIS::EntityStatePdu*>(pdu));
+			FEntityStatePDU entityStatePDU = ConvertEntityStatePDUtoBPStruct(static_cast<DIS::EntityStatePdu*>(pdu));
 
 			OnEntityStatePDUProcessed.Broadcast(entityStatePDU);
 
@@ -198,7 +198,7 @@ void UPDUProcessor::ConvertESPDU2Bytes(int Exercise, FEntityStatePDU EntityState
 	BytesOut = tempBytes;
 }
 
-FEntityStatePDU UPDUProcessor::ConvertESPDUtoBPStruct(DIS::EntityStatePdu* EntityStatePDUIn)
+FEntityStatePDU UPDUProcessor::ConvertEntityStatePDUtoBPStruct(DIS::EntityStatePdu* EntityStatePDUIn)
 {
 	FEntityStatePDU entityStatePDU;
 
