@@ -500,3 +500,46 @@ void UUEOpenDIS_BPFL::CalculateHeadingPitchRollRadiansFromPsiThetaPhiDegreesAtLa
 	PitchRadians = FMath::DegreesToRadians(PitchDegrees);
 	RollRadians = FMath::DegreesToRadians(RollDegrees);
 }
+
+void UUEOpenDIS_BPFL::GetUnrealRotationFromEntityStatePdu(const FEntityStatePDU EntityStatePdu, FVector NorthVector, FVector EastVector, FVector DownVector, FRotator& EntityRotation)
+{
+	double LatitudeDegrees, LongitudeDegrees, HeightMeters;
+	CalculateLatLonHeightFromEcefXYZ(EntityStatePdu.EntityLocationDouble[0], EntityStatePdu.EntityLocationDouble[1],
+	                                 EntityStatePdu.EntityLocation[2], LatitudeDegrees, LongitudeDegrees, HeightMeters);
+
+	float HeadingDegrees, PitchDegrees, RollDegrees;
+	//NOTE: Roll=Psi, Pitch=Theta, Yaw=Phi
+	CalculateHeadingPitchRollDegreesFromPsiThetaPhiRadiansAtLatLon(EntityStatePdu.EntityOrientation.Roll,
+	                                                               EntityStatePdu.EntityOrientation.Pitch,
+	                                                               EntityStatePdu.EntityOrientation.Yaw,
+	                                                               LatitudeDegrees, LongitudeDegrees, HeadingDegrees,
+	                                                               PitchDegrees, RollDegrees);
+
+	RotateVectorAroundAxisByDegrees(NorthVector, HeadingDegrees, DownVector, NorthVector);
+	RotateVectorAroundAxisByDegrees(EastVector, HeadingDegrees, DownVector, EastVector);
+
+	RotateVectorAroundAxisByDegrees(NorthVector, PitchDegrees, EastVector, NorthVector);
+	RotateVectorAroundAxisByDegrees(DownVector, PitchDegrees, EastVector, DownVector);
+
+	RotateVectorAroundAxisByDegrees(EastVector, RollDegrees, NorthVector, EastVector);
+	RotateVectorAroundAxisByDegrees(DownVector, RollDegrees, NorthVector, DownVector);
+
+	const FMatrix RotationMatrix(NorthVector, EastVector, -DownVector, FVector::ZeroVector);
+	EntityRotation = RotationMatrix.Rotator();
+}
+
+void UUEOpenDIS_BPFL::GetEntityLocationFromEntityStatePdu(const FEntityStatePDU EntityStatePdu, FVector& EntityLocation)
+{
+	auto EntityLocationDouble = EntityStatePdu.EntityLocationDouble;
+	double LatitudeDegrees, LongitudeDegrees, HeightMeters;
+	CalculateLatLonHeightFromEcefXYZ(EntityLocationDouble[0], EntityLocationDouble[1], EntityLocationDouble[2], LatitudeDegrees, LongitudeDegrees, HeightMeters);
+
+	EntityLocation = FVector(LatitudeDegrees, LongitudeDegrees, HeightMeters);
+}
+
+void UUEOpenDIS_BPFL::GetEntityLocationAndOrientation(const FEntityStatePDU EntityStatePdu, FVector NorthVector,
+	FVector EastVector, FVector DownVector, FVector& EntityLocation, FRotator& EntityRotation)
+{
+	GetEntityLocationFromEntityStatePdu(EntityStatePdu, EntityLocation);
+	GetUnrealRotationFromEntityStatePdu(EntityStatePdu, NorthVector, EastVector, DownVector, EntityRotation);
+}
