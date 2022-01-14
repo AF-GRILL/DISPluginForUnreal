@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
 #include "DISEnumsAndStructs.h"
+#include "glm/gtx/quaternion.hpp"
 #include "OpenDISComponent.generated.h"
 
 DECLARE_LOG_CATEGORY_EXTERN(LogOpenDISComponent, Log, All);
@@ -136,4 +137,54 @@ protected:
 private:
 	FEntityStatePDU deadReckonedPDU;
 
+	/**
+	 * Gets the local yaw, pitch, and roll from the other parameters structure. The yaw, pitch, and roll act on the entity's local North, East, Down vectors.
+	 * @param OtherDeadReckoningParameters The 120 bits sent as part of the dead reckoning parameters marked as other parameters sent as an array of bytes
+	 * @param LocalRotator The local yaw, pitch, and roll of the entity. Yaw is the heading from true north, positive to the right, in radians. Pitch is the elevation angle above or below the local horizon, positive up, in radians. Roll is the bank angle from the local horizontal, positive tile to the right, in radians.
+	 */
+	static void GetLocalEulerAngles(TArray<uint8> OtherDeadReckoningParameters, FRotator& LocalRotator);
+
+	/**
+	 * Gets the local entity orientation as a quaternion from the dead reckoning other parameters
+	 * @param OtherDeadReckoningParameters The 120 bits sent as part of the dead reckoning parameters marked as other parameters sent as an array of bytes
+	 * @param EntityOrientation The four-valued unit quaternion that represents the entity's orientation
+	 */
+	static void GetLocalQuaternionAngles(TArray<uint8> OtherDeadReckoningParameters, FQuat& EntityOrientation);
+
+	/**
+	 * Calculates the new position vector using the given velocity, acceleration, and time increment
+	 * @param PositionVector The initial position of the entity in world coordinates
+	 * @param VelocityVector The initial velocity in world coordinates
+	 * @param AccelerationVector The initial acceleration in world coordinates
+	 * @param DeltaTime the time increment for dead reckoning calculation
+	 */
+	static glm::dvec3 CalculateDeadReckonedPosition(glm::dvec3 PositionVector, glm::dvec3 VelocityVector, glm::dvec3 AccelerationVector, double DeltaTime);
+
+	/**
+	 * Calculates and returns the dead reckoning matrix used for calculating entity rotation
+	 * @param AngularVelocityVector The angular velocity vector in body coordinates
+	 * @param DeltaTime The time increment for dead reckoning calculations
+	 */
+	static glm::dmat3 CreateDeadReckoningMatrix(glm::dvec3 AngularVelocityVector, double DeltaTime);
+
+	/**
+	 * Calculates a DIS entity's orientation matrix from the provided Euler angles
+	 * @param PsiRadians The rotation about the Z axis in radians
+	 * @param ThetaRadians The rotation about the Y axis in radians
+	 * @param PhiRadians The rotation about the X axis in radians
+	 */
+	static glm::dmat3 GetEntityOrientationMatrix(double PsiRadians, double ThetaRadians, double PhiRadians);
+
+	/**
+	 * Calculates the new orientation vector using the given velocity, acceleration, and time increment
+	 * @param PsiRadians The rotation about the Z axis in radians
+	 * @param ThetaRadians The rotation about the Y axis in radians
+	 * @param PhiRadians The rotation about the X axis in radians
+	 * @param AngularVelocityVector The angular velocity vector in body coordinates
+	 * @param DeltaTime the time increment for dead reckoning calculation
+	 * @param OutPsiRadians The rotation about the Z axis in radians after time step DeltaTime
+	 * @param OutThetaRadians The rotation about the Y axis in radians after time step DeltaTime
+	 * @param OutPhiRadians The rotation about the X axis in radians after time step DeltaTime
+	 */
+	static void CalculateDeadReckonedOrientation(double PsiRadians, double ThetaRadians, double PhiRadians, glm::dvec3 AngularVelocityVector,  float DeltaTime, double& OutPsiRadians, double& OutThetaRadians, double& OutPhiRadians);
 };
