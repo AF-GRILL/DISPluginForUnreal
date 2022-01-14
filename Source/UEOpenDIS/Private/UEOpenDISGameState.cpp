@@ -33,6 +33,7 @@ void AUEOpenDISGameState::BeginPlay()
 	Super::BeginPlay();
 
 	GetGameInstance()->GetSubsystem<UPDUProcessor>()->OnEntityStatePDUProcessed.AddDynamic(this, &AUEOpenDISGameState::HandleEntityStatePDU);
+	GetGameInstance()->GetSubsystem<UPDUProcessor>()->OnEntityStateUpdatePDUProcessed.AddDynamic(this, &AUEOpenDISGameState::HandleEntityStateUpdatePDU);
 	GetGameInstance()->GetSubsystem<UPDUProcessor>()->OnFirePDUProcessed.AddDynamic(this, &AUEOpenDISGameState::HandleFirePDU);
 	GetGameInstance()->GetSubsystem<UPDUProcessor>()->OnDetonationPDUProcessed.AddDynamic(this, &AUEOpenDISGameState::HandleDetonationPDU);
 	GetGameInstance()->GetSubsystem<UPDUProcessor>()->OnRemoveEntityPDUProcessed.AddDynamic(this, &AUEOpenDISGameState::HandleRemoveEntityPDU);
@@ -58,7 +59,7 @@ void AUEOpenDISGameState::HandleOnDISEntityDestroyed(AActor* DestroyedActor)
 
 void AUEOpenDISGameState::HandleEntityStatePDU(FEntityStatePDU EntityStatePDUIn)
 {
-	//Find associated actor in the DISActorMappings map
+	//Find associated actor in the DISActorMappings map -- If actor does not exist spawn one
 	ADISEntity_Base** associatedActor = DISActorMappings.Find(EntityStatePDUIn.EntityID);
 	if (associatedActor != nullptr && *associatedActor != nullptr)
 	{
@@ -80,35 +81,35 @@ void AUEOpenDISGameState::HandleEntityStatePDU(FEntityStatePDU EntityStatePDUIn)
 			return;
 		}
 
-		//If an actor was not found -- check to see if there is an associated actor for the entity type
-		TAssetSubclassOf<ADISEntity_Base>* associatedSoftClassReference = DISClassMappings.Find(EntityStatePDUIn.EntityType);
-		if (associatedSoftClassReference != nullptr)
-		{
-			//If so, spawn one and relay information to the associated component
-			UClass* associatedClass = associatedSoftClassReference->LoadSynchronous();
-			if (associatedClass != nullptr)
-			{
-				ADISEntity_Base* spawnedActor = GetWorld()->SpawnActor<ADISEntity_Base>(associatedClass);
-				spawnedActor->OnDestroyed.AddDynamic(this, &AUEOpenDISGameState::HandleOnDISEntityDestroyed);
+		SpawnNewEntityFromEntityState(EntityStatePDUIn);
+	}
+}
 
-				//Get DIS Component of the newly spawned actor
-				//Leaving this way rather than getting component of ADISEntity_Base in case we go to a more agnostic approach for classes able to be used
-				UOpenDISComponent* DISComponent = spawnedActor->FindComponentByClass<UOpenDISComponent>();
-				//Add actor to the map
-				AddDISEntityToMap(EntityStatePDUIn.EntityID, spawnedActor);
+void AUEOpenDISGameState::HandleEntityStateUpdatePDU(FEntityStateUpdatePDU EntityStateUpdatePDUIn)
+{
+	//Find associated actor in the DISActorMappings map -- If actor does not exist spawn one
+	ADISEntity_Base** associatedActor = DISActorMappings.Find(EntityStateUpdatePDUIn.EntityID);
+	if (associatedActor != nullptr && *associatedActor != nullptr)
+	{
+		//If an actor was found, relay information to the associated component
+		//Leaving this way rather than getting component of ADISEntity_Base in case we go to a more agnostic approach for classes able to be used
+		UOpenDISComponent* DISComponent = (*associatedActor)->FindComponentByClass<UOpenDISComponent>();
 
-				if (DISComponent != nullptr)
-				{
-					DISComponent->SpawnedFromNetwork = true;
-					DISComponent->HandleEntityStatePDU(EntityStatePDUIn);
-				}
-			}
-		}
-		else
+		if (DISComponent != nullptr)
 		{
-			//Otherwise notify the user that no such mapping exists
-			UE_LOG(LogOpenDIS, Warning, TEXT("No mapping exists between an actor and the DIS enumeration of: %s"), *EntityStatePDUIn.EntityType.ToString());
+			DISComponent->HandleEntityStateUpdatePDU(EntityStateUpdatePDUIn);
 		}
+	}
+	else
+	{
+		//Check if the entity has been deactivated -- Entity is deactivated if the 23rd bit of the Entity Appearance value is set
+		if (EntityStateUpdatePDUIn.EntityAppearance & (1 << 23))
+		{
+			UE_LOG(LogOpenDIS, Log, TEXT("Received Entity State Update PDU with a Deactivated Entity Appearance for an entity that is not in the level. Ignoring the PDU. Entity ID: %s"), *EntityStateUpdatePDUIn.EntityID.ToString());
+			return;
+		}
+
+		SpawnNewEntityFromEntityState(EntityStateUpdatePDUIn);
 	}
 }
 
@@ -146,6 +147,39 @@ void AUEOpenDISGameState::HandleRemoveEntityPDU(FRemoveEntityPDU RemoveEntityPDU
 		{
 			DISComponent->HandleRemoveEntityPDU(RemoveEntityPDUIn);
 		}
+	}
+}
+
+void AUEOpenDISGameState::SpawnNewEntityFromEntityState(FEntityStatePDU EntityStatePDUIn) 
+{
+	//If an actor was not found -- check to see if there is an associated actor for the entity type
+	TAssetSubclassOf<ADISEntity_Base>* associatedSoftClassReference = DISClassMappings.Find(EntityStatePDUIn.EntityType);
+	if (associatedSoftClassReference != nullptr)
+	{
+		//If so, spawn one and relay information to the associated component
+		UClass* associatedClass = associatedSoftClassReference->LoadSynchronous();
+		if (associatedClass != nullptr)
+		{
+			ADISEntity_Base* spawnedActor = GetWorld()->SpawnActor<ADISEntity_Base>(associatedClass);
+			spawnedActor->OnDestroyed.AddDynamic(this, &AUEOpenDISGameState::HandleOnDISEntityDestroyed);
+
+			//Get DIS Component of the newly spawned actor
+			//Leaving this way rather than getting component of ADISEntity_Base in case we go to a more agnostic approach for classes able to be used
+			UOpenDISComponent* DISComponent = spawnedActor->FindComponentByClass<UOpenDISComponent>();
+			//Add actor to the map
+			AddDISEntityToMap(EntityStatePDUIn.EntityID, spawnedActor);
+
+			if (DISComponent != nullptr)
+			{
+				DISComponent->SpawnedFromNetwork = true;
+				DISComponent->HandleEntityStatePDU(EntityStatePDUIn);
+			}
+		}
+	}
+	else
+	{
+		//Otherwise notify the user that no such mapping exists
+		UE_LOG(LogOpenDIS, Warning, TEXT("No mapping exists between an actor and the DIS enumeration of: %s"), *EntityStatePDUIn.EntityType.ToString());
 	}
 }
 

@@ -28,6 +28,12 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "OpenDIS")
 		void HandleEntityStatePDU(FEntityStatePDU EntityStatePDUIn);
 	/**
+	 * Delegates the given Entity State Update PDU to the appropriate DIS Entity actor.
+	 * @param EntityStateUpdatePDUIn - The Entity State Update PDU to pass to the appropriate entity.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "OpenDIS")
+		void HandleEntityStateUpdatePDU(FEntityStateUpdatePDU EntityStateUpdatePDUIn);
+	/**
 	 * Delegates the given Fire PDU to the appropriate DIS Entity actor.
 	 * @param FirePDUIn - The Fire PDU to pass to the appropriate entity.
 	 */
@@ -94,5 +100,6 @@ protected:
 		int32 ApplicationID;
 
 private:
+	void SpawnNewEntityFromEntityState(FEntityStatePDU EntityStatePDUIn);
 	UOpenDISComponent* GetAssociatedOpenDISComponent(FEntityID EntityIDIn);
 };

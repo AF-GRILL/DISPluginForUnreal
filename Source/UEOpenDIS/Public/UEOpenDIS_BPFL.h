@@ -7,6 +7,7 @@
 #include "CoreMinimal.h"
 #include "DISEnumsAndStructs.h"
 #include "Kismet/BlueprintFunctionLibrary.h"
+#include "DISEnumsAndStructs.h"
 #include "UEOpenDIS_BPFL.generated.h"
 
 /**

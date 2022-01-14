@@ -11,6 +11,7 @@
 DECLARE_LOG_CATEGORY_EXTERN(LogOpenDISComponent, Log, All);
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FReceivedEntityStatePDU, FEntityStatePDU, EntityStatePDU);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FReceivedEntityStateUpdatePDU, FEntityStateUpdatePDU, EntityStateUpdatePDU);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FReceivedDetonationPDU, FDetonationPDU, DetonationPDU);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FReceivedFirePDU, FFirePDU, FirePDU);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FReceivedRemoveEntityPDU, FRemoveEntityPDU, RemoveEntityPDU);
@@ -42,6 +43,7 @@ public:
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
 	void HandleEntityStatePDU(FEntityStatePDU NewEntityStatePDU);
+	void HandleEntityStateUpdatePDU(FEntityStateUpdatePDU NewEntityStateUpdatePDU);
 	void HandleFirePDU(FFirePDU FirePDUIn);
 	void HandleDetonationPDU(FDetonationPDU DetonationPDUIn);
 	void HandleRemoveEntityPDU(FRemoveEntityPDU RemoveEntityPDUIn);
@@ -58,6 +60,12 @@ public:
 	 */
 	UPROPERTY(BlueprintAssignable, Category = "Event")
 		FReceivedEntityStatePDU OnReceivedEntityStatePDU;
+	/**
+	 * Called after an Entity State Update PDU is received by the component. The component updates associated variables prior to broadcasting this event.
+	 * Passes the Entity State Update PDU that was received as a parameter.
+	 */
+	UPROPERTY(BlueprintAssignable, Category = "Event")
+		FReceivedEntityStatePDU OnReceivedEntityStateUpdatePDU;
 	/**
 	 * Called after a Detonation PDU is received by the component.
 	 * Passes the Detonation PDU that was received as a parameter.
