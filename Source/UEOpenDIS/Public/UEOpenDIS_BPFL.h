@@ -183,7 +183,7 @@ public:
 	 * @param DownVector The vector pointing away from the center of the Earth
 	 * @param OutX The x axis (forward) vector with the heading and pitch applied
 	 * @param OutY The y axis (right) vector with the heading and pitch applied
-	 * @param OutZ the z axis (up) vector with the heading and pitch applied
+	 * @param OutZ the z axis (down) vector with the heading and pitch applied
 	 */
 	UFUNCTION(BlueprintPure, Category = "OpenDIS|Unit Conversions")
 		static void ApplyHeadingPitchRollToNorthEastDownVector(const float HeadingDegrees, const float PitchDegrees, const float RollDegrees, const FVector NorthVector, const FVector EastVector, const FVector DownVector, FVector& OutX, FVector& OutY, FVector& OutZ);
