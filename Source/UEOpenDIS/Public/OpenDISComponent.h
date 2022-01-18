@@ -100,6 +100,12 @@ public:
 	 */
 	UPROPERTY(BlueprintReadWrite)
 		FEntityStatePDU mostRecentEntityStatePDU;
+
+	/**
+	 * The most recent Entity State PDU that has been dead reckoned if activated by the OpenDISComponent.
+	 */
+	UPROPERTY(BlueprintReadWrite)
+		FEntityStatePDU DeadReckoningEntityStatePDU;
 	/**
 	 * The timestamp that the most recent Entity State PDU was received at by the OpenDISComponent.
 	 */
