@@ -317,9 +317,17 @@ bool UOpenDISComponent::DeadReckoning(FEntityStatePDU EntityPDUToDeadReckon, flo
 			double PsiRadians, ThetaRadians, PhiRadians;
 			CalculateDeadReckonedOrientation(EntityPDUToDeadReckon.EntityOrientation.Roll, EntityPDUToDeadReckon.EntityOrientation.Pitch, EntityPDUToDeadReckon.EntityOrientation.Yaw, AngularVelocityVector, DeltaTime, PsiRadians, ThetaRadians, PhiRadians);
 
-			DeadReckonedEntityPDU.EntityOrientation.Roll = glm::degrees(PsiRadians);
-			DeadReckonedEntityPDU.EntityOrientation.Pitch = glm::degrees(ThetaRadians);
-			DeadReckonedEntityPDU.EntityOrientation.Yaw = glm::degrees(PhiRadians);
+			double Latitude, Longitude, Height;
+			UUEOpenDIS_BPFL::CalculateLatLonHeightFromEcefXYZ(DeadReckonedEntityPDU.EntityLocationDouble[0], DeadReckonedEntityPDU.EntityLocationDouble[1], DeadReckonedEntityPDU.EntityLocationDouble[2], Latitude, Longitude, Height);
+
+			float Heading, Pitch, Roll;
+			UUEOpenDIS_BPFL::CalculateHeadingPitchRollDegreesFromPsiThetaPhiRadiansAtLatLon(PsiRadians, ThetaRadians, PhiRadians, Latitude, Longitude, Heading, Pitch, Roll);
+			FVector NorthVector, EastVector, DownVector, TargetXVector, TargetYVector, TargetZVector;
+			UUEOpenDIS_BPFL::CalculateNorthEastDownVectorsFromLatLon(Latitude, Longitude, NorthVector, EastVector, DownVector);
+			UUEOpenDIS_BPFL::ApplyHeadingPitchRollToNorthEastDownVector(Heading, Pitch, Roll, NorthVector, EastVector, DownVector, TargetXVector, TargetYVector, TargetZVector);
+			auto TargetRotation = FTransform(TargetXVector, TargetYVector, -TargetZVector, FVector(0));
+			
+			DeadReckonedEntityPDU.EntityOrientation = TargetRotation.Rotator();
 
 			break;
 		}
