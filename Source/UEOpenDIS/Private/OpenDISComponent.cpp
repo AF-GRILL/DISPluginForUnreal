@@ -139,11 +139,13 @@ void UOpenDISComponent::TickComponent(float DeltaTime, ELevelTick TickType, FAct
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
+	DeltaTimeSinceLastEntityStatePDU += DeltaTime;
+
 	//Check if dead reckoning is supported/enabled. Broadcast dead reckoning update if it is
 	if (DeadReckoning(DeadReckoningEntityStatePDU, DeltaTime, deadReckonedPDU))
 	{
 		DeadReckoningEntityStatePDU = deadReckonedPDU;
-		OnDeadReckoningUpdate.Broadcast(deadReckonedPDU);
+		OnDeadReckoningUpdate.Broadcast(DeadReckoningEntityStatePDU, DeltaTimeSinceLastEntityStatePDU);
 	}
 }
 
@@ -159,6 +161,8 @@ void UOpenDISComponent::HandleEntityStatePDU(FEntityStatePDU NewEntityStatePDU)
 	latestPDUTimestamp = FDateTime::Now();
 	mostRecentEntityStatePDU = NewEntityStatePDU;
 	DeadReckoningEntityStatePDU = mostRecentEntityStatePDU;
+
+	DeltaTimeSinceLastEntityStatePDU = 0.0f;
 
 	EntityType = NewEntityStatePDU.EntityType;
 	EntityID = NewEntityStatePDU.EntityID;
