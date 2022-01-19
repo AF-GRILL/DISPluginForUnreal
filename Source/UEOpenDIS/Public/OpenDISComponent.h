@@ -11,6 +11,7 @@
 DECLARE_LOG_CATEGORY_EXTERN(LogOpenDISComponent, Log, All);
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FReceivedEntityStatePDU, FEntityStatePDU, EntityStatePDU);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FDeadReckoningUpdate, FEntityStatePDU, DeadReckonedEntityStatePDU, float, DeltaTimeSinceLastEntityStatePDU);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FReceivedEntityStateUpdatePDU, FEntityStateUpdatePDU, EntityStateUpdatePDU);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FReceivedDetonationPDU, FDetonationPDU, DetonationPDU);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FReceivedFirePDU, FFirePDU, FirePDU);
@@ -50,10 +51,10 @@ public:
 
 	/**
 	 * Called after a dead reckoning update is performed by the component.
-	 * Passes out an Entity State PDU with updated dead reckoning variables as a parameter.
+	 * Passes out an Entity State PDU with updated dead reckoning variables and a float containing the delta time since the last Entity State PDU was received in seconds as parameters.
 	 */
 	UPROPERTY(BlueprintAssignable, Category = "Event")
-		FReceivedEntityStatePDU OnDeadReckoningUpdate;
+		FDeadReckoningUpdate OnDeadReckoningUpdate;
 	/**
 	 * Called after an Entity State PDU is received by the component. The component updates associated variables prior to broadcasting this event.
 	 * Passes the Entity State PDU that was received as a parameter.
@@ -150,6 +151,7 @@ protected:
 
 private:
 	FEntityStatePDU deadReckonedPDU;
+	float DeltaTimeSinceLastEntityStatePDU = 0.0f;
 
 	/**
 	 * Gets the local yaw, pitch, and roll from the other parameters structure. The yaw, pitch, and roll act on the entity's local North, East, Down vectors.

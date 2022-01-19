@@ -161,18 +161,22 @@ void AUEOpenDISGameState::SpawnNewEntityFromEntityState(FEntityStatePDU EntitySt
 		if (associatedClass != nullptr)
 		{
 			ADISEntity_Base* spawnedActor = GetWorld()->SpawnActor<ADISEntity_Base>(associatedClass);
-			spawnedActor->OnDestroyed.AddDynamic(this, &AUEOpenDISGameState::HandleOnDISEntityDestroyed);
 
-			//Get DIS Component of the newly spawned actor
-			//Leaving this way rather than getting component of ADISEntity_Base in case we go to a more agnostic approach for classes able to be used
-			UOpenDISComponent* DISComponent = spawnedActor->FindComponentByClass<UOpenDISComponent>();
-			//Add actor to the map
-			AddDISEntityToMap(EntityStatePDUIn.EntityID, spawnedActor);
-
-			if (DISComponent != nullptr)
+			if (spawnedActor != nullptr)
 			{
-				DISComponent->SpawnedFromNetwork = true;
-				DISComponent->HandleEntityStatePDU(EntityStatePDUIn);
+				spawnedActor->OnDestroyed.AddDynamic(this, &AUEOpenDISGameState::HandleOnDISEntityDestroyed);
+
+				//Get DIS Component of the newly spawned actor
+				//Leaving this way rather than getting component of ADISEntity_Base in case we go to a more agnostic approach for classes able to be used
+				UOpenDISComponent* DISComponent = spawnedActor->FindComponentByClass<UOpenDISComponent>();
+				//Add actor to the map
+				AddDISEntityToMap(EntityStatePDUIn.EntityID, spawnedActor);
+
+				if (DISComponent != nullptr)
+				{
+					DISComponent->SpawnedFromNetwork = true;
+					DISComponent->HandleEntityStatePDU(EntityStatePDUIn);
+				}
 			}
 		}
 	}
