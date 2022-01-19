@@ -25,6 +25,11 @@ AUEOpenDISGameState::AUEOpenDISGameState()
 	ExerciseID = Settings->ExerciseID;
 	SiteID = Settings->SiteID;
 	ApplicationID = Settings->ApplicationID;
+
+	CurrentWorldOriginLLA = Settings->WorldOrigin.WorldOriginLLA;
+	CurrentWorldOriginEastVector = Settings->WorldOrigin.WorldOriginEast;
+	CurrentWorldOriginNorthVector = Settings->WorldOrigin.WorldOriginNorth;
+	CurrentWorldOriginUpVector = Settings->WorldOrigin.WorldOriginUp;
 }
 
 // Called when the game starts
@@ -55,6 +60,22 @@ void AUEOpenDISGameState::HandleOnDISEntityDestroyed(AActor* DestroyedActor)
 	{
 		UE_LOG(LogOpenDIS, Error, TEXT("Failed to remove %s from the Entity Map!"), *DestroyedActor->GetName());
 	}
+}
+
+void AUEOpenDISGameState::GetWorldOriginSettings(FVector& WorldOriginLLA, FVector& WorldOriginEastVector, FVector& WorldOriginNorthVector, FVector& WorldOriginUpVector)
+{
+	WorldOriginLLA = CurrentWorldOriginLLA;
+	WorldOriginEastVector = CurrentWorldOriginEastVector;
+	WorldOriginNorthVector = CurrentWorldOriginNorthVector;
+	WorldOriginUpVector = CurrentWorldOriginUpVector;
+}
+
+void AUEOpenDISGameState::UpdateWorldOriginSettings(FVector WorldOriginLLA, FVector WorldOriginEastVector, FVector WorldOriginNorthVector, FVector WorldOriginUpVector)
+{
+	CurrentWorldOriginLLA = WorldOriginLLA;
+	CurrentWorldOriginEastVector = WorldOriginEastVector;
+	CurrentWorldOriginNorthVector = WorldOriginNorthVector;
+	CurrentWorldOriginUpVector = WorldOriginUpVector;
 }
 
 void AUEOpenDISGameState::HandleEntityStatePDU(FEntityStatePDU EntityStatePDUIn)
@@ -159,7 +180,7 @@ void AUEOpenDISGameState::SpawnNewEntityFromEntityState(FEntityStatePDU EntitySt
 		//If so, spawn one and relay information to the associated component
 		UClass* associatedClass = associatedSoftClassReference->LoadSynchronous();
 		if (associatedClass != nullptr)
-		{
+		{ 
 			ADISEntity_Base* spawnedActor = GetWorld()->SpawnActor<ADISEntity_Base>(associatedClass);
 
 			if (spawnedActor != nullptr)
