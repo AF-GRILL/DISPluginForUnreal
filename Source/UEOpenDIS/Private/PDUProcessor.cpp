@@ -280,8 +280,8 @@ FEntityStateUpdatePDU UPDUProcessor::ConvertEntityStateUpdatePDUtoBPStruct(DIS::
 	entityStateUpdatePDU.EntityLocation[2] = position.getZ();
 
 	//rotation
-	entityStateUpdatePDU.EntityOrientation.Yaw = rotation.getPhi();
-	entityStateUpdatePDU.EntityOrientation.Roll = rotation.getPsi();
+	entityStateUpdatePDU.EntityOrientation.Yaw = rotation.getPsi();
+	entityStateUpdatePDU.EntityOrientation.Roll = rotation.getPhi();
 	entityStateUpdatePDU.EntityOrientation.Pitch = rotation.getTheta();
 
 	//velocity (originally in float so this is fine)

@@ -85,7 +85,7 @@ glm::dmat3 UOpenDISComponent::CreateDeadReckoningMatrix(glm::dvec3 AngularVeloci
 	const auto SinOmega = glm::sin(AngularVelocityMagnitude * DeltaTime);
 
 	glm::dmat3 DeadReckoningMatrix = (((1 - CosOmega) / glm::pow(AngularVelocityMagnitude, 2)) * AngularVelocity) +
-									(CosOmega * glm::dmat3()) +
+									(CosOmega * glm::dmat3(1)) -
 									(SinOmega / AngularVelocityMagnitude * UUEOpenDIS_BPFL::CreateNCrossXMatrix(AngularVelocityVector));
 
 	return DeadReckoningMatrix;
@@ -93,18 +93,19 @@ glm::dmat3 UOpenDISComponent::CreateDeadReckoningMatrix(glm::dvec3 AngularVeloci
 
 glm::dmat3 UOpenDISComponent::GetEntityOrientationMatrix(const double PsiRadians, const double ThetaRadians, const double PhiRadians)
 {
-	auto OrientationMatrix = glm::dmat3();
-	OrientationMatrix[0][0] = glm::cos(ThetaRadians) * glm::cos(PsiRadians);
-	OrientationMatrix[0][1] = glm::cos(ThetaRadians) * glm::sin(PsiRadians);
-	OrientationMatrix[0][2] = -glm::sin(ThetaRadians);
-	OrientationMatrix[1][0] = glm::sin(PhiRadians) * glm::sin(ThetaRadians) * glm::cos(PsiRadians) - glm::cos(PhiRadians) * glm::sin(PsiRadians);
-	OrientationMatrix[1][1] = glm::sin(PhiRadians) * glm::sin(ThetaRadians) * glm::sin(PsiRadians) + glm::cos(PhiRadians) * glm::cos(PsiRadians);
-	OrientationMatrix[1][2] = glm::sin(PhiRadians) * glm::cos(ThetaRadians);
-	OrientationMatrix[2][0] = glm::cos(PhiRadians) * glm::sin(ThetaRadians) * glm::cos(PsiRadians) + glm::sin(PhiRadians) * glm::sin(PsiRadians);
-	OrientationMatrix[2][1] = glm::cos(PhiRadians) * glm::sin(ThetaRadians) * glm::sin(PsiRadians) - glm::sin(PhiRadians) * glm::cos(PsiRadians);
-	OrientationMatrix[2][2] = glm::cos(PhiRadians) * glm::cos(ThetaRadians);
+	//Trig orientations
+	const auto CosPsi = glm::cos(PsiRadians);
+	const auto SinPsi = glm::sin(PsiRadians);
+	const auto CosTheta = glm::cos(ThetaRadians);
+	const auto SinTheta = glm::sin(ThetaRadians);
+	const auto CosPhi = glm::cos(PhiRadians);
+	const auto SinPhi = glm::sin(PhiRadians);
 
-	return OrientationMatrix;
+	const auto HeadingRotationMatrix = glm::dmat3(CosPsi, -SinPsi, 0, SinPsi, CosPsi, 0, 0, 0, 1);
+	const auto PitchRotationMatrix = glm::dmat3(CosTheta, 0, SinTheta, 0, 1, 0, -SinTheta, 0, CosTheta);
+	const auto RollRotationMatrix = glm::dmat3(1, 0, 0, 0, CosPhi, -SinPhi, 0, SinPhi, CosPhi);
+
+	return RollRotationMatrix * PitchRotationMatrix * HeadingRotationMatrix;
 
 }
 
@@ -121,7 +122,7 @@ void UOpenDISComponent::CalculateDeadReckonedOrientation(const double PsiRadians
 	OrientationMatrix = DeadReckoningMatrix * OrientationMatrix;
 
 	// Extract Euler angles from orientation matrix
-	OutThetaRadians = glm::asin(-OrientationMatrix[0][2]);
+	OutThetaRadians = glm::asin(-OrientationMatrix[2][0]);
 
 	// Special case for |Theta| = pi/2
 	double CosTheta = 1e-5;
@@ -130,8 +131,8 @@ void UOpenDISComponent::CalculateDeadReckonedOrientation(const double PsiRadians
 		CosTheta = glm::cos(OutThetaRadians);
 	}
 
-	OutPsiRadians = glm::acos(OrientationMatrix[0][0] / CosTheta) * (abs(OrientationMatrix[0][1]) / OrientationMatrix[0][1]);
-	OutPhiRadians = glm::acos(OrientationMatrix[2][2] / CosTheta) * (abs(OrientationMatrix[1][2]) / OrientationMatrix[1][2]);
+	OutPsiRadians = glm::acos(OrientationMatrix[0][0] / CosTheta) * (abs(OrientationMatrix[1][0]) / OrientationMatrix[1][0]);
+	OutPhiRadians = glm::acos(OrientationMatrix[2][2] / CosTheta) * (abs(OrientationMatrix[2][1]) / OrientationMatrix[2][1]);
 }
 
 // Called every frame
