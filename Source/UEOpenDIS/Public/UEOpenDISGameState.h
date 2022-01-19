@@ -22,6 +22,25 @@ public:
 	AUEOpenDISGameState();
 
 	/**
+	 * Gets the current settings for the world origin.
+	 * @param WorldOriginLLA - The Latitude (x), Longitude (y), Altitude (z) of the world origin.
+	 * @param WorldOriginEastVector - The East vector of the world origin.
+	 * @param WorldOriginNorthVector - The North vector of the world origin.
+	 * @param WorldOriginUpVector - The Up vector of the world origin.
+	 */
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "OpenDIS")
+		void GetWorldOriginSettings(FVector& WorldOriginLLA, FVector& WorldOriginEastVector, FVector& WorldOriginNorthVector, FVector& WorldOriginUpVector);
+	/**
+	 * Updates the current settings for the world origin.
+	 * @param WorldOriginLLA - The Latitude (x), Longitude (y), Altitude (z) of the world origin.
+	 * @param WorldOriginEastVector - The East vector of the world origin.
+	 * @param WorldOriginNorthVector - The North vector of the world origin.
+	 * @param WorldOriginUpVector - The Up vector of the world origin.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "OpenDIS")
+		void UpdateWorldOriginSettings(FVector WorldOriginLLA, FVector WorldOriginEastVector, FVector WorldOriginNorthVector, FVector WorldOriginUpVector);
+
+	/**
 	 * Delegates the given Entity State PDU to the appropriate DIS Entity actor.
 	 * @param EntityStatePDUIn - The Entity State PDU to pass to the appropriate entity.
 	 */
@@ -100,6 +119,11 @@ protected:
 		int32 ApplicationID;
 
 private:
+	FVector CurrentWorldOriginLLA;
+	FVector CurrentWorldOriginEastVector;
+	FVector CurrentWorldOriginNorthVector;
+	FVector CurrentWorldOriginUpVector;
+
 	void SpawnNewEntityFromEntityState(FEntityStatePDU EntityStatePDUIn);
 	UOpenDISComponent* GetAssociatedOpenDISComponent(FEntityID EntityIDIn);
 };
