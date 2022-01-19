@@ -3,6 +3,8 @@
 
 #include "UEOpenDIS_BPFL.h"
 
+#include "Kismet/KismetMathLibrary.h"
+
 float UUEOpenDIS_BPFL::GetHeadingFromEuler(float Lat, float Lon, float Psi, float Theta)
 {
 	double sinlat = FMath::Sin(Lat);
@@ -507,25 +509,33 @@ void UUEOpenDIS_BPFL::GetUnrealRotationFromEntityStatePdu(const FEntityStatePDU 
 	CalculateLatLonHeightFromEcefXYZ(EntityStatePdu.EntityLocationDouble[0], EntityStatePdu.EntityLocationDouble[1],
 	                                 EntityStatePdu.EntityLocation[2], LatitudeDegrees, LongitudeDegrees, HeightMeters);
 
+	FVector LocalNorthVector, LocalEastVector, LocalDownVector;
+	CalculateNorthEastDownVectorsFromLatLon(LatitudeDegrees, LongitudeDegrees, LocalNorthVector, LocalEastVector, LocalDownVector);
+	
+
 	float HeadingDegrees, PitchDegrees, RollDegrees;
-	//NOTE: Roll=Psi, Pitch=Theta, Yaw=Phi
-	CalculateHeadingPitchRollDegreesFromPsiThetaPhiRadiansAtLatLon(EntityStatePdu.EntityOrientation.Roll,
+	//NOTE: Roll=Phi, Pitch=Theta, Yaw=Psi
+	CalculateHeadingPitchRollDegreesFromPsiThetaPhiRadiansAtLatLon(EntityStatePdu.EntityOrientation.Yaw,
 	                                                               EntityStatePdu.EntityOrientation.Pitch,
-	                                                               EntityStatePdu.EntityOrientation.Yaw,
+	                                                               EntityStatePdu.EntityOrientation.Roll,
 	                                                               LatitudeDegrees, LongitudeDegrees, HeadingDegrees,
 	                                                               PitchDegrees, RollDegrees);
 
-	RotateVectorAroundAxisByDegrees(NorthVector, HeadingDegrees, DownVector, NorthVector);
-	RotateVectorAroundAxisByDegrees(EastVector, HeadingDegrees, DownVector, EastVector);
+	/*RotateVectorAroundAxisByDegrees(LocalNorthVector, HeadingDegrees, LocalDownVector, LocalNorthVector);
+	RotateVectorAroundAxisByDegrees(LocalEastVector, HeadingDegrees, LocalDownVector, LocalEastVector);
 
-	RotateVectorAroundAxisByDegrees(NorthVector, PitchDegrees, EastVector, NorthVector);
-	RotateVectorAroundAxisByDegrees(DownVector, PitchDegrees, EastVector, DownVector);
+	RotateVectorAroundAxisByDegrees(LocalNorthVector, PitchDegrees, LocalEastVector, LocalNorthVector);
+	RotateVectorAroundAxisByDegrees(LocalDownVector, PitchDegrees, LocalEastVector, LocalDownVector);
 
-	RotateVectorAroundAxisByDegrees(EastVector, RollDegrees, NorthVector, EastVector);
-	RotateVectorAroundAxisByDegrees(DownVector, RollDegrees, NorthVector, DownVector);
+	RotateVectorAroundAxisByDegrees(LocalEastVector, RollDegrees, LocalNorthVector, LocalEastVector);
+	RotateVectorAroundAxisByDegrees(LocalDownVector, RollDegrees, LocalNorthVector, LocalDownVector);*/
+	FRotator HeadingRotator = FRotator(0, HeadingDegrees, 0);
+	FRotator PitchRotator = FRotator(PitchDegrees, 0, 0);
+	FRotator RollRotator = FRotator(0, 0, RollDegrees);
 
-	const FMatrix RotationMatrix(NorthVector, EastVector, -DownVector, FVector::ZeroVector);
-	EntityRotation = RotationMatrix.Rotator();
+	EntityRotation = UKismetMathLibrary::ComposeRotators(UKismetMathLibrary::ComposeRotators(UKismetMathLibrary::ComposeRotators(RollRotator, PitchRotator), HeadingRotator), UKismetMathLibrary::MakeRotationFromAxes(NorthVector, EastVector, -DownVector));
+	/*const FMatrix RotationMatrix(NorthVector, EastVector, -DownVector, FVector::ZeroVector);
+	EntityRotation = RotationMatrix.Rotator();*/
 }
 
 void UUEOpenDIS_BPFL::GetEntityLocationFromEntityStatePdu(const FEntityStatePDU EntityStatePdu, FVector& EntityLocation)

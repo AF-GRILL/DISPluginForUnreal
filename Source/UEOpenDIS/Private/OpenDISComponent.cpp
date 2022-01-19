@@ -22,13 +22,13 @@ void UOpenDISComponent::BeginPlay()
 	Super::BeginPlay();
 }
 
-void UOpenDISComponent::GetLocalEulerAngles(TArray<uint8> OtherDeadReckoningParameters, FRotator& LocalRotator)
+bool UOpenDISComponent::GetLocalEulerAngles(TArray<uint8> OtherDeadReckoningParameters, FRotator& LocalRotator)
 {
 	// Ensure the DR Parameter type is set to 1
-	if (OtherDeadReckoningParameters[0] != 1) return;
+	if (OtherDeadReckoningParameters[0] != 1) return false;
 
 	// Ensure the Array is at least 15 bytes long
-	if (OtherDeadReckoningParameters.Num() < 15) return;
+	if (OtherDeadReckoningParameters.Num() < 15) return false;
 
 	// The next 2 bytes are padding and not necessary so skip indices 1 and 2
 	// Concatenate the next three groups of four bytes
@@ -43,15 +43,17 @@ void UOpenDISComponent::GetLocalEulerAngles(TArray<uint8> OtherDeadReckoningPara
 
 	// Set the values and return
 	LocalRotator = FRotator(LocalPitch, LocalYaw, LocalRoll);
+
+	return true;
 }
 
-void UOpenDISComponent::GetLocalQuaternionAngles(TArray<uint8> OtherDeadReckoningParameters, FQuat& EntityOrientation)
+bool UOpenDISComponent::GetLocalQuaternionAngles(TArray<uint8> OtherDeadReckoningParameters, FQuat& EntityOrientation)
 {
 	// Ensure the DR Parameter type is set to 2
-	if (OtherDeadReckoningParameters[0] != 2) return;
+	if (OtherDeadReckoningParameters[0] != 2) return false;
 
 	// Ensure the array is at least 15 bytes long
-	if (OtherDeadReckoningParameters.Num() < 15) return;
+	if (OtherDeadReckoningParameters.Num() < 15) return false;
 
 	//The next two bytes represent the 16 bit unsigned int approximation of q_0 (q_w in UE4 terminology)
 	uint16 Qu0 = (OtherDeadReckoningParameters[1] << 8) + OtherDeadReckoningParameters[2];
@@ -66,6 +68,8 @@ void UOpenDISComponent::GetLocalQuaternionAngles(TArray<uint8> OtherDeadReckonin
 
 	// Set the values and return
 	EntityOrientation = FQuat(QuX, QuY, QuZ, Qu0);
+
+	return true;
 }
 
 glm::dvec3 UOpenDISComponent::CalculateDeadReckonedPosition(const glm::dvec3 PositionVector, const glm::dvec3 VelocityVector,
@@ -235,9 +239,13 @@ bool UOpenDISComponent::DeadReckoning(FEntityStatePDU EntityPDUToDeadReckon, flo
 	case 1: // Static
 		{
 			FRotator LocalRotator;
-			GetLocalEulerAngles(EntityPDUToDeadReckon.DeadReckoningParameters.OtherParameters, LocalRotator);
+			bool bUseOtherParams = GetLocalEulerAngles(EntityPDUToDeadReckon.DeadReckoningParameters.OtherParameters, LocalRotator);
 
-			bSupported = false;
+			if (bUseOtherParams)
+			{
+				DeadReckonedEntityPDU.EntityOrientation = LocalRotator;
+			}
+
 			break;
 		}
 
@@ -245,7 +253,7 @@ bool UOpenDISComponent::DeadReckoning(FEntityStatePDU EntityPDUToDeadReckon, flo
 		{
 			// Set entity orientation
 			FRotator LocalRotator;
-			GetLocalEulerAngles(EntityPDUToDeadReckon.DeadReckoningParameters.OtherParameters, LocalRotator);
+			bool bUseOtherParams = GetLocalEulerAngles(EntityPDUToDeadReckon.DeadReckoningParameters.OtherParameters, LocalRotator);
 
 			// Calculate and set entity location
 			glm::dvec3 PositionVector = glm::dvec3(EntityPDUToDeadReckon.EntityLocationDouble[0], EntityPDUToDeadReckon.EntityLocationDouble[1], EntityPDUToDeadReckon.EntityLocationDouble[2]);
@@ -259,15 +267,18 @@ bool UOpenDISComponent::DeadReckoning(FEntityStatePDU EntityPDUToDeadReckon, flo
 
 			DeadReckonedEntityPDU.EntityLocation.X = CalculatedPositionVector[0];
 			DeadReckonedEntityPDU.EntityLocation.Y = CalculatedPositionVector[1];
-			DeadReckonedEntityPDU.EntityLocation.Z = CalculatedPositionVector[2];
 
+			if (bUseOtherParams)
+			{
+				DeadReckonedEntityPDU.EntityOrientation = LocalRotator;
+			}
 			break;
 		}
 	
 	case 3: // Rotation Position World (RPW)
 		{
 			FQuat EntityRotation;
-			GetLocalQuaternionAngles(DeadReckonedEntityPDU.DeadReckoningParameters.OtherParameters, EntityRotation);
+			bool bUseOtherParams = GetLocalQuaternionAngles(DeadReckonedEntityPDU.DeadReckoningParameters.OtherParameters, EntityRotation);
 
 			// Calculate and set entity location
 			glm::dvec3 PositionVector = glm::dvec3(EntityPDUToDeadReckon.EntityLocationDouble[0], EntityPDUToDeadReckon.EntityLocationDouble[1], EntityPDUToDeadReckon.EntityLocationDouble[2]);
@@ -283,22 +294,25 @@ bool UOpenDISComponent::DeadReckoning(FEntityStatePDU EntityPDUToDeadReckon, flo
 			DeadReckonedEntityPDU.EntityLocation.Y = CalculatedPositionVector[1];
 			DeadReckonedEntityPDU.EntityLocation.Z = CalculatedPositionVector[2];
 
-			glm::dvec3 AngularVelocityVector = glm::dvec3(EntityPDUToDeadReckon.DeadReckoningParameters.EntityAngularVelocity.X, EntityPDUToDeadReckon.DeadReckoningParameters.EntityAngularVelocity.Y, EntityPDUToDeadReckon.DeadReckoningParameters.EntityAngularVelocity.Z);
-			//NOTE: Roll=Psi, Pitch=Theta, Yaw=Phi
-			double PsiRadians, ThetaRadians, PhiRadians;
-			CalculateDeadReckonedOrientation(EntityPDUToDeadReckon.EntityOrientation.Roll, EntityPDUToDeadReckon.EntityOrientation.Pitch, EntityPDUToDeadReckon.EntityOrientation.Yaw, AngularVelocityVector, DeltaTime, PsiRadians, ThetaRadians, PhiRadians);
+			if (bUseOtherParams)
+			{
+				DeadReckonedEntityPDU.EntityOrientation = FRotator(EntityRotation);
+			} else
+			{
+				glm::dvec3 AngularVelocityVector = glm::dvec3(EntityPDUToDeadReckon.DeadReckoningParameters.EntityAngularVelocity.X, EntityPDUToDeadReckon.DeadReckoningParameters.EntityAngularVelocity.Y, EntityPDUToDeadReckon.DeadReckoningParameters.EntityAngularVelocity.Z);
+				//NOTE: Roll=Phi, Pitch=Theta, Yaw=Psi
+				double PsiRadians, ThetaRadians, PhiRadians;
+				CalculateDeadReckonedOrientation(EntityPDUToDeadReckon.EntityOrientation.Roll, EntityPDUToDeadReckon.EntityOrientation.Pitch, EntityPDUToDeadReckon.EntityOrientation.Yaw, AngularVelocityVector, DeltaTime, PsiRadians, ThetaRadians, PhiRadians);
 
-			DeadReckonedEntityPDU.EntityOrientation.Roll = glm::degrees(PsiRadians);
-			DeadReckonedEntityPDU.EntityOrientation.Pitch = glm::degrees(ThetaRadians);
-			DeadReckonedEntityPDU.EntityOrientation.Yaw = glm::degrees(PhiRadians);
-
+				DeadReckonedEntityPDU.EntityOrientation = FRotator(ThetaRadians, PsiRadians, PhiRadians);
+			}
 			break;
 		}
 	
 	case 4: // Rotation Velocity World (RVW)
 		{
 			FQuat EntityRotation;
-			GetLocalQuaternionAngles(DeadReckonedEntityPDU.DeadReckoningParameters.OtherParameters, EntityRotation);
+			bool bUseOtherParams = GetLocalQuaternionAngles(DeadReckonedEntityPDU.DeadReckoningParameters.OtherParameters, EntityRotation);
 
 			DeadReckonedEntityPDU.EntityOrientation = GetRotationForDeadReckoning(EntityPDUToDeadReckon, DeltaTime);
 
@@ -317,30 +331,25 @@ bool UOpenDISComponent::DeadReckoning(FEntityStatePDU EntityPDUToDeadReckon, flo
 			DeadReckonedEntityPDU.EntityLocation.Y = CalculatedPositionVector[1];
 			DeadReckonedEntityPDU.EntityLocation.Z = CalculatedPositionVector[2];
 
-			glm::dvec3 AngularVelocityVector = glm::dvec3(EntityPDUToDeadReckon.DeadReckoningParameters.EntityAngularVelocity.X, EntityPDUToDeadReckon.DeadReckoningParameters.EntityAngularVelocity.Y, EntityPDUToDeadReckon.DeadReckoningParameters.EntityAngularVelocity.Z);
-			//NOTE: Roll=Psi, Pitch=Theta, Yaw=Phi
-			double PsiRadians, ThetaRadians, PhiRadians;
-			CalculateDeadReckonedOrientation(EntityPDUToDeadReckon.EntityOrientation.Roll, EntityPDUToDeadReckon.EntityOrientation.Pitch, EntityPDUToDeadReckon.EntityOrientation.Yaw, AngularVelocityVector, DeltaTime, PsiRadians, ThetaRadians, PhiRadians);
+			if (bUseOtherParams)
+			{
+				DeadReckonedEntityPDU.EntityOrientation = FRotator(EntityRotation);
+			} else
+			{
+				glm::dvec3 AngularVelocityVector = glm::dvec3(EntityPDUToDeadReckon.DeadReckoningParameters.EntityAngularVelocity.X, EntityPDUToDeadReckon.DeadReckoningParameters.EntityAngularVelocity.Y, EntityPDUToDeadReckon.DeadReckoningParameters.EntityAngularVelocity.Z);
+				//NOTE: Roll=Phi, Pitch=Theta, Yaw=Psi
+				double PsiRadians, ThetaRadians, PhiRadians;
+				CalculateDeadReckonedOrientation(EntityPDUToDeadReckon.EntityOrientation.Yaw, EntityPDUToDeadReckon.EntityOrientation.Pitch, EntityPDUToDeadReckon.EntityOrientation.Roll, AngularVelocityVector, DeltaTime, PsiRadians, ThetaRadians, PhiRadians);
 
-			double Latitude, Longitude, Height;
-			UUEOpenDIS_BPFL::CalculateLatLonHeightFromEcefXYZ(DeadReckonedEntityPDU.EntityLocationDouble[0], DeadReckonedEntityPDU.EntityLocationDouble[1], DeadReckonedEntityPDU.EntityLocationDouble[2], Latitude, Longitude, Height);
-
-			float Heading, Pitch, Roll;
-			UUEOpenDIS_BPFL::CalculateHeadingPitchRollDegreesFromPsiThetaPhiRadiansAtLatLon(PsiRadians, ThetaRadians, PhiRadians, Latitude, Longitude, Heading, Pitch, Roll);
-			FVector NorthVector, EastVector, DownVector, TargetXVector, TargetYVector, TargetZVector;
-			UUEOpenDIS_BPFL::CalculateNorthEastDownVectorsFromLatLon(Latitude, Longitude, NorthVector, EastVector, DownVector);
-			UUEOpenDIS_BPFL::ApplyHeadingPitchRollToNorthEastDownVector(Heading, Pitch, Roll, NorthVector, EastVector, DownVector, TargetXVector, TargetYVector, TargetZVector);
-			auto TargetRotation = FTransform(TargetXVector, TargetYVector, -TargetZVector, FVector(0));
-			
-			DeadReckonedEntityPDU.EntityOrientation = TargetRotation.Rotator();
-
+				DeadReckonedEntityPDU.EntityOrientation = FRotator(ThetaRadians, PsiRadians, PhiRadians);
+			}
 			break;
 		}
 	
 	case 5: // Fixed Velocity World (FVW)
 		{
 			FRotator LocalRotator;
-			GetLocalEulerAngles(EntityPDUToDeadReckon.DeadReckoningParameters.OtherParameters, LocalRotator);
+			bool bUseOtherParams = GetLocalEulerAngles(EntityPDUToDeadReckon.DeadReckoningParameters.OtherParameters, LocalRotator);
 
 			// Calculate and set entity location
 			glm::dvec3 PositionVector = glm::dvec3(EntityPDUToDeadReckon.EntityLocationDouble[0], EntityPDUToDeadReckon.EntityLocationDouble[1], EntityPDUToDeadReckon.EntityLocationDouble[2]);
@@ -357,13 +366,22 @@ bool UOpenDISComponent::DeadReckoning(FEntityStatePDU EntityPDUToDeadReckon, flo
 			DeadReckonedEntityPDU.EntityLocation.Y = CalculatedPositionVector[1];
 			DeadReckonedEntityPDU.EntityLocation.Z = CalculatedPositionVector[2];
 
+			if (bUseOtherParams)
+			{
+				DeadReckonedEntityPDU.EntityOrientation = LocalRotator;
+			}
 			break;
 		}
 
 	case 6: // Fixed Position Body (FPB)
 		{
 			FRotator LocalRotator;
-			GetLocalEulerAngles(EntityPDUToDeadReckon.DeadReckoningParameters.OtherParameters, LocalRotator);
+			bool bUseOtherParams = GetLocalEulerAngles(EntityPDUToDeadReckon.DeadReckoningParameters.OtherParameters, LocalRotator);
+
+			if (bUseOtherParams)
+			{
+				DeadReckonedEntityPDU.EntityOrientation = LocalRotator;
+			}
 			bSupported = false;
 			break;
 		}
@@ -371,7 +389,12 @@ bool UOpenDISComponent::DeadReckoning(FEntityStatePDU EntityPDUToDeadReckon, flo
 	case 7: // Rotation Position Body (RPB)
 		{
 			FQuat EntityRotation;
-			GetLocalQuaternionAngles(DeadReckonedEntityPDU.DeadReckoningParameters.OtherParameters, EntityRotation);
+			bool bUseOtherParams = GetLocalQuaternionAngles(DeadReckonedEntityPDU.DeadReckoningParameters.OtherParameters, EntityRotation);
+
+			if (bUseOtherParams)
+			{
+				DeadReckonedEntityPDU.EntityOrientation = FRotator(EntityRotation);
+			}
 			bSupported = false;
 			break;
 		}
@@ -379,7 +402,12 @@ bool UOpenDISComponent::DeadReckoning(FEntityStatePDU EntityPDUToDeadReckon, flo
 	case 8: // Rotation Velocity Body (RVB)
 		{
 			FQuat EntityRotation;
-			GetLocalQuaternionAngles(DeadReckonedEntityPDU.DeadReckoningParameters.OtherParameters, EntityRotation);
+			bool bUseOtherParams = GetLocalQuaternionAngles(DeadReckonedEntityPDU.DeadReckoningParameters.OtherParameters, EntityRotation);
+
+			if (bUseOtherParams)
+			{
+				DeadReckonedEntityPDU.EntityOrientation = FRotator(EntityRotation);
+			}
 			bSupported = false;
 			break;
 		}
@@ -387,7 +415,12 @@ bool UOpenDISComponent::DeadReckoning(FEntityStatePDU EntityPDUToDeadReckon, flo
 	case 9: // Fixed Velocity Body (FVB)
 		{
 			FRotator LocalRotator;
-			GetLocalEulerAngles(EntityPDUToDeadReckon.DeadReckoningParameters.OtherParameters, LocalRotator);
+			bool bUseOtherParams = GetLocalEulerAngles(EntityPDUToDeadReckon.DeadReckoningParameters.OtherParameters, LocalRotator);
+
+			if (bUseOtherParams)
+			{
+				DeadReckonedEntityPDU.EntityOrientation = LocalRotator;
+			}
 			bSupported = false;
 			break;
 		}

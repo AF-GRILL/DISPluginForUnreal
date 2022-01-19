@@ -158,14 +158,14 @@ private:
 	 * @param OtherDeadReckoningParameters The 120 bits sent as part of the dead reckoning parameters marked as other parameters sent as an array of bytes
 	 * @param LocalRotator The local yaw, pitch, and roll of the entity. Yaw is the heading from true north, positive to the right, in radians. Pitch is the elevation angle above or below the local horizon, positive up, in radians. Roll is the bank angle from the local horizontal, positive tile to the right, in radians.
 	 */
-	static void GetLocalEulerAngles(TArray<uint8> OtherDeadReckoningParameters, FRotator& LocalRotator);
+	static bool GetLocalEulerAngles(TArray<uint8> OtherDeadReckoningParameters, FRotator& LocalRotator);
 
 	/**
 	 * Gets the local entity orientation as a quaternion from the dead reckoning other parameters
 	 * @param OtherDeadReckoningParameters The 120 bits sent as part of the dead reckoning parameters marked as other parameters sent as an array of bytes
 	 * @param EntityOrientation The four-valued unit quaternion that represents the entity's orientation
 	 */
-	static void GetLocalQuaternionAngles(TArray<uint8> OtherDeadReckoningParameters, FQuat& EntityOrientation);
+	static bool GetLocalQuaternionAngles(TArray<uint8> OtherDeadReckoningParameters, FQuat& EntityOrientation);
 
 	/**
 	 * Calculates the new position vector using the given velocity, acceleration, and time increment
