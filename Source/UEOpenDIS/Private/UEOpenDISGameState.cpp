@@ -26,10 +26,7 @@ AUEOpenDISGameState::AUEOpenDISGameState()
 	SiteID = Settings->SiteID;
 	ApplicationID = Settings->ApplicationID;
 
-	CurrentWorldOriginLLA = Settings->WorldOrigin.WorldOriginLLA;
-	CurrentWorldOriginEastVector = Settings->WorldOrigin.WorldOriginEast;
-	CurrentWorldOriginNorthVector = Settings->WorldOrigin.WorldOriginNorth;
-	CurrentWorldOriginUpVector = Settings->WorldOrigin.WorldOriginUp;
+	UpdateWorldOriginSettings(Settings->WorldOrigin.WorldOriginLLA, Settings->WorldOrigin.WorldOriginEast, Settings->WorldOrigin.WorldOriginNorth, Settings->WorldOrigin.WorldOriginUp);
 }
 
 // Called when the game starts
