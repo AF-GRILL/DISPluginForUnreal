@@ -20,25 +20,6 @@ struct FOpenDISEnumerationMappings
 		TArray<FEntityType> AssociatedDISEnumerations;
 };
 
-USTRUCT()
-struct FWorldOrigin
-{
-	GENERATED_BODY()
-
-	/** The Latitude (x), Longitude (y), and Altitude (z) of the world origin. */
-	UPROPERTY(EditAnywhere, Category = "OpenDIS Mappings")
-		FVector WorldOriginLLA;
-	/** The East vector of the world origin. */
-	UPROPERTY(EditAnywhere, Category = "OpenDIS Mappings")
-		FVector WorldOriginEast;
-	/** The North vector of the world origin. */
-	UPROPERTY(EditAnywhere, Category = "OpenDIS Mappings")
-		FVector WorldOriginNorth;
-	/** The Up vector of the world origin. */
-	UPROPERTY(EditAnywhere, Category = "OpenDIS Mappings")
-		FVector WorldOriginUp;
-};
-
 /**
  * 
  */
@@ -59,10 +40,6 @@ public:
 	UPROPERTY(GlobalConfig, EditAnywhere, Category = "OpenDIS Mappings",	
 		Meta = (DisplayName = "DIS Enumeration Mappings",	Tooltip = "Mappings between DIS enumerations and associated actors."))
 		TArray<FOpenDISEnumerationMappings> DISClassMappings;
-
-	UPROPERTY(GlobalConfig, EditAnywhere, Category = "OpenDIS Mappings",
-		Meta = (DisplayName = "World Origin", Tooltip = "The LLA and ENU of the world origin."))
-		FWorldOrigin WorldOrigin;
 
 	UPROPERTY(GlobalConfig, EditAnywhere, Category = "OpenDIS Networking|Entity",
 		Meta = (DisplayName = "Exercise ID", Tooltip = "The Exercise ID of the DIS sim. Valid Exercise IDs range from 0 to 255."))

@@ -1,4 +1,5 @@
 #include "UEOpenDIS_BPFL.h"
+#include "DISEnumsAndStructs.h"
 #include "HAL/Platform.h"
 
 BEGIN_DEFINE_SPEC(FUnitConversionSpec, "OpenDIS.UnitConversions", EAutomationTestFlags::ProductFilter | EAutomationTestFlags::ApplicationContextMask)
@@ -49,62 +50,70 @@ END_DEFINE_SPEC(FUnitConversionSpec)
 void FUnitConversionSpec::Define()
 {
 	Describe("CalculateHeadingPitchRoll", [this]()
-		{
-			
+		{			
 			for(int Index = 0; Index < NumTestCases; Index++)
 			{
 				FTestCase TestCase = TestCases[Index];
+
+				FPsiThetaPhi psiThetaPhiDegrees;
+				psiThetaPhiDegrees.Psi = TestCase.PsiDegrees;
+				psiThetaPhiDegrees.Theta = TestCase.ThetaDegrees;
+				psiThetaPhiDegrees.Phi = TestCase.PhiDegrees;
+
+				FPsiThetaPhi psiThetaPhiRadians;
+				psiThetaPhiRadians.Psi = TestCase.PsiRadians;
+				psiThetaPhiRadians.Theta = TestCase.ThetaRadians;
+				psiThetaPhiRadians.Phi = TestCase.PhiRadians;
+
+				FHeadingPitchRoll headingPitchRollDegrees;
+
 				It(FString::Printf(
 					   TEXT(
 						   "should calculate Heading->\"%7.4f°\", Pitch->\"%7.4f°\", and Roll->\"%7.4f°\" from Psi=\"%7.4f°\", Theta=\"%7.4f°\", and Phi=\"%7.4f°\" at Latitude=\"%7.4f°\" and Longitude=\"%7.4f°\""),
-					   TestCase.HeadingDegrees, TestCase.PitchDegrees, TestCase.RollDegrees, TestCase.PsiDegrees,
+						TestCase.HeadingDegrees, TestCase.PitchDegrees, TestCase.RollDegrees, TestCase.PsiDegrees,
 					   TestCase.ThetaDegrees, TestCase.PhiDegrees, TestCase.LatitudeDegrees, TestCase.LongitudeDegrees).Replace(TEXT("."), TEXT(",")),
-				   [this, TestCase]()
+				   [this, TestCase, psiThetaPhiDegrees, psiThetaPhiRadians, &headingPitchRollDegrees]()
 				   {
-						float Heading, Pitch, Roll;
-						UUEOpenDIS_BPFL::CalculateHeadingPitchRollDegreesFromPsiThetaPhiDegreesAtLatLon(TestCase.PsiDegrees, TestCase.ThetaDegrees, TestCase.PhiDegrees, TestCase.LatitudeDegrees, TestCase.LongitudeDegrees, Heading, Pitch, Roll);
-						TestEqual(FString::Printf(TEXT("Calculated Heading %7.4f° = Desired Heading %7.4f°"), Heading, TestCase.HeadingDegrees), Heading, TestCase.HeadingDegrees, FloatTolerance);
-						TestEqual(FString::Printf(TEXT("Calculated Pitch %7.4f° = Desired Pitch %7.4f°"), Pitch, TestCase.PitchDegrees), Pitch, TestCase.PitchDegrees, FloatTolerance);
-						TestEqual(FString::Printf(TEXT("Calculated Roll %7.4f° = Desired Roll %7.4f°"), Roll, TestCase.RollDegrees), Roll, TestCase.RollDegrees, FloatTolerance);
+						UUEOpenDIS_BPFL::CalculateHeadingPitchRollDegreesFromPsiThetaPhiDegreesAtLatLon(psiThetaPhiDegrees, TestCase.LatitudeDegrees, TestCase.LongitudeDegrees, headingPitchRollDegrees);
+						TestEqual(FString::Printf(TEXT("Calculated Heading %7.4f° = Desired Heading %7.4f°"), headingPitchRollDegrees.Heading, TestCase.HeadingDegrees), headingPitchRollDegrees.Heading, TestCase.HeadingDegrees, FloatTolerance);
+						TestEqual(FString::Printf(TEXT("Calculated Pitch %7.4f° = Desired Pitch %7.4f°"), headingPitchRollDegrees.Pitch, TestCase.PitchDegrees), headingPitchRollDegrees.Pitch, TestCase.PitchDegrees, FloatTolerance);
+						TestEqual(FString::Printf(TEXT("Calculated Roll %7.4f° = Desired Roll %7.4f°"), headingPitchRollDegrees.Roll, TestCase.RollDegrees), headingPitchRollDegrees.Roll, TestCase.RollDegrees, FloatTolerance);
 					});
 				It(FString::Printf(
 					TEXT(
 						"should calculate Heading->%7.4f°, Pitch->%7.4f°, and Roll->%7.4f° from Psi=%7.4fr, Theta=%7.4fr, and Phi=%7.4fr at Latitude=%7.4f° and Longitude=%7.4f°"),
 					TestCase.HeadingDegrees, TestCase.PitchDegrees, TestCase.RollDegrees, TestCase.PsiRadians,
 					TestCase.ThetaRadians, TestCase.PhiRadians, TestCase.LatitudeDegrees, TestCase.LongitudeDegrees).Replace(TEXT("."), TEXT(",")),
-					[this, TestCase]()
+					[this, TestCase, psiThetaPhiDegrees, psiThetaPhiRadians, &headingPitchRollDegrees]()
 					{
-						float Heading, Pitch, Roll;
-						UUEOpenDIS_BPFL::CalculateHeadingPitchRollDegreesFromPsiThetaPhiRadiansAtLatLon(TestCase.PsiRadians, TestCase.ThetaRadians, TestCase.PhiRadians, TestCase.LatitudeDegrees, TestCase.LongitudeDegrees, Heading, Pitch, Roll);
-						TestEqual(FString::Printf(TEXT("Calculated Heading %7.4f° = Desired Heading %7.4f°"), Heading, TestCase.HeadingDegrees), Heading, TestCase.HeadingDegrees, FloatTolerance);
-						TestEqual(FString::Printf(TEXT("Calculated Pitch %7.4f° = Desired Pitch %7.4f°"), Pitch, TestCase.PitchDegrees), Pitch, TestCase.PitchDegrees, FloatTolerance);
-						TestEqual(FString::Printf(TEXT("Calculated Roll %7.4f° = Desired Roll %7.4f°"), Roll, TestCase.RollDegrees), Roll, TestCase.RollDegrees, FloatTolerance);
+						UUEOpenDIS_BPFL::CalculateHeadingPitchRollDegreesFromPsiThetaPhiRadiansAtLatLon(psiThetaPhiRadians, TestCase.LatitudeDegrees, TestCase.LongitudeDegrees, headingPitchRollDegrees);
+						TestEqual(FString::Printf(TEXT("Calculated Heading %7.4f° = Desired Heading %7.4f°"), headingPitchRollDegrees.Heading, TestCase.HeadingDegrees), headingPitchRollDegrees.Heading, TestCase.HeadingDegrees, FloatTolerance);
+						TestEqual(FString::Printf(TEXT("Calculated Pitch %7.4f° = Desired Pitch %7.4f°"), headingPitchRollDegrees.Pitch, TestCase.PitchDegrees), headingPitchRollDegrees.Pitch, TestCase.PitchDegrees, FloatTolerance);
+						TestEqual(FString::Printf(TEXT("Calculated Roll %7.4f° = Desired Roll %7.4f°"), headingPitchRollDegrees.Roll, TestCase.RollDegrees), headingPitchRollDegrees.Roll, TestCase.RollDegrees, FloatTolerance);
 				   });
 				It(FString::Printf(
 					   TEXT(
 						   "should calculate Heading->%7.4fr, Pitch->%7.4fr, and Roll->%7.4fr from Psi=%7.4f°, Theta=%7.4f°, and Phi=%7.4f° at Latitude=%7.4f° and Longitude=%7.4f°"),
 					   TestCase.HeadingRadians, TestCase.PitchRadians, TestCase.RollRadians, TestCase.PsiDegrees,
 					   TestCase.ThetaDegrees, TestCase.PhiDegrees, TestCase.LatitudeDegrees, TestCase.LongitudeDegrees).Replace(TEXT("."), TEXT(",")),
-				   [this, TestCase]()
+				   [this, TestCase, psiThetaPhiDegrees, psiThetaPhiRadians, &headingPitchRollDegrees]()
 				   {
-						float Heading, Pitch, Roll;
-						UUEOpenDIS_BPFL::CalculateHeadingPitchRollRadiansFromPsiThetaPhiDegreesAtLatLon(TestCase.PsiDegrees, TestCase.ThetaDegrees, TestCase.PhiDegrees, TestCase.LatitudeDegrees, TestCase.LongitudeDegrees, Heading, Pitch, Roll);
-						TestEqual(FString::Printf(TEXT("Calculated Heading %7.4fr = Desired Heading %7.4fr"), Heading, TestCase.HeadingRadians), Heading, TestCase.HeadingRadians, FloatTolerance);
-						TestEqual(FString::Printf(TEXT("Calculated Pitch %7.4fr = Desired Pitch %7.4fr"), Pitch, TestCase.PitchRadians), Pitch, TestCase.PitchRadians, FloatTolerance);
-						TestEqual(FString::Printf(TEXT("Calculated Roll %7.4fr = Desired Roll %7.4fr"), Roll, TestCase.RollRadians), Roll, TestCase.RollRadians, FloatTolerance);
+						UUEOpenDIS_BPFL::CalculateHeadingPitchRollRadiansFromPsiThetaPhiDegreesAtLatLon(psiThetaPhiDegrees, TestCase.LatitudeDegrees, TestCase.LongitudeDegrees, headingPitchRollDegrees);
+						TestEqual(FString::Printf(TEXT("Calculated Heading %7.4fr = Desired Heading %7.4fr"), headingPitchRollDegrees.Heading, TestCase.HeadingRadians), headingPitchRollDegrees.Heading, TestCase.HeadingRadians, FloatTolerance);
+						TestEqual(FString::Printf(TEXT("Calculated Pitch %7.4fr = Desired Pitch %7.4fr"), headingPitchRollDegrees.Pitch, TestCase.PitchRadians), headingPitchRollDegrees.Pitch, TestCase.PitchRadians, FloatTolerance);
+						TestEqual(FString::Printf(TEXT("Calculated Roll %7.4fr = Desired Roll %7.4fr"), headingPitchRollDegrees.Roll, TestCase.RollRadians), headingPitchRollDegrees.Roll, TestCase.RollRadians, FloatTolerance);
 					});
 				It(FString::Printf(
 					TEXT(
 						"should calculate Heading->%7.4fr, Pitch->%7.4fr, and Roll->%7.4fr from Psi=%7.4fr, Theta=%7.4fr, and Phi=%7.4fr at Latitude=%7.4f° and Longitude=%7.4f°"),
 					TestCase.HeadingRadians, TestCase.PitchRadians, TestCase.RollRadians, TestCase.PsiRadians,
 					TestCase.ThetaRadians, TestCase.PhiRadians, TestCase.LatitudeDegrees, TestCase.LongitudeDegrees).Replace(TEXT("."), TEXT(",")),
-					[this, TestCase]()
+					[this, TestCase, psiThetaPhiDegrees, psiThetaPhiRadians, &headingPitchRollDegrees]()
 					{
-						float Heading, Pitch, Roll;
-						UUEOpenDIS_BPFL::CalculateHeadingPitchRollRadiansFromPsiThetaPhiRadiansAtLatLon(TestCase.PsiRadians, TestCase.ThetaRadians, TestCase.PhiRadians, TestCase.LatitudeDegrees, TestCase.LongitudeDegrees, Heading, Pitch, Roll);
-						TestEqual(FString::Printf(TEXT("Calculated Heading %7.4fr = Desired Heading %7.4fr"), Heading, TestCase.HeadingRadians), Heading, TestCase.HeadingRadians, FloatTolerance);
-						TestEqual(FString::Printf(TEXT("Calculated Pitch %7.4fr = Desired Pitch %7.4fr"), Pitch, TestCase.PitchRadians), Pitch, TestCase.PitchRadians, FloatTolerance);
-						TestEqual(FString::Printf(TEXT("Calculated Roll %7.4fr = Desired Roll %7.4fr"), Roll, TestCase.RollRadians), Roll, TestCase.RollRadians, FloatTolerance);
+						UUEOpenDIS_BPFL::CalculateHeadingPitchRollRadiansFromPsiThetaPhiRadiansAtLatLon(psiThetaPhiRadians, TestCase.LatitudeDegrees, TestCase.LongitudeDegrees, headingPitchRollDegrees);
+						TestEqual(FString::Printf(TEXT("Calculated Heading %7.4fr = Desired Heading %7.4fr"), headingPitchRollDegrees.Heading, TestCase.HeadingRadians), headingPitchRollDegrees.Heading, TestCase.HeadingRadians, FloatTolerance);
+						TestEqual(FString::Printf(TEXT("Calculated Pitch %7.4fr = Desired Pitch %7.4fr"), headingPitchRollDegrees.Pitch, TestCase.PitchRadians), headingPitchRollDegrees.Pitch, TestCase.PitchRadians, FloatTolerance);
+						TestEqual(FString::Printf(TEXT("Calculated Roll %7.4fr = Desired Roll %7.4fr"), headingPitchRollDegrees.Roll, TestCase.RollRadians), headingPitchRollDegrees.Roll, TestCase.RollRadians, FloatTolerance);
 				   });
 			}
 		});
@@ -114,57 +123,66 @@ void FUnitConversionSpec::Define()
 			for(int Index = 0; Index < NumTestCases; Index++)
 			{
 				FTestCase TestCase = TestCases[Index];
+
+				FHeadingPitchRoll headingPitchRollDegrees;
+				headingPitchRollDegrees.Heading = TestCase.HeadingDegrees;
+				headingPitchRollDegrees.Pitch = TestCase.PitchDegrees;
+				headingPitchRollDegrees.Roll = TestCase.RollDegrees;
+
+				FHeadingPitchRoll headingPitchRollRadians;
+				headingPitchRollRadians.Heading = TestCase.HeadingRadians;
+				headingPitchRollRadians.Pitch = TestCase.PitchRadians;
+				headingPitchRollRadians.Roll = TestCase.RollRadians;
+
+				FPsiThetaPhi psiThetaPhi;
+
 				It(FString::Printf(
 					   TEXT(
 						   "should calculate Psi->%7.4f°, Theta->%7.4f°, and Phi->%7.4f° from Heading=%7.4f°, Pitch=%7.4f°, and Roll=%7.4f° at Latitude=%7.4f° and Longitude=%7.4f°"),
 					   TestCase.PsiDegrees, TestCase.ThetaDegrees, TestCase.PhiDegrees, TestCase.HeadingDegrees,
 					   TestCase.PitchDegrees, TestCase.RollDegrees, TestCase.LatitudeDegrees, TestCase.LongitudeDegrees).Replace(TEXT("."), TEXT(",")),
-				   [this, TestCase]()
+				   [this, TestCase, headingPitchRollDegrees, &psiThetaPhi]()
 				   {
-						float Psi, Theta, Phi;
-						UUEOpenDIS_BPFL::CalculatePsiThetaPhiDegreesFromHeadingPitchRollDegreesAtLatLon(TestCase.HeadingDegrees, TestCase.PitchDegrees, TestCase.RollDegrees, TestCase.LatitudeDegrees, TestCase.LongitudeDegrees, Psi, Theta, Phi);
-						TestEqual(FString::Printf(TEXT("Calculated Psi %7.4f° = Desired Psi %7.4f°"), Psi, TestCase.PsiDegrees), Psi, TestCase.PsiDegrees, FloatTolerance);
-						TestEqual(FString::Printf(TEXT("Calculated Theta %7.4f° = Desired Theta %7.4f°"), Theta, TestCase.ThetaDegrees), Theta, TestCase.ThetaDegrees, FloatTolerance);
-						TestEqual(FString::Printf(TEXT("Calculated Phi %7.4f° = Desired Phi %7.4f°"), Phi, TestCase.PhiDegrees), Phi, TestCase.PhiDegrees, FloatTolerance);
+						UUEOpenDIS_BPFL::CalculatePsiThetaPhiDegreesFromHeadingPitchRollDegreesAtLatLon(headingPitchRollDegrees, TestCase.LatitudeDegrees, TestCase.LongitudeDegrees, psiThetaPhi);
+						TestEqual(FString::Printf(TEXT("Calculated Psi %7.4f° = Desired Psi %7.4f°"), psiThetaPhi.Psi, TestCase.PsiDegrees), psiThetaPhi.Psi, TestCase.PsiDegrees, FloatTolerance);
+						TestEqual(FString::Printf(TEXT("Calculated Theta %7.4f° = Desired Theta %7.4f°"), psiThetaPhi.Theta, TestCase.ThetaDegrees), psiThetaPhi.Theta, TestCase.ThetaDegrees, FloatTolerance);
+						TestEqual(FString::Printf(TEXT("Calculated Phi %7.4f° = Desired Phi %7.4f°"), psiThetaPhi.Phi, TestCase.PhiDegrees), psiThetaPhi.Phi, TestCase.PhiDegrees, FloatTolerance);
 					});
 				It(FString::Printf(
 					TEXT(
 						"should calculate Psi->%7.4f°, Theta->%7.4f°, and Phi->%7.4f° from Heading=%7.4fr, Pitch=%7.4fr, and Roll=%7.4fr at Latitude=%7.4f° and Longitude=%7.4f°"),
 					TestCase.PsiDegrees, TestCase.ThetaDegrees, TestCase.PhiDegrees, TestCase.HeadingRadians,
 					TestCase.PitchRadians, TestCase.RollRadians, TestCase.LatitudeDegrees, TestCase.LongitudeDegrees).Replace(TEXT("."), TEXT(",")),
-					[this, TestCase]()
+					[this, TestCase, headingPitchRollRadians, &psiThetaPhi]()
 					{
-						float Psi, Theta, Phi;
-						UUEOpenDIS_BPFL::CalculatePsiThetaPhiDegreesFromHeadingPitchRollRadiansAtLatLon(TestCase.HeadingRadians, TestCase.PitchRadians, TestCase.RollRadians, TestCase.LatitudeDegrees, TestCase.LongitudeDegrees, Psi, Theta, Phi);
-						TestEqual(FString::Printf(TEXT("Calculated Psi %7.4f° = Desired Psi %7.4f°"), Psi, TestCase.PsiDegrees), Psi, TestCase.PsiDegrees, FloatTolerance);
-						TestEqual(FString::Printf(TEXT("Calculated Theta %7.4f° = Desired Theta %7.4f°"), Theta, TestCase.ThetaDegrees), Theta, TestCase.ThetaDegrees, FloatTolerance);
-						TestEqual(FString::Printf(TEXT("Calculated Phi %7.4f° = Desired Phi %7.4f°"), Phi, TestCase.PhiDegrees), Phi, TestCase.PhiDegrees, FloatTolerance);
+						UUEOpenDIS_BPFL::CalculatePsiThetaPhiDegreesFromHeadingPitchRollRadiansAtLatLon(headingPitchRollRadians, TestCase.LatitudeDegrees, TestCase.LongitudeDegrees, psiThetaPhi);
+						TestEqual(FString::Printf(TEXT("Calculated Psi %7.4f° = Desired Psi %7.4f°"), psiThetaPhi.Psi, TestCase.PsiDegrees), psiThetaPhi.Psi, TestCase.PsiDegrees, FloatTolerance);
+						TestEqual(FString::Printf(TEXT("Calculated Theta %7.4f° = Desired Theta %7.4f°"), psiThetaPhi.Theta, TestCase.ThetaDegrees), psiThetaPhi.Theta, TestCase.ThetaDegrees, FloatTolerance);
+						TestEqual(FString::Printf(TEXT("Calculated Phi %7.4f° = Desired Phi %7.4f°"), psiThetaPhi.Phi, TestCase.PhiDegrees), psiThetaPhi.Phi, TestCase.PhiDegrees, FloatTolerance);
 					});
 				It(FString::Printf(
 					TEXT(
 						"should calculate Psi->%7.4fr, Theta->%7.4fr, and Phi->%7.4fr from Heading=%7.4f°, Pitch=%7.4f°, and Roll=%7.4f° at Latitude=%7.4f° and Longitude=%7.4f°"),
 					TestCase.PsiRadians, TestCase.ThetaRadians, TestCase.PhiRadians, TestCase.HeadingDegrees,
 					TestCase.PitchDegrees, TestCase.RollDegrees, TestCase.LatitudeDegrees, TestCase.LongitudeDegrees).Replace(TEXT("."), TEXT(",")),
-					[this, TestCase]()
+					[this, TestCase, headingPitchRollDegrees, &psiThetaPhi]()
 					{
-						float Psi, Theta, Phi;
-						UUEOpenDIS_BPFL::CalculatePsiThetaPhiRadiansFromHeadingPitchRollDegreesAtLatLon(TestCase.HeadingDegrees, TestCase.PitchDegrees, TestCase.RollDegrees, TestCase.LatitudeDegrees, TestCase.LongitudeDegrees, Psi, Theta, Phi);
-						TestEqual(FString::Printf(TEXT("Calculated Psi %7.4fr = Desired Psi %7.4fr"), Psi, TestCase.PsiRadians), Psi, TestCase.PsiRadians, FloatTolerance);
-						TestEqual(FString::Printf(TEXT("Calculated Theta %7.4fr = Desired Theta %7.4fr"), Theta, TestCase.ThetaRadians), Theta, TestCase.ThetaRadians, FloatTolerance);
-						TestEqual(FString::Printf(TEXT("Calculated Phi %7.4fr = Desired Phi %7.4fr"), Phi, TestCase.PhiRadians), Phi, TestCase.PhiRadians, FloatTolerance);
+						UUEOpenDIS_BPFL::CalculatePsiThetaPhiRadiansFromHeadingPitchRollDegreesAtLatLon(headingPitchRollDegrees, TestCase.LatitudeDegrees, TestCase.LongitudeDegrees, psiThetaPhi);
+						TestEqual(FString::Printf(TEXT("Calculated Psi %7.4fr = Desired Psi %7.4fr"), psiThetaPhi.Psi, TestCase.PsiRadians), psiThetaPhi.Psi, TestCase.PsiRadians, FloatTolerance);
+						TestEqual(FString::Printf(TEXT("Calculated Theta %7.4fr = Desired Theta %7.4fr"), psiThetaPhi.Theta, TestCase.ThetaRadians), psiThetaPhi.Theta, TestCase.ThetaRadians, FloatTolerance);
+						TestEqual(FString::Printf(TEXT("Calculated Phi %7.4fr = Desired Phi %7.4fr"), psiThetaPhi.Phi, TestCase.PhiRadians), psiThetaPhi.Phi, TestCase.PhiRadians, FloatTolerance);
 					});
 				It(FString::Printf(
 					TEXT(
 						"should calculate Psi->%7.4fr, Theta->%7.4fr, and Phi->%7.4fr from Heading=%7.4fr, Pitch=%7.4fr, and Roll=%7.4fr at Latitude=%7.4f° and Longitude=%7.4f°"),
 					TestCase.PsiRadians, TestCase.ThetaRadians, TestCase.PhiRadians, TestCase.HeadingRadians,
 					TestCase.PitchRadians, TestCase.RollRadians, TestCase.LatitudeDegrees, TestCase.LongitudeDegrees).Replace(TEXT("."), TEXT(",")),
-					[this, TestCase]()
+					[this, TestCase, headingPitchRollRadians, &psiThetaPhi]()
 					{
-						float Psi, Theta, Phi;
-						UUEOpenDIS_BPFL::CalculatePsiThetaPhiRadiansFromHeadingPitchRollRadiansAtLatLon(TestCase.HeadingRadians, TestCase.PitchRadians, TestCase.RollRadians, TestCase.LatitudeDegrees, TestCase.LongitudeDegrees, Psi, Theta, Phi);
-						TestEqual(FString::Printf(TEXT("Calculated Psi %7.4fr = Desired Psi %7.4fr"), Psi, TestCase.PsiRadians), Psi, TestCase.PsiRadians, FloatTolerance);
-						TestEqual(FString::Printf(TEXT("Calculated Theta %7.4fr = Desired Theta %7.4fr"), Theta, TestCase.ThetaRadians), Theta, TestCase.ThetaRadians, FloatTolerance);
-						TestEqual(FString::Printf(TEXT("Calculated Phi %7.4fr = Desired Phi %7.4fr"), Phi, TestCase.PhiRadians), Phi, TestCase.PhiRadians, FloatTolerance);
+						UUEOpenDIS_BPFL::CalculatePsiThetaPhiRadiansFromHeadingPitchRollRadiansAtLatLon(headingPitchRollRadians, TestCase.LatitudeDegrees, TestCase.LongitudeDegrees, psiThetaPhi);
+						TestEqual(FString::Printf(TEXT("Calculated Psi %7.4fr = Desired Psi %7.4fr"), psiThetaPhi.Psi, TestCase.PsiRadians), psiThetaPhi.Psi, TestCase.PsiRadians, FloatTolerance);
+						TestEqual(FString::Printf(TEXT("Calculated Theta %7.4fr = Desired Theta %7.4fr"), psiThetaPhi.Theta, TestCase.ThetaRadians), psiThetaPhi.Theta, TestCase.ThetaRadians, FloatTolerance);
+						TestEqual(FString::Printf(TEXT("Calculated Phi %7.4fr = Desired Phi %7.4fr"), psiThetaPhi.Phi, TestCase.PhiRadians), psiThetaPhi.Phi, TestCase.PhiRadians, FloatTolerance);
 				   });
 			}
 		});
@@ -174,17 +192,24 @@ void FUnitConversionSpec::Define()
 			for (int Index = 0; Index < NumTestCases; Index++)
 			{
 				FTestCase TestCase = TestCases[Index];
+
+				FEarthCenteredEarthFixedDouble ECEF;
+				ECEF.X = TestCase.EcefX;
+				ECEF.Y = TestCase.EcefY;
+				ECEF.Z = TestCase.EcefZ;
+
+				FLatLonHeightDouble latLonHeight;
+
 				It(FString::Printf(
 					   TEXT(
 						   "should calculate Latitude->%7.4f°, Longitude->%7.4f°, and Height->%7.4fm from ECEF X=%14.8f, Y=%14.8f, and Z=%14.8f"),
 					   TestCase.LatitudeDegrees, TestCase.LongitudeDegrees, TestCase.HeightMeters, TestCase.EcefX,
-					   TestCase.EcefY, TestCase.EcefZ).Replace(TEXT("."), TEXT(",")), [this, TestCase]()
+					   TestCase.EcefY, TestCase.EcefZ).Replace(TEXT("."), TEXT(",")), [this, TestCase, ECEF, &latLonHeight]()
 				   {
-						double Latitude, Longitude, Height;
-						UUEOpenDIS_BPFL::CalculateLatLonHeightFromEcefXYZ(TestCase.EcefX, TestCase.EcefY, TestCase.EcefZ, Latitude, Longitude, Height);
-						TestEqual(FString::Printf(TEXT("Calculated Latitude %7.4f° = Desired Latitude %7.4f°"), Latitude, TestCase.LatitudeDegrees), Latitude, TestCase.LatitudeDegrees, 1.05);
-						TestEqual(FString::Printf(TEXT("Calculated Longitude %7.4f° = Desired Longitude %7.4f°"), Longitude, TestCase.LongitudeDegrees), Longitude, TestCase.LongitudeDegrees, 1.05);
-						TestEqual(FString::Printf(TEXT("Calculated Height %7.4fm = Desired Height %7.4fm"), Height, TestCase.HeightMeters), Height, TestCase.HeightMeters, 23);
+						UUEOpenDIS_BPFL::CalculateLatLonHeightFromEcefXYZ(ECEF, latLonHeight);
+						TestEqual(FString::Printf(TEXT("Calculated Latitude %7.4f° = Desired Latitude %7.4f°"), latLonHeight.Latitude, TestCase.LatitudeDegrees), latLonHeight.Latitude, TestCase.LatitudeDegrees, 1.05);
+						TestEqual(FString::Printf(TEXT("Calculated Longitude %7.4f° = Desired Longitude %7.4f°"), latLonHeight.Longitude, TestCase.LongitudeDegrees), latLonHeight.Longitude, TestCase.LongitudeDegrees, 1.05);
+						TestEqual(FString::Printf(TEXT("Calculated Height %7.4fm = Desired Height %7.4fm"), latLonHeight.Height, TestCase.HeightMeters), latLonHeight.Height, TestCase.HeightMeters, 23);
 				   });
 			}
 		});
@@ -194,17 +219,24 @@ void FUnitConversionSpec::Define()
 			for (int Index = 0; Index < NumTestCases; Index++)
 			{
 				FTestCase TestCase = TestCases[Index];
+
+				FLatLonHeightDouble latLonHeight;
+				latLonHeight.Latitude = TestCase.LatitudeDegrees;
+				latLonHeight.Longitude = TestCase.LongitudeDegrees;
+				latLonHeight.Height = TestCase.HeightMeters;
+
+				FEarthCenteredEarthFixedDouble ECEF;
+
 				It(FString::Printf(
 					   TEXT(
 						   "should calculate EcefX->%14.8f, EcefY->%14.8f, and Height->%14.8f from Latitude=%7.4f°, Longitude=%7.4f°, and Height=%7.4fm"),
 					   TestCase.EcefX, TestCase.EcefY, TestCase.EcefZ, TestCase.LatitudeDegrees,
-					   TestCase.LongitudeDegrees, TestCase.HeightMeters).Replace(TEXT("."), TEXT(",")), [this, TestCase]()
+					   TestCase.LongitudeDegrees, TestCase.HeightMeters).Replace(TEXT("."), TEXT(",")), [this, TestCase, latLonHeight, &ECEF]()
 				   {
-						double EcefX, EcefY, EcefZ;
-						UUEOpenDIS_BPFL::CalculateEcefXYZFromLatLonHeight(TestCase.LatitudeDegrees, TestCase.LongitudeDegrees, TestCase.HeightMeters, EcefX, EcefY, EcefZ);
-						TestEqual(FString::Printf(TEXT("Calculated EcefX %14.8f = Desired EcefX %14.8f"), EcefX, TestCase.EcefX), EcefX, TestCase.EcefX, 10);
-						TestEqual(FString::Printf(TEXT("Calculated EcefY %14.8f = Desired EcefY %14.8f"), EcefY, TestCase.EcefY), EcefY, TestCase.EcefY, 10);
-						TestEqual(FString::Printf(TEXT("Calculated EcefZ %14.8f = Desired EcefZ %14.8f"), EcefZ, TestCase.EcefZ), EcefZ, TestCase.EcefZ, 10);
+						UUEOpenDIS_BPFL::CalculateEcefXYZFromLatLonHeight(latLonHeight, ECEF);
+						TestEqual(FString::Printf(TEXT("Calculated EcefX %14.8f = Desired EcefX %14.8f"), ECEF.X, TestCase.EcefX), ECEF.X, TestCase.EcefX, 10);
+						TestEqual(FString::Printf(TEXT("Calculated EcefY %14.8f = Desired EcefY %14.8f"), ECEF.Y, TestCase.EcefY), ECEF.Y, TestCase.EcefY, 10);
+						TestEqual(FString::Printf(TEXT("Calculated EcefZ %14.8f = Desired EcefZ %14.8f"), ECEF.Z, TestCase.EcefZ), ECEF.Z, TestCase.EcefZ, 10);
 				   });
 			}
 		});

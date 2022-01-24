@@ -39,43 +39,30 @@ private:
 	 * Rotates the given East, North, and Up vectors by the given Heading and Pitch
 	 * @param HeadingDegrees The degrees from North of the facing direction (spin left and right)
 	 * @param PitchDegrees The degrees rotated about the local Y axis (front tip up and down)
-	 * @param NorthVector The vector pointing to the North
-	 * @param EastVector The vector pointing toward the East
-	 * @param DownVector The vector pointing away from the center of the Earth
+	 * @param NorthEastDownVectors The vectors pointing to the North, to the East, and toward the center of the Earth
 	 * @param OutX The x axis (forward) vector with the heading and pitch applied
 	 * @param OutY The y axis (right) vector with the heading and pitch applied
 	 * @param OutZ the z axis (up) vector with the heading and pitch applied
 	 */
-	static void ApplyHeadingPitchToNorthEastDownVector(const float HeadingDegrees, const float PitchDegrees, const FVector NorthVector, const FVector EastVector, const FVector DownVector, FVector& OutX, FVector& OutY, FVector& OutZ);
+	static void ApplyHeadingPitchToNorthEastDownVector(const float HeadingDegrees, const float PitchDegrees, const FNorthEastDown NorthEastDownVectors, FVector& OutX, FVector& OutY, FVector& OutZ);
 
 	/**
 	 * Rotates the given East, North, and Up vectors by the given Heading and Pitch
 	 * @param RollDegrees The degrees rotated about the local X axis (tilt left and right)
-	 * @param North The vector pointing toward the North
-	 * @param East The vector pointing to the East
-	 * @param Down The vector pointing toward the center of the Earth
+	 * @param NorthEastDownVectors The vectors pointing to the North, to the East, and toward the center of the Earth
 	 * @param OutX The x axis (forward) vector with the heading and pitch applied
 	 * @param OutY The y axis (right) vector with the heading and pitch applied
 	 * @param OutZ the z axis (up) vector with the heading and pitch applied
 	 */
-	static void ApplyRollToNorthEastDownVector(const float RollDegrees, const FVector North, const FVector East, const FVector Down, FVector& OutX, FVector& OutY, FVector& OutZ);
+	static void ApplyRollToNorthEastDownVector(const float RollDegrees, const FNorthEastDown NorthEastDownVectors, FVector& OutX, FVector& OutY, FVector& OutZ);
 
 public:
-	static float GetHeadingFromEuler(float Lat, float Lon, float Psi, float Theta);
-	static float GetPitchFromEuler(float Lat, float Lon, float Psi, float Theta);
-	static float GetRollFromEuler(float Lat, float Lon, float Psi, float Theta, float Phi);
-	static double GetHeadingFromEulerDouble(double Lat, double Lon, float Psi, float Theta);
-	static double GetPitchFromEulerDouble(double Lat, double Lon, float Psi, float Theta);
-	static double GetRollFromEulerDouble(double Lat, double Lon, float Psi, float Theta, float Phi);
+	static double GetHeadingFromEuler(double LatitudeRadians, double LongitudeRadians, float PsiRadians, float ThetaRadians);
+	static double GetPitchFromEuler(double LatitudeRadians, double LongitudeRadians, float PsiRadians, float ThetaRadians);
+	static double GetRollFromEuler(double LatitudeRadians, double LongitudeRadians, FPsiThetaPhi PsiThetaPhiRadians);
 
 	UFUNCTION(BlueprintCallable, Category = "OpenDIS|Unit Conversions")
-		static void EulerToENU(float LatInRad, float LonInRad, float Psi, float Theta, float Phi, FRotator& TaitBryanAnglesOut);
-	UFUNCTION(BlueprintCallable, Category = "OpenDIS|Unit Conversions")
-		static void ECEF2UE4LocationESPDU(FEntityStatePDU EntityStatePDUIn, FVector& LocationOut);
-	UFUNCTION(BlueprintCallable, Category = "OpenDIS|Unit Conversions")
-		static void ECEF2LongLatHeightESPDU(FEntityStatePDU EntityStatePDUIn, FVector& LonLatHeight);
-	UFUNCTION(BlueprintCallable, Category = "OpenDIS|Unit Conversions")
-		static void ECEF2ENU2UERotESPDU(FEntityStatePDU EntityStatePDUIn, FRotator& RotationOut);
+		static void EulerToENU(float LatInRad, float LonInRad, FPsiThetaPhi PsiThetaPhiRadians, FRotator& TaitBryanAnglesOut);
 
 	/**
 	 * Creates a 4x4 n^x matrix used for creating a rotation matrix
@@ -90,50 +77,34 @@ public:
 	static glm::dmat3x3 CreateNCrossXMatrix(glm::dvec3 NVector);
 
 	/**
-	 * Converts DIS X, Y, Z coordinates (ECEF) to Latitude, Longitude, and Height (LLH)
-	 * @param EcefX The X ECEF location
-	 * @param EcefY The Y ECEF location
-	 * @param EcefZ The Z ECEF location
-	 * @param OutLatitudeDegrees The converted latitude in degrees
-	 * @param OutLongitudeDegrees The converted longitude in degrees
-	 * @param OutHeightMeters The converted height in meters
+	 * Converts DIS X, Y, Z coordinates (ECEF) to Latitude, Longitude, and Height (LLH) all in double (64-bit) precision
+	 * @param ECEF The ECEF location
+	 * @param OutLatLonHeightDegreesMeters The converted latitude in degrees, longitude in degrees, and height in meters
 	 */
-	static void CalculateLatLonHeightFromEcefXYZ(const double EcefX, const double EcefY, const double EcefZ, double& OutLatitudeDegrees, double& OutLongitudeDegrees, double& OutHeightMeters);
+	static void CalculateLatLonHeightFromEcefXYZ(const FEarthCenteredEarthFixedDouble ECEF, FLatLonHeightDouble& OutLatLonHeightDegreesMeters);
 
 	/**
-	 * Converts DIS X, Y, Z coordinates (ECEF) to Latitude, Longitude, and Height (LLH)
-	 * @param EcefX The X ECEF location
-	 * @param EcefY The Y ECEF location
-	 * @param EcefZ The Z ECEF location
-	 * @param OutLatitudeDegrees The converted latitude in degrees
-	 * @param OutLongitudeDegrees The converted longitude in degrees
-	 * @param OutHeightMeters The converted height in meters
+	 * Converts DIS X, Y, Z coordinates (ECEF) to Latitude, Longitude, and Height (LLH) all in double (32-bit) precision
+	 * @param ECEF The ECEF location
+	 * @param OutLatLonHeightDegreesMeters The converted latitude in degrees, longitude in degrees, and height in meters
 	 */
 	UFUNCTION(BlueprintPure, Category = "OpenDIS|Unit Conversions")
-		static void CalculateLatLonHeightFromEcefXYZ(const float EcefX, const float EcefY, const float EcefZ, float& OutLatitudeDegrees, float& OutLongitudeDegrees, float& OutHeightMeters);
+		static void CalculateLatLonHeightFromEcefXYZ(const FEarthCenteredEarthFixedFloat ECEF, FLatLonHeightFloat& OutLatLonHeightDegreesMeters);
 
 	/**
-	 * Converts Latitude, Longitude, and Height (LLH) to DIS X, Y, Z coordinates (ECEF)
-	 * @param LatitudeDegrees The latitude in degrees
-	 * @param LongitudeDegrees The longitude in degrees
-	 * @param HeightMeters The height in meters
-	 * @param OutEcefX The converted X ECEF location
-	 * @param OutEcefY The converted Y ECEF location
-	 * @param OutEcefZ The converted Z ECEF location
+	 * Converts Latitude, Longitude, and Height (LLH) to DIS X, Y, Z coordinates (ECEF) all in double (64-bit) precision
+	 * @param LatLonHeightDegreesMeters The latitude in degrees, longitude in degrees, and height in meters
+	 * @param OutECEF The converted ECEF location
 	 */
-	static void CalculateEcefXYZFromLatLonHeight(const double LatitudeDegrees, const double LongitudeDegrees, const double HeightMeters, double& OutEcefX, double& OutEcefY, double& OutEcefZ);
+	static void CalculateEcefXYZFromLatLonHeight(const FLatLonHeightDouble LatLonHeightDegreesMeters, FEarthCenteredEarthFixedDouble& OutECEF);
 
 	/**
-	 * Converts Latitude, Longitude, and Height (LLH) to DIS X, Y, Z coordinates (ECEF)
-	 * @param LatitudeDegrees The latitude in degrees
-	 * @param LongitudeDegrees The longitude in degrees
-	 * @param HeightMeters The height in meters
-	 * @param OutEcefX The converted X ECEF location
-	 * @param OutEcefY The converted Y ECEF location
-	 * @param OutEcefZ The converted Z ECEF location
+	 * Converts Latitude, Longitude, and Height (LLH) to DIS X, Y, Z coordinates (ECEF) all in floating point (32-bit) precision
+	 * @param LatLonHeightDegreesMeters The latitude in degrees, longitude in degrees, and height in meters
+	 * @param OutECEF The converted ECEF location in double
 	 */
 	UFUNCTION(BlueprintPure, Category = "OpenDIS|Unit Conversions")
-		static void CalculateEcefXYZFromLatLonHeight(const float LatitudeDegrees, const float LongitudeDegrees, const float HeightMeters, float& OutEcefX, float& OutEcefY, float& OutEcefZ);
+		static void CalculateEcefXYZFromLatLonHeight(const FLatLonHeightFloat LatLonHeightDegreesMeters, FEarthCenteredEarthFixedFloat& OutECEF);
 
 	/**
 	 * Rotates the vector VectorToRotate around given axis AxisVector by Theta radians
@@ -175,181 +146,137 @@ public:
 
 	/**
 	 * Applies the given heading, pitch, and roll in degrees to the local East North Down vectors
-	 * @param HeadingDegrees The degrees from North of the facing direction (spin left and right)
-	 * @param PitchDegrees The degrees rotated about the local Y axis (front tip up and down)
-	 * @param RollDegrees The degrees rotated about the local X axis (tilt left and right)
-	 * @param NorthVector The vector pointing to the East
-	 * @param EastVector The vector pointing toward the North
-	 * @param DownVector The vector pointing away from the center of the Earth
+	 * @param HeadingPitchRollDegrees The degrees from North of the facing direction (heading), the degrees rotated about the local Y axis (pitch), and the degrees rotated about the local X axis (roll)
+	 * @param NorthEastDownVectors The vectors pointing to the North, to the East, and toward the center of the Earth
 	 * @param OutX The x axis (forward) vector with the heading and pitch applied
 	 * @param OutY The y axis (right) vector with the heading and pitch applied
 	 * @param OutZ the z axis (down) vector with the heading and pitch applied
 	 */
 	UFUNCTION(BlueprintPure, Category = "OpenDIS|Unit Conversions")
-		static void ApplyHeadingPitchRollToNorthEastDownVector(const float HeadingDegrees, const float PitchDegrees, const float RollDegrees, const FVector NorthVector, const FVector EastVector, const FVector DownVector, FVector& OutX, FVector& OutY, FVector& OutZ);
+		static void ApplyHeadingPitchRollToNorthEastDownVector(const FHeadingPitchRoll HeadingPitchRollDegrees, const FNorthEastDown NorthEastDownVectors, FVector& OutX, FVector& OutY, FVector& OutZ);
 
 	/**
 	 * Calculates the East, North, and Up vectors at given latitude and longitude.
 	 * @param LatitudeDegrees The target latitude given in degrees
 	 * @param LongitudeDegrees The target longitude given in degrees
-	 * @param NorthVector The local vector pointing east at the given latitude and longitude
-	 * @param EastVector The local vector pointing north at the given latitude and longitude
-	 * @param DownVector The local vector pointing away from the center of the Earth at the given latitude and longitude
+	 * @param OutNorthEastDownVectors The local vectors pointing North, pointing East, and toward the center of the Earth at the given latitude and longitude
 	 */
 	UFUNCTION(BlueprintPure, Category = "OpenDIS|Unit Conversions")
-		static void CalculateNorthEastDownVectorsFromLatLon(const float LatitudeDegrees, const float LongitudeDegrees, FVector& NorthVector, FVector& EastVector, FVector& DownVector);
+		static void CalculateNorthEastDownVectorsFromLatLon(const float LatitudeDegrees, const float LongitudeDegrees, FNorthEastDown& OutNorthEastDownVectors);
 
 	/**
 	 * Calculates the East, North, and Up vectors at given latitude and longitude.
+	 * @param NorthEastDownVectors The vectors pointing to the North, to the East, and toward the center of the Earth
 	 * @param LatitudeDegrees The target latitude given in degrees
-	 * @param LongitudeDegrees The target longitude given in degrees
-	 * @param NorthVector The local vector pointing east at the given latitude and longitude
-	 * @param EastVector The local vector pointing north at the given latitude and longitude
-	 * @param DownVector The local vector pointing away from the center of the Earth at the given latitude and longitude
+	 * @param LongitudeDegrees The target longitude given in degrees	 
 	 */
 	UFUNCTION(BlueprintPure, Category = "OpenDIS|Unit Conversions")
-		static void CalculateLatLongFromNorthEastDownVectors(FVector NorthVector, FVector EastVector, FVector DownVector, float& LatitudeDegrees, float& LongitudeDegrees);
+		static void CalculateLatLongFromNorthEastDownVectors(FNorthEastDown NorthEastDownVectors, float& LatitudeDegrees, float& LongitudeDegrees);
 
 	/**
 	 * Calculates the DIS orientation values Psi, Theta, and Phi in degrees with the given Heading, Pitch, and Roll in degrees at the given Latitude and Longitude.
-	 * @param HeadingDegrees The degrees (-180 to 180) from North of the facing direction (spin left and right)
-	 * @param PitchDegrees The degrees rotated about the local Y axis (front tip up and down)
-	 * @param RollDegrees The degrees rotated about the local X axis (tilt left and right)
+	 * @param HeadingPitchRollDegrees The degrees from North of the facing direction (heading), the degrees rotated about the local Y axis (pitch), and the degrees rotated about the local X axis (roll)
 	 * @param LatitudeDegrees The target latitude given in degrees
 	 * @param LongitudeDegrees The target longitude given in degrees
-	 * @param PsiDegrees The rotation about the Z axis in degrees
-	 * @param ThetaDegrees The rotation about the Y axis in degrees
-	 * @param PhiDegrees The rotation about the X axis in degrees
+	 * @param PsiThetaPhiDegrees The rotation about the Z axis in degrees (Psi),the rotation about the Y axis in degrees (Theta), the rotation about the X axis in degrees (Phi)
 	 */
 	UFUNCTION(BlueprintPure, Category = "OpenDIS|Unit Conversions")
-		static void CalculatePsiThetaPhiDegreesFromHeadingPitchRollDegreesAtLatLon(const float HeadingDegrees, const float PitchDegrees, const float RollDegrees, const float LatitudeDegrees, const float LongitudeDegrees, float& PsiDegrees, float& ThetaDegrees, float& PhiDegrees);
+		static void CalculatePsiThetaPhiDegreesFromHeadingPitchRollDegreesAtLatLon(const FHeadingPitchRoll HeadingPitchRollDegrees, const float LatitudeDegrees, const float LongitudeDegrees, FPsiThetaPhi& PsiThetaPhiDegrees);
 
 	/**
 	 * Calculates the DIS orientation values Psi, Theta, and Phi in radians with the given Heading, Pitch, and Roll in radians at the given Latitude and Longitude.
-	 * @param HeadingRadians The radians (-pi to pi) from North of the facing direction (spin left and right)
-	 * @param PitchRadians The radians rotated about the local Y axis (front tip up and down)
-	 * @param RollRadians The radians rotated about the local X axis (tilt left and right)
+	 * @param HeadingPitchRollRadians The radians from North of the facing direction (heading), the radians rotated about the local Y axis (pitch), and the radians rotated about the local X axis (roll)
 	 * @param LatitudeDegrees The target latitude given in degrees
 	 * @param LongitudeDegrees The target longitude given in degrees
-	 * @param PsiRadians The rotation about the Z axis in radians
-	 * @param ThetaRadians The rotation about the Y axis in radians
-	 * @param PhiRadians The rotation about the X axis in radians
+	 * @param PsiThetaPhiRadians The rotation about the Z axis in radians (Psi),the rotation about the Y axis in radians (Theta), the rotation about the X axis in radians (Phi)
 	 */
 	UFUNCTION(BlueprintPure, Category = "OpenDIS|Unit Conversions")
-		static void CalculatePsiThetaPhiRadiansFromHeadingPitchRollRadiansAtLatLon(const float HeadingRadians, const float PitchRadians, const float RollRadians, const float LatitudeDegrees, const float LongitudeDegrees, float& PsiRadians, float& ThetaRadians, float& PhiRadians);
+		static void CalculatePsiThetaPhiRadiansFromHeadingPitchRollRadiansAtLatLon(const FHeadingPitchRoll HeadingPitchRollRadians, const float LatitudeDegrees, const float LongitudeDegrees, FPsiThetaPhi& PsiThetaPhiRadians);
 
 	/**
 	 * Calculates the DIS orientation values Psi, Theta, and Phi in radians with the given Heading, Pitch, and Roll in degrees at the given Latitude and Longitude.
-	 * @param HeadingDegrees The degrees (-180 to 180) from North of the facing direction (spin left and right)
-	 * @param PitchDegrees The degrees rotated about the local Y axis (front tip up and down)
-	 * @param RollDegrees The degrees rotated about the local X axis (tilt left and right)
+	 * @param HeadingPitchRollDegrees The degrees from North of the facing direction (heading), the degrees rotated about the local Y axis (pitch), and the degrees rotated about the local X axis (roll)
 	 * @param LatitudeDegrees The target latitude given in degrees
 	 * @param LongitudeDegrees The target longitude given in degrees
-	 * @param PsiRadians The rotation about the Z axis in radians
-	 * @param ThetaRadians The rotation about the Y axis in radians
-	 * @param PhiRadians The rotation about the X axis in radians
+	 * @param PsiThetaPhiRadians The rotation about the Z axis in radians (Psi),the rotation about the Y axis in radians (Theta), the rotation about the X axis in radians (Phi)
 	 */
 	UFUNCTION(BlueprintPure, Category = "OpenDIS|Unit Conversions")
-		static void CalculatePsiThetaPhiRadiansFromHeadingPitchRollDegreesAtLatLon(const float HeadingDegrees, const float PitchDegrees, const float RollDegrees, const float LatitudeDegrees, const float LongitudeDegrees, float& PsiRadians, float& ThetaRadians, float& PhiRadians);
+		static void CalculatePsiThetaPhiRadiansFromHeadingPitchRollDegreesAtLatLon(const FHeadingPitchRoll HeadingPitchRollDegrees, const float LatitudeDegrees, const float LongitudeDegrees, FPsiThetaPhi& PsiThetaPhiRadians);
 
 	/**
 	 * Calculates the DIS orientation values Psi, Theta, and Phi in degrees with the given Heading, Pitch, and Roll in radians at the given Latitude and Longitude.
-	 * @param HeadingRadians The radians (-pi to pi) from North of the facing direction (spin left and right)
-	 * @param PitchRadians The radians rotated about the local Y axis (front tip up and down)
-	 * @param RollRadians The radians rotated about the local X axis (tilt left and right)
+	 * @param HeadingPitchRollRadians The radians from North of the facing direction (heading), the radians rotated about the local Y axis (pitch), and the radians rotated about the local X axis (roll)
 	 * @param LatitudeDegrees The target latitude given in degrees
 	 * @param LongitudeDegrees The target longitude given in degrees
-	 * @param PsiDegrees The rotation about the Z axis in degrees
-	 * @param ThetaDegrees The rotation about the Y axis in degrees
-	 * @param PhiDegrees The rotation about the X axis in degrees
+	 * @param PsiThetaPhiDegrees The rotation about the Z axis in degrees (Psi),the rotation about the Y axis in degrees (Theta), the rotation about the X axis in degrees (Phi)
 	 */
 	UFUNCTION(BlueprintPure, Category = "OpenDIS|Unit Conversions")
-		static void CalculatePsiThetaPhiDegreesFromHeadingPitchRollRadiansAtLatLon(const float HeadingRadians, const float PitchRadians, const float RollRadians, const float LatitudeDegrees, const float LongitudeDegrees, float& PsiDegrees, float& ThetaDegrees, float& PhiDegrees);
+		static void CalculatePsiThetaPhiDegreesFromHeadingPitchRollRadiansAtLatLon(const FHeadingPitchRoll HeadingPitchRollRadians, const float LatitudeDegrees, const float LongitudeDegrees, FPsiThetaPhi& PsiThetaPhiDegrees);
 
 	/**
 	 * Calculates the Heading, Pitch, and Roll in degrees from the given DIS orientation values Psi, Theta, and Phi in degrees at the given Latitude and Longitude.
-	 * @param PsiDegrees The rotation about the Z axis in degrees
-	 * @param ThetaDegrees The rotation about the Y axis in degrees
-	 * @param PhiDegrees The rotation about the X axis in degrees
+	 * @param PsiThetaPhiDegrees The rotation about the Z axis in degrees (Psi),the rotation about the Y axis in degrees (Theta), the rotation about the X axis in degrees (Phi)
 	 * @param LatitudeDegrees The target latitude given in degrees
 	 * @param LongitudeDegrees The target longitude given in degrees
-	 * @param HeadingDegrees The degrees (-180 to 180) from North of the facing direction (spin left and right)
-	 * @param PitchDegrees The degrees rotated about the local Y axis (front tip up and down)
-	 * @param RollDegrees The degrees rotated about the local X axis (tilt left and right)
+	 * @param HeadingPitchRollDegrees The degrees from North of the facing direction (heading), the degrees rotated about the local Y axis (pitch), and the degrees rotated about the local X axis (roll)
 	 */
 	UFUNCTION(BlueprintPure, Category = "OpenDIS|Unit Conversions")
-		static void CalculateHeadingPitchRollDegreesFromPsiThetaPhiDegreesAtLatLon(const float PsiDegrees, const float ThetaDegrees, const float PhiDegrees, const float LatitudeDegrees, const float LongitudeDegrees, float& HeadingDegrees, float& PitchDegrees, float& RollDegrees);
+		static void CalculateHeadingPitchRollDegreesFromPsiThetaPhiDegreesAtLatLon(const FPsiThetaPhi PsiThetaPhiDegrees, const float LatitudeDegrees, const float LongitudeDegrees, FHeadingPitchRoll& HeadingPitchRollDegrees);
 
 	/**
 	 * Calculates the Heading, Pitch, and Roll in radians from the given DIS orientation values Psi, Theta, and Phi in radians at the given Latitude and Longitude.
-	 * @param PsiRadians The rotation about the Z axis in radians
-	 * @param ThetaRadians The rotation about the Y axis in radians
-	 * @param PhiRadians The rotation about the X axis in radians
+	 * @param PsiThetaPhiRadians The rotation about the Z axis in radians (Psi),the rotation about the Y axis in radians (Theta), the rotation about the X axis in radians (Phi)
 	 * @param LatitudeDegrees The target latitude given in degrees
 	 * @param LongitudeDegrees The target longitude given in degrees
-	 * @param HeadingRadians The radians (-pi to pi) from North of the facing direction (spin left and right)
-	 * @param PitchRadians The radians rotated about the local Y axis (front tip up and down)
-	 * @param RollRadians The radians rotated about the local X axis (tilt left and right)
+	 * @param HeadingPitchRollRadians The radians from North of the facing direction (heading), the radians rotated about the local Y axis (pitch), and the radians rotated about the local X axis (roll)
 	 */
 	UFUNCTION(BlueprintPure, Category = "OpenDIS|Unit Conversions")
-		static void CalculateHeadingPitchRollRadiansFromPsiThetaPhiRadiansAtLatLon(const float PsiRadians, const float ThetaRadians, const float PhiRadians, const float LatitudeDegrees, const float LongitudeDegrees, float& HeadingRadians, float& PitchRadians, float& RollRadians);
+		static void CalculateHeadingPitchRollRadiansFromPsiThetaPhiRadiansAtLatLon(const FPsiThetaPhi PsiThetaPhiRadians, const float LatitudeDegrees, const float LongitudeDegrees, FHeadingPitchRoll& HeadingPitchRollRadians);
 
 	/**
 	 * Calculates the Heading, Pitch, and Roll in degrees from the given DIS orientation values Psi, Theta, and Phi in radians at the given Latitude and Longitude.
-	 * @param PsiRadians The rotation about the Z axis in radians
-	 * @param ThetaRadians The rotation about the Y axis in radians
-	 * @param PhiRadians The rotation about the X axis in radians
+	 * @param PsiThetaPhiRadians The rotation about the Z axis in radians (Psi),the rotation about the Y axis in radians (Theta), the rotation about the X axis in radians (Phi)
 	 * @param LatitudeDegrees The target latitude given in degrees
 	 * @param LongitudeDegrees The target longitude given in degrees
-	 * @param HeadingDegrees The degrees (-180 to 180) from North of the facing direction (spin left and right)
-	 * @param PitchDegrees The degrees rotated about the local Y axis (front tip up and down)
-	 * @param RollDegrees The degrees rotated about the local X axis (tilt left and right)
+	 * @param HeadingPitchRollDegrees The degrees from North of the facing direction (heading), the degrees rotated about the local Y axis (pitch), and the degrees rotated about the local X axis (roll)
 	 */
 	UFUNCTION(BlueprintPure, Category = "OpenDIS|Unit Conversions")
-		static void CalculateHeadingPitchRollDegreesFromPsiThetaPhiRadiansAtLatLon(const float PsiRadians, const float ThetaRadians, const float PhiRadians, const float LatitudeDegrees, const float LongitudeDegrees, float& HeadingDegrees, float& PitchDegrees, float& RollDegrees);
+		static void CalculateHeadingPitchRollDegreesFromPsiThetaPhiRadiansAtLatLon(const FPsiThetaPhi PsiThetaPhiRadians, const float LatitudeDegrees, const float LongitudeDegrees, FHeadingPitchRoll& HeadingPitchRollDegrees);
 
 	/**
 	 * Calculates the Heading, Pitch, and Roll in radians from the given DIS orientation values Psi, Theta, and Phi in degrees at the given Latitude and Longitude.
-	 * @param PsiDegrees The rotation about the Z axis in degrees
-	 * @param ThetaDegrees The rotation about the Y axis in degrees
-	 * @param PhiDegrees The rotation about the X axis in degrees
+	 * @param PsiThetaPhiDegrees The rotation about the Z axis in degrees (Psi),the rotation about the Y axis in degrees (Theta), the rotation about the X axis in degrees (Phi)
 	 * @param LatitudeDegrees The target latitude given in degrees
 	 * @param LongitudeDegrees The target longitude given in degrees
-	 * @param HeadingRadians The radians (-pi to pi) from North of the facing direction (spin left and right)
-	 * @param PitchRadians The radians rotated about the local Y axis (front tip up and down)
-	 * @param RollRadians The radians rotated about the local X axis (tilt left and right)
+	 * @param HeadingPitchRollRadians The radians from North of the facing direction (heading), the radians rotated about the local Y axis (pitch), and the radians rotated about the local X axis (roll)
 	 */
 	UFUNCTION(BlueprintPure, Category = "OpenDIS|Unit Conversions")
-		static void CalculateHeadingPitchRollRadiansFromPsiThetaPhiDegreesAtLatLon(const float PsiDegrees, const float ThetaDegrees, const float PhiDegrees, const float LatitudeDegrees, const float LongitudeDegrees, float& HeadingRadians, float& PitchRadians, float& RollRadians);
+		static void CalculateHeadingPitchRollRadiansFromPsiThetaPhiDegreesAtLatLon(const FPsiThetaPhi PsiThetaPhiDegrees, const float LatitudeDegrees, const float LongitudeDegrees, FHeadingPitchRoll& HeadingPitchRollRadians);
 
 	/**
 	 * Get Unreal rotation from a DIS entity state PDU
 	 * @param EntityStatePdu The DIS PDU struct indicating the current state of the DIS entity
-	 * @param NorthVector The unit vector pointing toward geographic North
-	 * @param EastVector The unit vector pointing toward East
-	 * @param DownVector The unit vector pointing toward the center of the Earth
+	 * @param NorthEastDownVectors The vectors pointing to the North, to the East, and toward the center of the Earth
 	 * @param EntityRotation The desired Yaw, Pitch, and Roll calculated from the given entity state
 	 */
 	UFUNCTION(BlueprintPure, Category = "OpenDIS|Unit Conversions")
-		static void GetUnrealRotationFromEntityStatePdu(const FEntityStatePDU EntityStatePdu, FVector NorthVector, FVector EastVector, FVector DownVector, FRotator& EntityRotation);
+		static void GetUnrealRotationFromEntityStatePdu(const FEntityStatePDU EntityStatePdu, FNorthEastDown NorthEastDownVectors, FRotator& EntityRotation);
 
 	/**
 	 * Gets the latitude, longitude, and height of the entity from the given ECEF values in the DIS entity state pdu
 	 * @param EntityStatePdu The DIS PDU struct indicating the current state of the DIS entity
-	 * @param EntityLocation The location of the entity as a vector where X is Latitude, Y is Longitude, and Z is Height
+	 * @param EntityLatLonHeightLocation The location of the entity as a vector where X is Latitude, Y is Longitude, and Z is Height
 	 */
 	UFUNCTION(BlueprintPure, Category = "OpenDIS|Unit Conversions")
-		static void GetEntityLocationFromEntityStatePdu(const FEntityStatePDU EntityStatePdu, FVector& EntityLocation);
+		static void GetEntityLocationFromEntityStatePdu(const FEntityStatePDU EntityStatePdu, FLatLonHeightFloat& EntityLatLonHeightLocation);
 
 	/**
 	 * Gets the latitude, longitude, height, and unreal rotation from a DIS entity state PDU
 	 * @param EntityStatePdu The DIS PDU struct indicating the current state of the DIS entity
-	 * @param NorthVector The unit vector pointing toward geographic North
-	 * @param EastVector The unit vector pointing toward East
-	 * @param DownVector The unit vector pointing toward the center of the Earth
-	 * @param EntityLocation The location of the entity as a vector where X is Latitude, Y is Longitude, and Z is Height
+	 * @param NorthEastDownVectors The vectors pointing to the North, to the East, and toward the center of the Earth
+	 * @param EntityLatLonHeightLocation The location of the entity as a vector where X is Latitude, Y is Longitude, and Z is Height
 	 * @param EntityRotation The desired Yaw, Pitch, and Roll calculated from the given entity state
 	 */
 	UFUNCTION(BlueprintPure, Category = "OpenDIS|Unit Conversions")
-		static void GetEntityLocationAndOrientation(const FEntityStatePDU EntityStatePdu, FVector NorthVector, FVector EastVector, FVector DownVector, FVector& EntityLocation, FRotator& EntityRotation);
+		static void GetEntityLocationAndOrientation(const FEntityStatePDU EntityStatePdu, FNorthEastDown NorthEastDownVectors, FLatLonHeightFloat& EntityLatLonHeightLocation, FRotator& EntityRotation);
 };

@@ -146,6 +146,243 @@ enum class EReason : uint8
 	AbortTrainingReturnToTacticalOperations
 };
 
+USTRUCT()
+struct FEarthCenteredEarthFixedDouble
+{
+	GENERATED_BODY()
+
+	UPROPERTY()
+		double X;
+	UPROPERTY()
+		double Y;
+	UPROPERTY()
+		double Z;
+
+	FEarthCenteredEarthFixedDouble()
+	{
+		X = 0;
+		Y = 0;
+		Z = 0;
+	}
+
+	/*operator FEarthCenteredEarthFixedFloat() const
+	{
+		FEarthCenteredEarthFixedFloat ECEFFloat;
+
+		ECEFFloat.X = X;
+		ECEFFloat.Y = Y;
+		ECEFFloat.Z = Z;
+
+		return ECEFFloat;
+	}*/
+};
+
+USTRUCT(BlueprintType)
+struct FEarthCenteredEarthFixedFloat
+{
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		float X;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		float Y;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		float Z;
+
+	FEarthCenteredEarthFixedFloat()
+	{
+		X = 0.0f;
+		Y = 0.0f;
+		Z = 0.0f;
+	}
+
+	/*operator FEarthCenteredEarthFixedDouble() const
+	{
+		FEarthCenteredEarthFixedDouble ECEFDouble;
+
+		ECEFDouble.X = static_cast<double>(X);
+		ECEFDouble.Y = static_cast<double>(Y);
+		ECEFDouble.Z = static_cast<double>(Z);
+
+		return ECEFDouble;
+	}*/
+};
+
+USTRUCT()
+struct FLatLonHeightDouble
+{
+	GENERATED_BODY()
+
+	UPROPERTY()
+		double Latitude;
+	UPROPERTY()
+		double Longitude;
+	UPROPERTY()
+		double Height;
+
+	FLatLonHeightDouble()
+	{
+		Latitude = 0;
+		Longitude = 0;
+		Height = 0;
+	}
+
+	/*operator FLatLonHeightFloat() const
+	{
+		FLatLonHeightFloat LLHFloat;
+
+		LLHFloat.Latitude = Latitude;
+		LLHFloat.Longitude = Longitude;
+		LLHFloat.Height = Height;
+
+		return LLHFloat;
+	}*/
+};
+
+USTRUCT(BlueprintType)
+struct FLatLonHeightFloat 
+{
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		float Latitude;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		float Longitude;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		float Height;
+
+	FLatLonHeightFloat()
+	{
+		Latitude = 0.0f;
+		Longitude = 0.0f;
+		Height = 0.0f;
+	}
+
+	/*operator FLatLonHeightDouble() const
+	{
+		FLatLonHeightDouble LLHDouble;
+
+		LLHDouble.Latitude = static_cast<double>(Latitude);
+		LLHDouble.Longitude = static_cast<double>(Longitude);
+		LLHDouble.Height = static_cast<double>(Height);
+
+		return LLHDouble;
+	}*/
+};
+
+USTRUCT(BlueprintType)
+struct FEastNorthUp
+{
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		FVector EastVector;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		FVector NorthVector;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		FVector UpVector;
+
+	FEastNorthUp()
+	{
+		NorthVector = FVector(1, 0, 0);
+		EastVector = FVector(0, 1, 0);
+		UpVector = FVector(0, 0, 1);
+	}
+
+	/*operator FNorthEastDown() const
+	{
+		FNorthEastDown NEDVectors;
+
+		NEDVectors.NorthVector = NorthVector;
+		NEDVectors.EastVector = EastVector;
+		NEDVectors.DownVector = -UpVector;
+
+		return NEDVectors;
+	}*/
+};
+
+USTRUCT(BlueprintType)
+struct FNorthEastDown
+{
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		FVector NorthVector;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		FVector EastVector;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		FVector DownVector;
+
+	FNorthEastDown()
+	{
+		NorthVector = FVector(1, 0, 0);
+		EastVector = FVector(0, 1, 0);
+		DownVector = FVector(0, 0, 1);
+	}
+
+	/*operator FEastNorthUp() const
+	{
+		FEastNorthUp ENUVectors;
+
+		ENUVectors.EastVector = EastVector;
+		ENUVectors.NorthVector = NorthVector;
+		ENUVectors.UpVector = -DownVector;
+
+		return ENUVectors;
+	}*/
+};
+
+USTRUCT(BlueprintType)
+struct FHeadingPitchRoll
+{
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		float Heading;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		float Pitch;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		float Roll;
+
+	FHeadingPitchRoll()
+	{
+		Heading = 0.0f;
+		Pitch = 0.0f;
+		Roll = 0.0f;
+	}
+};
+
+USTRUCT(BlueprintType)
+struct FPsiThetaPhi
+{
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		float Psi;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		float Theta;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		float Phi;
+
+	FPsiThetaPhi() 
+	{
+		Psi = 0.0f;
+		Theta = 0.0f;
+		Phi = 0.0f;
+	}
+};
+
+USTRUCT(BlueprintType)
+struct FWorldOrigin
+{
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		FLatLonHeightFloat WorldOriginLLH;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		FEastNorthUp WorldOriginENU;
+};
+
 USTRUCT(BlueprintType)
 struct FClockTime
 {
@@ -385,10 +622,13 @@ struct FEntityStatePDU
 		FEntityID EntityID;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		EForceID ForceID;
+	/** The location of the entity in ECEF - double (64-bit) precision */
 	UPROPERTY()
 		TArray<double> EntityLocationDouble;
+	/** The location of the entity in ECEF - floating point (32-bit) precision */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		FVector EntityLocation;
+	/** The orientation of the entity in Psi (Yaw), Theta (Pitch), Phi (Roll) - in radians */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		FRotator EntityOrientation;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
@@ -436,10 +676,13 @@ struct FEntityStateUpdatePDU
 		EPDUType PduType;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		FEntityID EntityID;
+	/** The location of the entity in ECEF - double (64-bit) precision */
 	UPROPERTY()
 		TArray<double> EntityLocationDouble;
+	/** The location of the entity in ECEF - floating point (32-bit) precision */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		FVector EntityLocation;
+	/** The orientation of the entity in Psi (Yaw), Theta (Pitch), Phi (Roll) - in radians */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		FRotator EntityOrientation;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
