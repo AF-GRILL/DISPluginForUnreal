@@ -445,17 +445,18 @@ void UUEOpenDIS_BPFL::GetUnrealRotationFromEntityStatePdu(const FEntityStatePDU 
 	EntityRotation.Yaw = headingPitchRoll.Heading;
 }
 
-void UUEOpenDIS_BPFL::GetEntityLocationFromEntityStatePdu(const FEntityStatePDU EntityStatePdu, const FLatLonHeightFloat OriginLatLonAlt, const FNorthEastDown OriginNorthEastDown, FVector& EntityLocation, FLatLonHeightFloat& EntityLatLonHeightLocation)
+void UUEOpenDIS_BPFL::GetEntityLocationFromEntityStatePdu(const FEntityStatePDU EntityStatePdu, const FLatLonHeightFloat OriginLatLonAlt, const FNorthEastDown OriginNorthEastDown, FVector& EntityLocation)
 {
 	auto EntityLocationDouble = FEarthCenteredEarthFixedDouble(EntityStatePdu.EntityLocationDouble[0], EntityStatePdu.EntityLocationDouble[1], EntityStatePdu.EntityLocationDouble[2]);
 	FLatLonHeightDouble LatLonHeightDouble;
 	CalculateLatLonHeightFromEcefXYZ(EntityLocationDouble, LatLonHeightDouble);
 
-	// Convert longitude difference to meters
-	auto EntityNorthDistance = (LatLonHeightDouble.Longitude - OriginLatLonAlt.Longitude) * (10000 / 90.) * 1000;
-	// Convert latitude difference to meters
-	auto EntityEastDistance = (LatLonHeightDouble.Latitude - OriginLatLonAlt.Latitude) * (10000 / 90.) * 1000;
-	auto EntityUpDistance = LatLonHeightDouble.Height - OriginLatLonAlt.Height;
+	// Multiply by 100 to convert from meters to unreal units (cm)
+	// Convert longitude difference to cm
+	auto EntityNorthDistance = (LatLonHeightDouble.Longitude - OriginLatLonAlt.Longitude) * (10000 / 90.) * 1000 * 100;
+	// Convert latitude difference to cm
+	auto EntityEastDistance = (LatLonHeightDouble.Latitude - OriginLatLonAlt.Latitude) * (10000 / 90.) * 1000 * 100;
+	auto EntityUpDistance = (LatLonHeightDouble.Height * 100) - OriginLatLonAlt.Height;
 	FVector EntityNorthVector, EntityEastVector, EntityUpVector;
 	EntityNorthVector = OriginNorthEastDown.NorthVector * EntityNorthDistance;
 	EntityEastVector = OriginNorthEastDown.EastVector * EntityEastDistance;
@@ -464,8 +465,8 @@ void UUEOpenDIS_BPFL::GetEntityLocationFromEntityStatePdu(const FEntityStatePDU 
 	EntityLocation = EntityNorthVector + EntityEastVector + EntityUpVector;
 }
 
-void UUEOpenDIS_BPFL::GetEntityLocationAndOrientation(const FEntityStatePDU EntityStatePdu, const FLatLonHeightFloat OriginLatLonAlt, FNorthEastDown NorthEastDownVectors, FVector& EntityLocation, FLatLonHeightFloat& EntityLatLonHeightLocation, FRotator& EntityRotation)
+void UUEOpenDIS_BPFL::GetEntityLocationAndOrientation(const FEntityStatePDU EntityStatePdu, const FLatLonHeightFloat OriginLatLonAlt, FNorthEastDown NorthEastDownVectors, FVector& EntityLocation, FRotator& EntityRotation)
 {
-	GetEntityLocationFromEntityStatePdu(EntityStatePdu, OriginLatLonAlt, NorthEastDownVectors, EntityLocation, EntityLatLonHeightLocation);
+	GetEntityLocationFromEntityStatePdu(EntityStatePdu, OriginLatLonAlt, NorthEastDownVectors, EntityLocation);
 	GetUnrealRotationFromEntityStatePdu(EntityStatePdu, EntityRotation);
 }
