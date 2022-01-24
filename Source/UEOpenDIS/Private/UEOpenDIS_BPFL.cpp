@@ -331,12 +331,12 @@ void UUEOpenDIS_BPFL::ApplyHeadingPitchToNorthEastDownVector(const float Heading
 	const FVector NorthVector, const FVector EastVector, const FVector DownVector, FVector& OutX, FVector& OutY, FVector& OutZ)
 {
 	// Rotate the X and Y vectors around the Z vector by the Heading
-	RotateVectorAroundAxisByDegrees(OutX, HeadingDegrees, OutZ, OutX);
-	RotateVectorAroundAxisByDegrees(OutY, HeadingDegrees, OutZ, OutY);
+	RotateVectorAroundAxisByDegrees(NorthVector, HeadingDegrees, DownVector, OutX);
+	RotateVectorAroundAxisByDegrees(EastVector, HeadingDegrees, DownVector, OutY);
 
 	// Rotate the X and Z vectors around the Y vector by the Pitch
 	RotateVectorAroundAxisByDegrees(OutX, PitchDegrees, OutY, OutX);
-	RotateVectorAroundAxisByDegrees(OutZ, PitchDegrees, OutY, OutZ);
+	RotateVectorAroundAxisByDegrees(DownVector, PitchDegrees, OutY, OutZ);
 }
 
 // TODO: Implement this
@@ -344,15 +344,15 @@ void UUEOpenDIS_BPFL::ApplyRollToNorthEastDownVector(const float RollDegrees, co
 	const FVector East, const FVector Down, FVector& OutX, FVector& OutY, FVector& OutZ)
 {
 	// Rotate the Y and Z vectors around the X vector by the Roll
-	RotateVectorAroundAxisByDegrees(OutY, RollDegrees, OutX, OutY);
-	RotateVectorAroundAxisByDegrees(OutZ, RollDegrees, OutX, OutZ);
+	RotateVectorAroundAxisByDegrees(East, RollDegrees, North, OutY);
+	RotateVectorAroundAxisByDegrees(Down, RollDegrees, North, OutZ);
 }
 
 void UUEOpenDIS_BPFL::RotateVectorAroundAxisByRadians(glm::dvec3 VectorToRotate, double ThetaRadians, glm::dvec3 AxisVector, glm::dvec3& OutRotatedVector)
 {
 	auto RotationMatrix = glm::dmat3x3();
 	CreateRotationMatrix(AxisVector, ThetaRadians, RotationMatrix);
-	OutRotatedVector = RotationMatrix * AxisVector;
+	OutRotatedVector = RotationMatrix * VectorToRotate;
 }
 
 void UUEOpenDIS_BPFL::RotateVectorAroundAxisByDegrees(glm::dvec3 VectorToRotate, float ThetaDegrees,
@@ -474,6 +474,14 @@ void UUEOpenDIS_BPFL::CalculateHeadingPitchRollDegreesFromPsiThetaPhiDegreesAtLa
 
 	HeadingDegrees = FMath::RadiansToDegrees(FMath::Atan2(FVector::DotProduct(X3, EastVector), FVector::DotProduct(X3, NorthVector)));
 	PitchDegrees = FMath::RadiansToDegrees(FMath::Atan2(-FVector::DotProduct(X3, DownVector), FMath::Sqrt(FMath::Square(FVector::DotProduct(X3, EastVector)) + FMath::Square(FVector::DotProduct(X3, NorthVector)))));
+	// Unsure about this section
+	/*if (FMath::IsNearlyEqual(HeadingDegrees, 30, 1E-3f))
+	{
+		HeadingDegrees = 0;
+	}if (FMath::IsNearlyEqual(PitchDegrees, 30, 1E-3f))
+	{
+		PitchDegrees = 0;
+	}*/
 	ApplyHeadingPitchToNorthEastDownVector(HeadingDegrees, PitchDegrees, NorthVector, EastVector, DownVector, X2, Y2, Z2);
 	RollDegrees = FMath::RadiansToDegrees(FMath::Atan2(FVector::DotProduct(Y3, Z2), FVector::DotProduct(Y3, Y2)));
 }
