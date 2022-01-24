@@ -165,6 +165,13 @@ struct FEarthCenteredEarthFixedDouble
 		Z = 0;
 	}
 
+	FEarthCenteredEarthFixedDouble(const double X, const double Y, const double Z)
+	{
+		this->X = X;
+		this->Y = Y;
+		this->Z = Z;
+	}
+
 	/*operator FEarthCenteredEarthFixedFloat() const
 	{
 		FEarthCenteredEarthFixedFloat ECEFFloat;
@@ -225,6 +232,13 @@ struct FLatLonHeightDouble
 		Latitude = 0;
 		Longitude = 0;
 		Height = 0;
+	}
+
+	FLatLonHeightDouble(const double Latitude,const double Longitude, const double Height)
+	{
+		this->Latitude = Latitude;
+		this->Longitude = Longitude;
+		this->Height = Height;
 	}
 
 	/*operator FLatLonHeightFloat() const
@@ -318,6 +332,13 @@ struct FNorthEastDown
 		NorthVector = FVector(1, 0, 0);
 		EastVector = FVector(0, 1, 0);
 		DownVector = FVector(0, 0, 1);
+	}
+
+	FNorthEastDown(FVector NorthVector, FVector EastVector, FVector DownVector)
+	{
+		this->NorthVector = NorthVector;
+		this->EastVector = EastVector;
+		this->DownVector = DownVector;
 	}
 
 	/*operator FEastNorthUp() const

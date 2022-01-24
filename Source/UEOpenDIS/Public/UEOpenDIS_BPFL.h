@@ -256,27 +256,25 @@ public:
 	/**
 	 * Get Unreal rotation from a DIS entity state PDU
 	 * @param EntityStatePdu The DIS PDU struct indicating the current state of the DIS entity
-	 * @param NorthEastDownVectors The vectors pointing to the North, to the East, and toward the center of the Earth
-	 * @param EntityRotation The desired Yaw, Pitch, and Roll calculated from the given entity state
+	 * @param EntityRotation The Heading (yaw), Pitch, and Roll calculated from the given entity state
 	 */
 	UFUNCTION(BlueprintPure, Category = "OpenDIS|Unit Conversions")
-		static void GetUnrealRotationFromEntityStatePdu(const FEntityStatePDU EntityStatePdu, FNorthEastDown NorthEastDownVectors, FRotator& EntityRotation);
+		static void GetUnrealRotationFromEntityStatePdu(const FEntityStatePDU EntityStatePdu, FRotator& EntityRotation);
 
 	/**
 	 * Gets the latitude, longitude, and height of the entity from the given ECEF values in the DIS entity state pdu
 	 * @param EntityStatePdu The DIS PDU struct indicating the current state of the DIS entity
 	 * @param EntityLatLonHeightLocation The location of the entity as a vector where X is Latitude, Y is Longitude, and Z is Height
 	 */
-	UFUNCTION(BlueprintPure, Category = "OpenDIS|Unit Conversions")
-		static void GetEntityLocationFromEntityStatePdu(const FEntityStatePDU EntityStatePdu, FLatLonHeightFloat& EntityLatLonHeightLocation);
+	UFUNCTION(BlueprintPure, Category = "OpenDIS|Unit Conversions", meta = (WorldContext = "WorldContextObject"))
+		static void GetEntityLocationFromEntityStatePdu(const FEntityStatePDU EntityStatePdu, const FLatLonHeightFloat OriginLatLonAlt, const FNorthEastDown OriginNorthEastDown, FVector& EntityLocation, FLatLonHeightFloat& EntityLatLonHeightLocation);
 
 	/**
 	 * Gets the latitude, longitude, height, and unreal rotation from a DIS entity state PDU
 	 * @param EntityStatePdu The DIS PDU struct indicating the current state of the DIS entity
-	 * @param NorthEastDownVectors The vectors pointing to the North, to the East, and toward the center of the Earth
-	 * @param EntityLatLonHeightLocation The location of the entity as a vector where X is Latitude, Y is Longitude, and Z is Height
+	 * @param EntityLocation The location of the entity as a vector where X is Latitude, Y is Longitude, and Z is Height
 	 * @param EntityRotation The desired Yaw, Pitch, and Roll calculated from the given entity state
 	 */
 	UFUNCTION(BlueprintPure, Category = "OpenDIS|Unit Conversions")
-		static void GetEntityLocationAndOrientation(const FEntityStatePDU EntityStatePdu, FNorthEastDown NorthEastDownVectors, FLatLonHeightFloat& EntityLatLonHeightLocation, FRotator& EntityRotation);
+		static void GetEntityLocationAndOrientation(const FEntityStatePDU EntityStatePdu, const FLatLonHeightFloat OriginLatLonAlt, const FNorthEastDown NorthEastDownVectors, FVector& EntityLocation, FLatLonHeightFloat & EntityLatLonHeightLocation, FRotator& EntityRotation);
 };

@@ -2,6 +2,7 @@
 
 
 #include "UEOpenDIS_BPFL.h"
+#include "UEOpenDISGameState.h"
 
 #include "Kismet/KismetMathLibrary.h"
 
@@ -229,27 +230,28 @@ void UUEOpenDIS_BPFL::CreateRotationMatrix(glm::dvec3 AxisVector, double ThetaRa
 void UUEOpenDIS_BPFL::ApplyHeadingPitchToNorthEastDownVector(const float HeadingDegrees, const float PitchDegrees, const FNorthEastDown NorthEastDownVectors, FVector& OutX, FVector& OutY, FVector& OutZ)
 {
 	// Rotate the X and Y vectors around the Z vector by the Heading
-	RotateVectorAroundAxisByDegrees(OutX, HeadingDegrees, OutZ, OutX);
-	RotateVectorAroundAxisByDegrees(OutY, HeadingDegrees, OutZ, OutY);
+	RotateVectorAroundAxisByDegrees(NorthEastDownVectors.NorthVector, HeadingDegrees, NorthEastDownVectors.DownVector, OutX);
+	RotateVectorAroundAxisByDegrees(NorthEastDownVectors.EastVector, HeadingDegrees, NorthEastDownVectors.DownVector, OutY);
 
 	// Rotate the X and Z vectors around the Y vector by the Pitch
 	RotateVectorAroundAxisByDegrees(OutX, PitchDegrees, OutY, OutX);
-	RotateVectorAroundAxisByDegrees(OutZ, PitchDegrees, OutY, OutZ);
+	RotateVectorAroundAxisByDegrees(NorthEastDownVectors.DownVector, PitchDegrees, OutY, OutZ);
 }
 
 // TODO: Implement this
 void UUEOpenDIS_BPFL::ApplyRollToNorthEastDownVector(const float RollDegrees, const FNorthEastDown NorthEastDownVectors, FVector& OutX, FVector& OutY, FVector& OutZ)
 {
 	// Rotate the Y and Z vectors around the X vector by the Roll
-	RotateVectorAroundAxisByDegrees(OutY, RollDegrees, OutX, OutY);
-	RotateVectorAroundAxisByDegrees(OutZ, RollDegrees, OutX, OutZ);
+	OutX = NorthEastDownVectors.NorthVector;
+	RotateVectorAroundAxisByDegrees(NorthEastDownVectors.EastVector, RollDegrees, NorthEastDownVectors.NorthVector, OutY);
+	RotateVectorAroundAxisByDegrees(NorthEastDownVectors.DownVector, RollDegrees, NorthEastDownVectors.NorthVector, OutZ);
 }
 
 void UUEOpenDIS_BPFL::RotateVectorAroundAxisByRadians(glm::dvec3 VectorToRotate, double ThetaRadians, glm::dvec3 AxisVector, glm::dvec3& OutRotatedVector)
 {
 	auto RotationMatrix = glm::dmat3x3();
 	CreateRotationMatrix(AxisVector, ThetaRadians, RotationMatrix);
-	OutRotatedVector = RotationMatrix * AxisVector;
+	OutRotatedVector = RotationMatrix * VectorToRotate;
 }
 
 void UUEOpenDIS_BPFL::RotateVectorAroundAxisByDegrees(glm::dvec3 VectorToRotate, float ThetaDegrees, glm::dvec3 AxisVector, glm::dvec3& OutRotatedVector)
@@ -275,13 +277,10 @@ void UUEOpenDIS_BPFL::RotateVectorAroundAxisByDegrees(FVector VectorToRotate, fl
 // TODO: Separate into ApplyHeadingPitch... and ApplyRoll...
 void UUEOpenDIS_BPFL::ApplyHeadingPitchRollToNorthEastDownVector(const FHeadingPitchRoll HeadingPitchRollDegrees, const FNorthEastDown NorthEastDownVectors, FVector& OutX, FVector& OutY, FVector& OutZ)
 {
-	OutX = NorthEastDownVectors.NorthVector;
-	OutY = NorthEastDownVectors.EastVector;
-	OutZ = NorthEastDownVectors.DownVector;
 
 	ApplyHeadingPitchToNorthEastDownVector(HeadingPitchRollDegrees.Heading, HeadingPitchRollDegrees.Pitch, NorthEastDownVectors, OutX, OutY, OutZ);
 
-	ApplyRollToNorthEastDownVector(HeadingPitchRollDegrees.Roll, NorthEastDownVectors, OutX, OutY, OutZ);
+	ApplyRollToNorthEastDownVector(HeadingPitchRollDegrees.Roll, FNorthEastDown(OutX, OutY, OutZ), OutX, OutY, OutZ);
 }
 
 void UUEOpenDIS_BPFL::CalculateNorthEastDownVectorsFromLatLon(const float LatitudeDegrees, const float LongitudeDegrees, FNorthEastDown& NorthEastDownVectors)
@@ -410,15 +409,15 @@ void UUEOpenDIS_BPFL::CalculateHeadingPitchRollDegreesFromPsiThetaPhiRadiansAtLa
 
 void UUEOpenDIS_BPFL::CalculateHeadingPitchRollRadiansFromPsiThetaPhiDegreesAtLatLon(const FPsiThetaPhi PsiThetaPhiDegrees, const float LatitudeDegrees, const float LongitudeDegrees, FHeadingPitchRoll& HeadingPitchRollRadians)
 {
-	FHeadingPitchRoll headingPitchRollDegrees;
+	FHeadingPitchRoll HeadingPitchRollDegrees;
 
-	CalculateHeadingPitchRollDegreesFromPsiThetaPhiDegreesAtLatLon(PsiThetaPhiDegrees, LatitudeDegrees, LongitudeDegrees, headingPitchRollDegrees);
-	HeadingPitchRollRadians.Heading = FMath::DegreesToRadians(headingPitchRollDegrees.Heading);
-	HeadingPitchRollRadians.Pitch = FMath::DegreesToRadians(headingPitchRollDegrees.Pitch);
-	HeadingPitchRollRadians.Roll = FMath::DegreesToRadians(headingPitchRollDegrees.Roll);
+	CalculateHeadingPitchRollDegreesFromPsiThetaPhiDegreesAtLatLon(PsiThetaPhiDegrees, LatitudeDegrees, LongitudeDegrees, HeadingPitchRollDegrees);
+	HeadingPitchRollRadians.Heading = FMath::DegreesToRadians(HeadingPitchRollDegrees.Heading);
+	HeadingPitchRollRadians.Pitch = FMath::DegreesToRadians(HeadingPitchRollDegrees.Pitch);
+	HeadingPitchRollRadians.Roll = FMath::DegreesToRadians(HeadingPitchRollDegrees.Roll);
 }
 
-void UUEOpenDIS_BPFL::GetUnrealRotationFromEntityStatePdu(const FEntityStatePDU EntityStatePdu, FNorthEastDown NorthEastDownVectors, FRotator& EntityRotation)
+void UUEOpenDIS_BPFL::GetUnrealRotationFromEntityStatePdu(const FEntityStatePDU EntityStatePdu, FRotator& EntityRotation)
 {
 	FEarthCenteredEarthFixedDouble ecefDouble;
 	ecefDouble.X = EntityStatePdu.EntityLocationDouble[0];
@@ -429,14 +428,8 @@ void UUEOpenDIS_BPFL::GetUnrealRotationFromEntityStatePdu(const FEntityStatePDU 
 
 	CalculateLatLonHeightFromEcefXYZ(ecefDouble, LatLonHeightDouble);
 
+	FNorthEastDown NorthEastDownVectors;
 	CalculateNorthEastDownVectorsFromLatLon(LatLonHeightDouble.Latitude, LatLonHeightDouble.Longitude, NorthEastDownVectors);
-	
-	double latitudeRadians = FMath::DegreesToRadians(LatLonHeightDouble.Latitude);
-	double longitudeRadians = FMath::DegreesToRadians(LatLonHeightDouble.Longitude);
-
-	/*EntityRotation.Roll = GetRollFromEuler(latitudeRadians, longitudeRadians, EntityStatePdu.EntityOrientation.Yaw, EntityStatePdu.EntityOrientation.Pitch, EntityStatePdu.EntityOrientation.Roll);
-	EntityRotation.Pitch = GetPitchFromEuler(latitudeRadians, longitudeRadians, EntityStatePdu.EntityOrientation.Yaw, EntityStatePdu.EntityOrientation.Pitch);
-	EntityRotation.Yaw = GetHeadingFromEuler(latitudeRadians, longitudeRadians, EntityStatePdu.EntityOrientation.Yaw, EntityStatePdu.EntityOrientation.Pitch);*/
 
 	FPsiThetaPhi psiThetaPhiRadians;
 	psiThetaPhiRadians.Psi = EntityStatePdu.EntityOrientation.Yaw;
@@ -450,27 +443,29 @@ void UUEOpenDIS_BPFL::GetUnrealRotationFromEntityStatePdu(const FEntityStatePDU 
 	EntityRotation.Roll = headingPitchRoll.Roll;
 	EntityRotation.Pitch = headingPitchRoll.Pitch;
 	EntityRotation.Yaw = headingPitchRoll.Heading;
-
-	EntityRotation = UKismetMathLibrary::ComposeRotators(EntityRotation, UKismetMathLibrary::MakeRotationFromAxes(NorthEastDownVectors.NorthVector, NorthEastDownVectors.EastVector, -NorthEastDownVectors.DownVector));
 }
 
-void UUEOpenDIS_BPFL::GetEntityLocationFromEntityStatePdu(const FEntityStatePDU EntityStatePdu, FLatLonHeightFloat& EntityLatLonHeightLocation)
+void UUEOpenDIS_BPFL::GetEntityLocationFromEntityStatePdu(const FEntityStatePDU EntityStatePdu, const FLatLonHeightFloat OriginLatLonAlt, const FNorthEastDown OriginNorthEastDown, FVector& EntityLocation, FLatLonHeightFloat& EntityLatLonHeightLocation)
 {
-	FEarthCenteredEarthFixedDouble ecefDouble;
-	ecefDouble.X = EntityStatePdu.EntityLocationDouble[0];
-	ecefDouble.Y = EntityStatePdu.EntityLocationDouble[1];
-	ecefDouble.Z = EntityStatePdu.EntityLocationDouble[2];
+	auto EntityLocationDouble = FEarthCenteredEarthFixedDouble(EntityStatePdu.EntityLocationDouble[0], EntityStatePdu.EntityLocationDouble[1], EntityStatePdu.EntityLocationDouble[2]);
+	FLatLonHeightDouble LatLonHeightDouble;
+	CalculateLatLonHeightFromEcefXYZ(EntityLocationDouble, LatLonHeightDouble);
 
-	FLatLonHeightDouble latLonHeightDouble;
-	latLonHeightDouble.Latitude = static_cast<double>(EntityLatLonHeightLocation.Latitude);
-	latLonHeightDouble.Longitude = static_cast<double>(EntityLatLonHeightLocation.Longitude);
-	latLonHeightDouble.Height = static_cast<double>(EntityLatLonHeightLocation.Height);
+	// Convert longitude difference to meters
+	auto EntityNorthDistance = (LatLonHeightDouble.Longitude - OriginLatLonAlt.Longitude) * (10000 / 90.) * 1000;
+	// Convert latitude difference to meters
+	auto EntityEastDistance = (LatLonHeightDouble.Latitude - OriginLatLonAlt.Latitude) * (10000 / 90.) * 1000;
+	auto EntityUpDistance = LatLonHeightDouble.Height - OriginLatLonAlt.Height;
+	FVector EntityNorthVector, EntityEastVector, EntityUpVector;
+	EntityNorthVector = OriginNorthEastDown.NorthVector * EntityNorthDistance;
+	EntityEastVector = OriginNorthEastDown.EastVector * EntityEastDistance;
+	EntityUpVector = -OriginNorthEastDown.DownVector * EntityUpDistance;
 
-	CalculateLatLonHeightFromEcefXYZ(ecefDouble, latLonHeightDouble);
+	EntityLocation = EntityNorthVector + EntityEastVector + EntityUpVector;
 }
 
-void UUEOpenDIS_BPFL::GetEntityLocationAndOrientation(const FEntityStatePDU EntityStatePdu, FNorthEastDown NorthEastDownVectors, FLatLonHeightFloat& EntityLatLonHeightLocation, FRotator& EntityRotation)
+void UUEOpenDIS_BPFL::GetEntityLocationAndOrientation(const FEntityStatePDU EntityStatePdu, const FLatLonHeightFloat OriginLatLonAlt, FNorthEastDown NorthEastDownVectors, FVector& EntityLocation, FLatLonHeightFloat& EntityLatLonHeightLocation, FRotator& EntityRotation)
 {
-	GetEntityLocationFromEntityStatePdu(EntityStatePdu, EntityLatLonHeightLocation);
-	GetUnrealRotationFromEntityStatePdu(EntityStatePdu, NorthEastDownVectors, EntityRotation);
+	GetEntityLocationFromEntityStatePdu(EntityStatePdu, OriginLatLonAlt, NorthEastDownVectors, EntityLocation, EntityLatLonHeightLocation);
+	GetUnrealRotationFromEntityStatePdu(EntityStatePdu, EntityRotation);
 }
