@@ -221,11 +221,11 @@ void UUEOpenDIS_BPFL::CalculateLatLongFromNorthEastDownVectors(const FNorthEastD
 
 void UUEOpenDIS_BPFL::CalculatePsiThetaPhiDegreesFromHeadingPitchRollDegreesAtLatLon(const FHeadingPitchRoll HeadingPitchRollDegrees, const float LatitudeDegrees, const float LongitudeDegrees, FPsiThetaPhi& PsiThetaPhiDegrees)
 {
-	FNorthEastDown northEastDownVectors;
-	CalculateNorthEastDownVectorsFromLatLon(LatitudeDegrees, LongitudeDegrees, northEastDownVectors);
+	FNorthEastDown NorthEastDownVectors;
+	CalculateNorthEastDownVectorsFromLatLon(LatitudeDegrees, LongitudeDegrees, NorthEastDownVectors);
 
 	FVector X, Y, Z, X2, Y2, Z2;
-	ApplyHeadingPitchRollToNorthEastDownVector(HeadingPitchRollDegrees, northEastDownVectors, X, Y, Z);
+	ApplyHeadingPitchRollToNorthEastDownVector(HeadingPitchRollDegrees, NorthEastDownVectors, X, Y, Z);
 
 	const auto X0 = FVector(1, 0, 0);
 	const auto Y0 = FVector(0, 1, 0);
@@ -234,11 +234,11 @@ void UUEOpenDIS_BPFL::CalculatePsiThetaPhiDegreesFromHeadingPitchRollDegreesAtLa
 	PsiThetaPhiDegrees.Psi = FMath::RadiansToDegrees(FMath::Atan2(FVector::DotProduct(X, Y0), FVector::DotProduct(X, X0)));
 	PsiThetaPhiDegrees.Theta = FMath::RadiansToDegrees(FMath::Atan2(-FVector::DotProduct(X, Z0), FMath::Sqrt(FMath::Square(FVector::DotProduct(X, X0)) + FMath::Square(FVector::DotProduct(X, Y0)))));
 
-	northEastDownVectors.NorthVector = X0;
-	northEastDownVectors.EastVector = Y0;
-	northEastDownVectors.DownVector = Z0;
+	NorthEastDownVectors.NorthVector = X0;
+	NorthEastDownVectors.EastVector = Y0;
+	NorthEastDownVectors.DownVector = Z0;
 
-	ApplyHeadingPitchToNorthEastDownVector(PsiThetaPhiDegrees.Psi, PsiThetaPhiDegrees.Theta, northEastDownVectors, X2, Y2, Z2);
+	ApplyHeadingPitchToNorthEastDownVector(PsiThetaPhiDegrees.Psi, PsiThetaPhiDegrees.Theta, NorthEastDownVectors, X2, Y2, Z2);
 
 	PsiThetaPhiDegrees.Phi = FMath::RadiansToDegrees(FMath::Atan2(FVector::DotProduct(Y, Z2), FVector::DotProduct(Y, Y2)));
 }
@@ -275,25 +275,25 @@ void UUEOpenDIS_BPFL::CalculatePsiThetaPhiDegreesFromHeadingPitchRollRadiansAtLa
 
 void UUEOpenDIS_BPFL::CalculateHeadingPitchRollDegreesFromPsiThetaPhiDegreesAtLatLon(const FPsiThetaPhi PsiThetaPhiDegrees, const float LatitudeDegrees, const float LongitudeDegrees, FHeadingPitchRoll& HeadingPitchRollDegrees)
 {
-	FNorthEastDown northEastDownVectors;
-	CalculateNorthEastDownVectorsFromLatLon(LatitudeDegrees, LongitudeDegrees, northEastDownVectors);
+	FNorthEastDown NorthEastDownVectors;
+	CalculateNorthEastDownVectorsFromLatLon(LatitudeDegrees, LongitudeDegrees, NorthEastDownVectors);
 
 	const auto X0 = FVector(1, 0, 0);
 	const auto Y0 = FVector(0, 1, 0);
 	const auto Z0 = FVector(0, 0, 1);
 
-	FNorthEastDown startingVectorsForRotation = FNorthEastDown(X0, Y0, Z0);
+	const FNorthEastDown StartingVectorsForRotation = FNorthEastDown(X0, Y0, Z0);
 
 	FVector X3, Y3, Z3, X2, Y2, Z2;
 
-	FHeadingPitchRoll headingPitchRoll = FHeadingPitchRoll(PsiThetaPhiDegrees.Psi, PsiThetaPhiDegrees.Theta, PsiThetaPhiDegrees.Phi);
+	const FHeadingPitchRoll HeadingPitchRoll = FHeadingPitchRoll(PsiThetaPhiDegrees.Psi, PsiThetaPhiDegrees.Theta, PsiThetaPhiDegrees.Phi);
 
-	ApplyHeadingPitchRollToNorthEastDownVector(headingPitchRoll, startingVectorsForRotation, X3, Y3, Z3);
+	ApplyHeadingPitchRollToNorthEastDownVector(HeadingPitchRoll, StartingVectorsForRotation, X3, Y3, Z3);
 
-	HeadingPitchRollDegrees.Heading = FMath::RadiansToDegrees(FMath::Atan2(FVector::DotProduct(X3, northEastDownVectors.EastVector), FVector::DotProduct(X3, northEastDownVectors.NorthVector)));
-	HeadingPitchRollDegrees.Pitch = FMath::RadiansToDegrees(FMath::Atan2(-FVector::DotProduct(X3, northEastDownVectors.DownVector), FMath::Sqrt(FMath::Square(FVector::DotProduct(X3, northEastDownVectors.EastVector)) + FMath::Square(FVector::DotProduct(X3, northEastDownVectors.NorthVector)))));
+	HeadingPitchRollDegrees.Heading = FMath::RadiansToDegrees(FMath::Atan2(FVector::DotProduct(X3, NorthEastDownVectors.EastVector), FVector::DotProduct(X3, NorthEastDownVectors.NorthVector)));
+	HeadingPitchRollDegrees.Pitch = FMath::RadiansToDegrees(FMath::Atan2(-FVector::DotProduct(X3, NorthEastDownVectors.DownVector), FMath::Sqrt(FMath::Square(FVector::DotProduct(X3, NorthEastDownVectors.EastVector)) + FMath::Square(FVector::DotProduct(X3, NorthEastDownVectors.NorthVector)))));
 
-	ApplyHeadingPitchToNorthEastDownVector(HeadingPitchRollDegrees.Heading, HeadingPitchRollDegrees.Pitch, northEastDownVectors, X2, Y2, Z2);
+	ApplyHeadingPitchToNorthEastDownVector(HeadingPitchRollDegrees.Heading, HeadingPitchRollDegrees.Pitch, NorthEastDownVectors, X2, Y2, Z2);
 	HeadingPitchRollDegrees.Roll = FMath::RadiansToDegrees(FMath::Atan2(FVector::DotProduct(Y3, Z2), FVector::DotProduct(Y3, Y2)));
 }
 

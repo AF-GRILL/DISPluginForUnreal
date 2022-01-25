@@ -77,11 +77,11 @@ public:
 
 	/**
 	 * Converts DIS X, Y, Z coordinates (ECEF) to Latitude, Longitude, and Height (LLH) all in double (32-bit) precision
-	 * @param ECEF The ECEF location
+	 * @param Ecef The ECEF location
 	 * @param OutLatLonHeightDegreesMeters The converted latitude in degrees, longitude in degrees, and height in meters
 	 */
 	UFUNCTION(BlueprintPure, Category = "OpenDIS|Unit Conversions")
-		static void CalculateLatLonHeightFromEcefXYZ(const FEarthCenteredEarthFixedFloat ECEF, FLatLonHeightFloat& OutLatLonHeightDegreesMeters);
+		static void CalculateLatLonHeightFromEcefXYZ(const FEarthCenteredEarthFixedFloat Ecef, FLatLonHeightFloat& OutLatLonHeightDegreesMeters);
 
 	/**
 	 * Converts Latitude, Longitude, and Height (LLH) to DIS X, Y, Z coordinates (ECEF) all in double (64-bit) precision
