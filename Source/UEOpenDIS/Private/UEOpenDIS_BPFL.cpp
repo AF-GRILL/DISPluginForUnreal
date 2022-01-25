@@ -414,25 +414,25 @@ void UUEOpenDIS_BPFL::CalculateHeadingPitchRollRadiansFromPsiThetaPhiDegreesAtLa
 
 void UUEOpenDIS_BPFL::GetUnrealRotationFromEntityStatePdu(const FEntityStatePDU EntityStatePdu, FRotator& EntityRotation)
 {
-	FEarthCenteredEarthFixedDouble ecefDouble;
-	ecefDouble.X = EntityStatePdu.EntityLocationDouble[0];
-	ecefDouble.Y = EntityStatePdu.EntityLocationDouble[1];
-	ecefDouble.Z = EntityStatePdu.EntityLocation[2];
+	FEarthCenteredEarthFixedDouble EcefDouble;
+	EcefDouble.X = EntityStatePdu.EntityLocationDouble[0];
+	EcefDouble.Y = EntityStatePdu.EntityLocationDouble[1];
+	EcefDouble.Z = EntityStatePdu.EntityLocation[2];
 
 	FLatLonHeightDouble LatLonHeightDouble;
 
-	CalculateLatLonHeightFromEcefXYZ(ecefDouble, LatLonHeightDouble);
+	CalculateLatLonHeightFromEcefXYZ(EcefDouble, LatLonHeightDouble);
 
 	FNorthEastDown NorthEastDownVectors;
 	CalculateNorthEastDownVectorsFromLatLon(LatLonHeightDouble.Latitude, LatLonHeightDouble.Longitude, NorthEastDownVectors);
 
-	FPsiThetaPhi psiThetaPhiRadians;
-	psiThetaPhiRadians.Psi = EntityStatePdu.EntityOrientation.Yaw;
-	psiThetaPhiRadians.Theta = EntityStatePdu.EntityOrientation.Pitch;
-	psiThetaPhiRadians.Phi = EntityStatePdu.EntityOrientation.Roll;
+	FPsiThetaPhi PsiThetaPhiRadians;
+	PsiThetaPhiRadians.Psi = EntityStatePdu.EntityOrientation.Yaw;
+	PsiThetaPhiRadians.Theta = EntityStatePdu.EntityOrientation.Pitch;
+	PsiThetaPhiRadians.Phi = EntityStatePdu.EntityOrientation.Roll;
 
 	FHeadingPitchRoll HeadingPitchRollDegrees;
-	CalculateHeadingPitchRollDegreesFromPsiThetaPhiRadiansAtLatLon(psiThetaPhiRadians, LatLonHeightDouble.Latitude, LatLonHeightDouble.Longitude, HeadingPitchRollDegrees);
+	CalculateHeadingPitchRollDegreesFromPsiThetaPhiRadiansAtLatLon(PsiThetaPhiRadians, LatLonHeightDouble.Latitude, LatLonHeightDouble.Longitude, HeadingPitchRollDegrees);
 
 	EntityRotation.Roll = HeadingPitchRollDegrees.Roll;
 	EntityRotation.Pitch = HeadingPitchRollDegrees.Pitch;
