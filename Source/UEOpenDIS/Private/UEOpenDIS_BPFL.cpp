@@ -4,83 +4,6 @@
 #include "UEOpenDIS_BPFL.h"
 #include "UEOpenDISGameState.h"
 
-double UUEOpenDIS_BPFL::GetHeadingFromEuler(const double LatitudeRadians, const double LongitudeRadians, const float PsiRadians, const float ThetaRadians)
-{
-	const double SinLat = FMath::Sin(LatitudeRadians);
-	const double SinLon = FMath::Sin(LongitudeRadians);
-	const double CosLon = FMath::Cos(LongitudeRadians);
-	const double CosLat = FMath::Cos(LatitudeRadians);
-	const double SinSin = SinLat * SinLon;
-
-	const double CosTheta = FMath::Cos(ThetaRadians);
-	const double CosPsi = FMath::Cos(PsiRadians);
-	const double SinPsi = FMath::Sin(PsiRadians);
-	const double SinTheta = FMath::Sin(ThetaRadians);
-
-
-	const double CosThetaCosPsi = CosTheta * CosPsi;
-	const double CosThetaSinPsi = CosTheta * SinPsi;
-	const double SinCos = SinLat * CosLon;
-
-	const double B11 = -SinLon * CosThetaCosPsi + CosLon * CosThetaSinPsi;
-	const double B12 = -SinCos * CosThetaCosPsi - SinSin * CosThetaSinPsi - CosLat * SinTheta;
-	return FMath::RadiansToDegrees(FMath::Atan2(B11, B12));
-}
-
-double UUEOpenDIS_BPFL::GetPitchFromEuler(const double LatitudeRadians, const double LongitudeRadians, const float PsiRadians, const float ThetaRadians)
-{
-	const double SinLat = FMath::Sin(LatitudeRadians);
-	const double SinLon = FMath::Sin(LongitudeRadians);
-	const double CosLon = FMath::Cos(LongitudeRadians);
-	const double CosLat = FMath::Cos(LatitudeRadians);
-	const double CosLatCosLon = CosLat * CosLon;
-	const double CosLatSinLon = CosLat * SinLon;
-
-	const double CosTheta = FMath::Cos(ThetaRadians);
-	const double CosPsi = FMath::Cos(PsiRadians);
-	const double SinPsi = FMath::Sin(PsiRadians);
-	const double SinTheta = FMath::Sin(ThetaRadians);
-
-	return FMath::RadiansToDegrees(FMath::Asin(CosLatCosLon * CosTheta * CosPsi + CosLatSinLon * CosTheta * SinPsi - SinLat * SinTheta));
-}
-
-double UUEOpenDIS_BPFL::GetRollFromEuler(const double LatitudeRadians, const double LongitudeRadians, const FPsiThetaPhi PsiThetaPhiRadians)
-{
-	const double SinLat = FMath::Sin(LatitudeRadians);
-	const double SinLon = FMath::Sin(LongitudeRadians);
-	const double CosLon = FMath::Cos(LongitudeRadians);
-	const double CosLat = FMath::Cos(LatitudeRadians);
-	const double CosLatCosLon = CosLat * CosLon;
-	const double CosLatSinLon = CosLat * SinLon;
-
-	const double CosTheta = FMath::Cos(PsiThetaPhiRadians.Theta);
-	const double SinTheta = FMath::Sin(PsiThetaPhiRadians.Theta);
-	const double CosPsi = FMath::Cos(PsiThetaPhiRadians.Psi);
-	const double SinPsi = FMath::Sin(PsiThetaPhiRadians.Psi);
-	const double SinPhi = FMath::Sin(PsiThetaPhiRadians.Phi);
-	const double CosPhi = FMath::Cos(PsiThetaPhiRadians.Phi);
-
-	const double SinPhiSinTheta = SinPhi * SinTheta;
-	const double PhiSinTheta = CosPhi * SinTheta;
-
-	const double B23 = CosLatCosLon * (-CosPhi * SinPsi + SinPhiSinTheta * CosPsi) +
-		CosLatSinLon * (CosPhi * CosPsi + SinPhiSinTheta * SinPsi) +
-		SinLat * (SinPhi * CosTheta);
-
-	const double B33 = CosLatCosLon * (SinPhi * SinPsi + PhiSinTheta * CosPsi) +
-		CosLatSinLon * (-SinPhi * CosPsi + PhiSinTheta * SinPsi) +
-		SinLat * (CosPhi * CosTheta);
-
-	return FMath::RadiansToDegrees(FMath::Atan2(-B23, -B33));
-}
-
-void UUEOpenDIS_BPFL::EulerToEastNorthUp(const float LatInRad, const float LonInRad, const FPsiThetaPhi PsiThetaPhiRadians, FRotator& TaitBryanAnglesOut)
-{
-	TaitBryanAnglesOut.Pitch = GetPitchFromEuler(LatInRad, LonInRad, PsiThetaPhiRadians.Psi, PsiThetaPhiRadians.Theta);
-	TaitBryanAnglesOut.Yaw = GetHeadingFromEuler(LatInRad, LonInRad, PsiThetaPhiRadians.Psi, PsiThetaPhiRadians.Theta);
-	TaitBryanAnglesOut.Roll = GetRollFromEuler(LatInRad, LonInRad, PsiThetaPhiRadians);
-}
-
 void UUEOpenDIS_BPFL::CalculateLatLonHeightFromEcefXYZ(const FEarthCenteredEarthFixedDouble Ecef,	FLatLonHeightDouble& OutLatLonHeightDegreesMeters)
 {
 	constexpr double EarthSemiMajorRadiusMeters = 6378137;
@@ -444,7 +367,7 @@ void UUEOpenDIS_BPFL::GetUnrealRotationFromEntityStatePdu(const FEntityStatePDU 
 	EntityRotation.Yaw = HeadingPitchRollDegrees.Heading + ZAxisRotationAngle - 90;
 }
 
-void UUEOpenDIS_BPFL::GetEntityLocationFromEntityStatePdu(const FEntityStatePDU EntityStatePdu, const FLatLonHeightFloat OriginLatLonAlt, const FNorthEastDown OriginNorthEastDown, FVector& EntityLocation)
+void UUEOpenDIS_BPFL::GetEntityLocationFromEntityStatePdu(const FEntityStatePDU EntityStatePdu, const FWorldOrigin WorldOriginLLHAndNED, FVector& EntityLocation)
 {
 	auto EntityLocationDouble = FEarthCenteredEarthFixedDouble(EntityStatePdu.EntityLocationDouble[0], EntityStatePdu.EntityLocationDouble[1], EntityStatePdu.EntityLocationDouble[2]);
 	FLatLonHeightDouble LatLonHeightDouble;
@@ -452,20 +375,20 @@ void UUEOpenDIS_BPFL::GetEntityLocationFromEntityStatePdu(const FEntityStatePDU 
 
 	// Multiply by 100 to convert from meters to unreal units (cm)
 	// Convert longitude difference to cm
-	auto EntityNorthDistance = (LatLonHeightDouble.Longitude - OriginLatLonAlt.Longitude) * (10000 / 90.) * 1000 * 100;
+	auto EntityNorthDistance = (LatLonHeightDouble.Longitude - WorldOriginLLHAndNED.WorldOriginLLH.Longitude) * (10000 / 90.) * 1000 * 100;
 	// Convert latitude difference to cm
-	auto EntityEastDistance = (LatLonHeightDouble.Latitude - OriginLatLonAlt.Latitude) * (10000 / 90.) * 1000 * 100;
-	auto EntityUpDistance = (LatLonHeightDouble.Height * 100) - OriginLatLonAlt.Height;
+	auto EntityEastDistance = (LatLonHeightDouble.Latitude - WorldOriginLLHAndNED.WorldOriginLLH.Latitude) * (10000 / 90.) * 1000 * 100;
+	auto EntityUpDistance = (LatLonHeightDouble.Height * 100) - WorldOriginLLHAndNED.WorldOriginLLH.Height;
 	FVector EntityNorthVector, EntityEastVector, EntityUpVector;
-	EntityNorthVector = OriginNorthEastDown.NorthVector * EntityNorthDistance;
-	EntityEastVector = OriginNorthEastDown.EastVector * EntityEastDistance;
-	EntityUpVector = -OriginNorthEastDown.DownVector * EntityUpDistance;
+	EntityNorthVector = WorldOriginLLHAndNED.WorldOriginNED.NorthVector * EntityNorthDistance;
+	EntityEastVector = WorldOriginLLHAndNED.WorldOriginNED.EastVector * EntityEastDistance;
+	EntityUpVector = -WorldOriginLLHAndNED.WorldOriginNED.DownVector * EntityUpDistance;
 
 	EntityLocation = EntityNorthVector + EntityEastVector + EntityUpVector;
 }
 
-void UUEOpenDIS_BPFL::GetEntityLocationAndOrientation(const FEntityStatePDU EntityStatePdu, const FLatLonHeightFloat OriginLatLonAlt, FNorthEastDown NorthEastDownVectors, FVector& EntityLocation, FRotator& EntityRotation)
+void UUEOpenDIS_BPFL::GetEntityLocationAndOrientation(const FEntityStatePDU EntityStatePdu, const FWorldOrigin WorldOriginLLHAndNED, FVector& EntityLocation, FRotator& EntityRotation)
 {
-	GetEntityLocationFromEntityStatePdu(EntityStatePdu, OriginLatLonAlt, NorthEastDownVectors, EntityLocation);
-	GetUnrealRotationFromEntityStatePdu(EntityStatePdu, NorthEastDownVectors, EntityRotation);
+	GetEntityLocationFromEntityStatePdu(EntityStatePdu, WorldOriginLLHAndNED, EntityLocation);
+	GetUnrealRotationFromEntityStatePdu(EntityStatePdu, WorldOriginLLHAndNED.WorldOriginNED, EntityRotation);
 }
