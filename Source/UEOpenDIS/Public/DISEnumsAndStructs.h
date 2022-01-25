@@ -171,17 +171,6 @@ struct FEarthCenteredEarthFixedDouble
 		this->Y = Y;
 		this->Z = Z;
 	}
-
-	/*operator FEarthCenteredEarthFixedFloat() const
-	{
-		FEarthCenteredEarthFixedFloat ECEFFloat;
-
-		ECEFFloat.X = X;
-		ECEFFloat.Y = Y;
-		ECEFFloat.Z = Z;
-
-		return ECEFFloat;
-	}*/
 };
 
 USTRUCT(BlueprintType)
@@ -202,17 +191,6 @@ struct FEarthCenteredEarthFixedFloat
 		Y = 0.0f;
 		Z = 0.0f;
 	}
-
-	/*operator FEarthCenteredEarthFixedDouble() const
-	{
-		FEarthCenteredEarthFixedDouble ECEFDouble;
-
-		ECEFDouble.X = static_cast<double>(X);
-		ECEFDouble.Y = static_cast<double>(Y);
-		ECEFDouble.Z = static_cast<double>(Z);
-
-		return ECEFDouble;
-	}*/
 };
 
 USTRUCT()
@@ -240,17 +218,6 @@ struct FLatLonHeightDouble
 		this->Longitude = Longitude;
 		this->Height = Height;
 	}
-
-	/*operator FLatLonHeightFloat() const
-	{
-		FLatLonHeightFloat LLHFloat;
-
-		LLHFloat.Latitude = Latitude;
-		LLHFloat.Longitude = Longitude;
-		LLHFloat.Height = Height;
-
-		return LLHFloat;
-	}*/
 };
 
 USTRUCT(BlueprintType)
@@ -271,17 +238,6 @@ struct FLatLonHeightFloat
 		Longitude = 0.0f;
 		Height = 0.0f;
 	}
-
-	/*operator FLatLonHeightDouble() const
-	{
-		FLatLonHeightDouble LLHDouble;
-
-		LLHDouble.Latitude = static_cast<double>(Latitude);
-		LLHDouble.Longitude = static_cast<double>(Longitude);
-		LLHDouble.Height = static_cast<double>(Height);
-
-		return LLHDouble;
-	}*/
 };
 
 USTRUCT(BlueprintType)
@@ -302,17 +258,6 @@ struct FEastNorthUp
 		EastVector = FVector(0, 1, 0);
 		UpVector = FVector(0, 0, 1);
 	}
-
-	/*operator FNorthEastDown() const
-	{
-		FNorthEastDown NEDVectors;
-
-		NEDVectors.NorthVector = NorthVector;
-		NEDVectors.EastVector = EastVector;
-		NEDVectors.DownVector = -UpVector;
-
-		return NEDVectors;
-	}*/
 };
 
 USTRUCT(BlueprintType)
@@ -340,17 +285,6 @@ struct FNorthEastDown
 		this->EastVector = EastVector;
 		this->DownVector = DownVector;
 	}
-
-	/*operator FEastNorthUp() const
-	{
-		FEastNorthUp ENUVectors;
-
-		ENUVectors.EastVector = EastVector;
-		ENUVectors.NorthVector = NorthVector;
-		ENUVectors.UpVector = -DownVector;
-
-		return ENUVectors;
-	}*/
 };
 
 USTRUCT(BlueprintType)
@@ -401,7 +335,7 @@ struct FWorldOrigin
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		FLatLonHeightFloat WorldOriginLLH;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		FEastNorthUp WorldOriginENU;
+		FNorthEastDown WorldOriginNED;
 };
 
 USTRUCT(BlueprintType)

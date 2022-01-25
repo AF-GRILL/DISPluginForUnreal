@@ -57,13 +57,6 @@ private:
 	static void ApplyRollToNorthEastDownVector(const float RollDegrees, const FNorthEastDown NorthEastDownVectors, FVector& OutX, FVector& OutY, FVector& OutZ);
 
 public:
-	static double GetHeadingFromEuler(double LatitudeRadians, double LongitudeRadians, float PsiRadians, float ThetaRadians);
-	static double GetPitchFromEuler(double LatitudeRadians, double LongitudeRadians, float PsiRadians, float ThetaRadians);
-	static double GetRollFromEuler(double LatitudeRadians, double LongitudeRadians, FPsiThetaPhi PsiThetaPhiRadians);
-
-	UFUNCTION(BlueprintCallable, Category = "OpenDIS|Unit Conversions")
-		static void EulerToENU(float LatInRad, float LonInRad, FPsiThetaPhi PsiThetaPhiRadians, FRotator& TaitBryanAnglesOut);
-
 	/**
 	 * Creates a 4x4 n^x matrix used for creating a rotation matrix
 	 * @param NVector A 3x1 vector representing the axis of rotation
@@ -262,19 +255,21 @@ public:
 		static void GetUnrealRotationFromEntityStatePdu(const FEntityStatePDU EntityStatePdu, FRotator& EntityRotation);
 
 	/**
-	 * Gets the unreal X, Y, Z coordinates of the entity from the given ECEF values in the DIS entity state pdu
+	 * Gets the latitude, longitude, and height of the entity from the given ECEF values in the DIS entity state pdu
 	 * @param EntityStatePdu The DIS PDU struct indicating the current state of the DIS entity
-	 * @param OriginLatLonAlt The latitude (in degrees), longitude (in degrees), and altitude (in meters) of the location represented by the Unreal origin
+	 * @param WorldOriginLLHAndNED The current latitude/longitude in degrees, height in meters, and North, East, Down vectors of the world origin.
+	 * @param EntityLocation The location of the entity in Unreal
 	 */
 	UFUNCTION(BlueprintPure, Category = "OpenDIS|Unit Conversions")
-		static void GetEntityLocationFromEntityStatePdu(const FEntityStatePDU EntityStatePdu, const FLatLonHeightFloat OriginLatLonAlt, const FNorthEastDown OriginNorthEastDown, FVector& EntityLocation);
+		static void GetEntityLocationFromEntityStatePdu(const FEntityStatePDU EntityStatePdu, const FWorldOrigin WorldOriginLLHAndNED, FVector& EntityLocation);
 
 	/**
 	 * Gets the latitude, longitude, height, and unreal rotation from a DIS entity state PDU
 	 * @param EntityStatePdu The DIS PDU struct indicating the current state of the DIS entity
-	 * @param EntityLocation The location of the entity as a vector where X is Latitude, Y is Longitude, and Z is Height
+	 * @param WorldOriginLLHAndNED The current latitude/longitude in degrees, height in meters, and North, East, Down vectors of the world origin.
+	 * @param EntityLocation The location of the entity in Unreal
 	 * @param EntityRotation The desired Yaw, Pitch, and Roll calculated from the given entity state
 	 */
 	UFUNCTION(BlueprintPure, Category = "OpenDIS|Unit Conversions")
-		static void GetEntityLocationAndOrientation(const FEntityStatePDU EntityStatePdu, const FLatLonHeightFloat OriginLatLonAlt, const FNorthEastDown NorthEastDownVectors, FVector& EntityLocation, FRotator& EntityRotation);
+		static void GetEntityLocationAndOrientation(const FEntityStatePDU EntityStatePdu, const FWorldOrigin WorldOriginLLHAndNED, FVector& EntityLocation, FRotator& EntityRotation);
 };
