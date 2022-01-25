@@ -4,97 +4,95 @@
 #include "UEOpenDIS_BPFL.h"
 #include "UEOpenDISGameState.h"
 
-#include "Kismet/KismetMathLibrary.h"
-
-double UUEOpenDIS_BPFL::GetHeadingFromEuler(double LatitudeRadians, double LongitudeRadians, float PsiRadians, float ThetaRadians)
+double UUEOpenDIS_BPFL::GetHeadingFromEuler(const double LatitudeRadians, const double LongitudeRadians, const float PsiRadians, const float ThetaRadians)
 {
-	double sinLat = FMath::Sin(LatitudeRadians);
-	double sinLon = FMath::Sin(LongitudeRadians);
-	double cosLon = FMath::Cos(LongitudeRadians);
-	double cosLat = FMath::Cos(LatitudeRadians);
-	double sinSin = sinLat * sinLon;
+	const double SinLat = FMath::Sin(LatitudeRadians);
+	const double SinLon = FMath::Sin(LongitudeRadians);
+	const double CosLon = FMath::Cos(LongitudeRadians);
+	const double CosLat = FMath::Cos(LatitudeRadians);
+	const double SinSin = SinLat * SinLon;
 
-	double cosTheta = FMath::Cos(ThetaRadians);
-	double cosPsi = FMath::Cos(PsiRadians);
-	double sinPsi = FMath::Sin(PsiRadians);
-	double sinTheta = FMath::Sin(ThetaRadians);
+	const double CosTheta = FMath::Cos(ThetaRadians);
+	const double CosPsi = FMath::Cos(PsiRadians);
+	const double SinPsi = FMath::Sin(PsiRadians);
+	const double SinTheta = FMath::Sin(ThetaRadians);
 
 
-	double cosThetaCosPsi = cosTheta * cosPsi;
-	double cosThetaSinPsi = cosTheta * sinPsi;
-	double sinCos = sinLat * cosLon;
+	const double CosThetaCosPsi = CosTheta * CosPsi;
+	const double CosThetaSinPsi = CosTheta * SinPsi;
+	const double SinCos = SinLat * CosLon;
 
-	double b11 = -sinLon * cosThetaCosPsi + cosLon * cosThetaSinPsi;
-	double b12 = -sinCos * cosThetaCosPsi - sinSin * cosThetaSinPsi - cosLat * sinTheta;
-	return FMath::RadiansToDegrees(FMath::Atan2(b11, b12));
+	const double B11 = -SinLon * CosThetaCosPsi + CosLon * CosThetaSinPsi;
+	const double B12 = -SinCos * CosThetaCosPsi - SinSin * CosThetaSinPsi - CosLat * SinTheta;
+	return FMath::RadiansToDegrees(FMath::Atan2(B11, B12));
 }
 
-double UUEOpenDIS_BPFL::GetPitchFromEuler(double LatitudeRadians, double LongitudeRadians, float PsiRadians, float ThetaRadians)
+double UUEOpenDIS_BPFL::GetPitchFromEuler(const double LatitudeRadians, const double LongitudeRadians, const float PsiRadians, const float ThetaRadians)
 {
-	double sinLat = FMath::Sin(LatitudeRadians);
-	double sinLon = FMath::Sin(LongitudeRadians);
-	double cosLon = FMath::Cos(LongitudeRadians);
-	double cosLat = FMath::Cos(LatitudeRadians);
-	double cosLatCosLon = cosLat * cosLon;
-	double cosLatSinLon = cosLat * sinLon;
+	const double SinLat = FMath::Sin(LatitudeRadians);
+	const double SinLon = FMath::Sin(LongitudeRadians);
+	const double CosLon = FMath::Cos(LongitudeRadians);
+	const double CosLat = FMath::Cos(LatitudeRadians);
+	const double CosLatCosLon = CosLat * CosLon;
+	const double CosLatSinLon = CosLat * SinLon;
 
-	double cosTheta = FMath::Cos(ThetaRadians);
-	double cosPsi = FMath::Cos(PsiRadians);
-	double sinPsi = FMath::Sin(PsiRadians);
-	double sinTheta = FMath::Sin(ThetaRadians);
+	const double CosTheta = FMath::Cos(ThetaRadians);
+	const double CosPsi = FMath::Cos(PsiRadians);
+	const double SinPsi = FMath::Sin(PsiRadians);
+	const double SinTheta = FMath::Sin(ThetaRadians);
 
-	return FMath::RadiansToDegrees(FMath::Asin(cosLatCosLon * cosTheta * cosPsi + cosLatSinLon * cosTheta * sinPsi - sinLat * sinTheta));
+	return FMath::RadiansToDegrees(FMath::Asin(CosLatCosLon * CosTheta * CosPsi + CosLatSinLon * CosTheta * SinPsi - SinLat * SinTheta));
 }
 
-double UUEOpenDIS_BPFL::GetRollFromEuler(double LatitudeRadians, double LongitudeRadians, FPsiThetaPhi PsiThetaPhiRadians)
+double UUEOpenDIS_BPFL::GetRollFromEuler(const double LatitudeRadians, const double LongitudeRadians, const FPsiThetaPhi PsiThetaPhiRadians)
 {
-	double sinLat = FMath::Sin(LatitudeRadians);
-	double sinLon = FMath::Sin(LongitudeRadians);
-	double cosLon = FMath::Cos(LongitudeRadians);
-	double cosLat = FMath::Cos(LatitudeRadians);
-	double cosLatCosLon = cosLat * cosLon;
-	double cosLatSinLon = cosLat * sinLon;
+	const double SinLat = FMath::Sin(LatitudeRadians);
+	const double SinLon = FMath::Sin(LongitudeRadians);
+	const double CosLon = FMath::Cos(LongitudeRadians);
+	const double CosLat = FMath::Cos(LatitudeRadians);
+	const double CosLatCosLon = CosLat * CosLon;
+	const double CosLatSinLon = CosLat * SinLon;
 
-	double cosTheta = FMath::Cos(PsiThetaPhiRadians.Theta);
-	double sinTheta = FMath::Sin(PsiThetaPhiRadians.Theta);
-	double cosPsi = FMath::Cos(PsiThetaPhiRadians.Psi);
-	double sinPsi = FMath::Sin(PsiThetaPhiRadians.Psi);
-	double sinPhi = FMath::Sin(PsiThetaPhiRadians.Phi);
-	double cosPhi = FMath::Cos(PsiThetaPhiRadians.Phi);
+	const double CosTheta = FMath::Cos(PsiThetaPhiRadians.Theta);
+	const double SinTheta = FMath::Sin(PsiThetaPhiRadians.Theta);
+	const double CosPsi = FMath::Cos(PsiThetaPhiRadians.Psi);
+	const double SinPsi = FMath::Sin(PsiThetaPhiRadians.Psi);
+	const double SinPhi = FMath::Sin(PsiThetaPhiRadians.Phi);
+	const double CosPhi = FMath::Cos(PsiThetaPhiRadians.Phi);
 
-	double sinPhiSinTheta = sinPhi * sinTheta;
-	double cosPhiSinTheta = cosPhi * sinTheta;
+	const double SinPhiSinTheta = SinPhi * SinTheta;
+	const double PhiSinTheta = CosPhi * SinTheta;
 
-	double b23 = cosLatCosLon * (-cosPhi * sinPsi + sinPhiSinTheta * cosPsi) +
-		cosLatSinLon * (cosPhi * cosPsi + sinPhiSinTheta * sinPsi) +
-		sinLat * (sinPhi * cosTheta);
+	const double B23 = CosLatCosLon * (-CosPhi * SinPsi + SinPhiSinTheta * CosPsi) +
+		CosLatSinLon * (CosPhi * CosPsi + SinPhiSinTheta * SinPsi) +
+		SinLat * (SinPhi * CosTheta);
 
-	double b33 = cosLatCosLon * (sinPhi * sinPsi + cosPhiSinTheta * cosPsi) +
-		cosLatSinLon * (-sinPhi * cosPsi + cosPhiSinTheta * sinPsi) +
-		sinLat * (cosPhi * cosTheta);
+	const double B33 = CosLatCosLon * (SinPhi * SinPsi + PhiSinTheta * CosPsi) +
+		CosLatSinLon * (-SinPhi * CosPsi + PhiSinTheta * SinPsi) +
+		SinLat * (CosPhi * CosTheta);
 
-	return FMath::RadiansToDegrees(FMath::Atan2(-b23, -b33));
+	return FMath::RadiansToDegrees(FMath::Atan2(-B23, -B33));
 }
 
-void UUEOpenDIS_BPFL::EulerToENU(float LatInRad, float LonInRad, FPsiThetaPhi PsiThetaPhiRadians, FRotator& TaitBryanAnglesOut)
+void UUEOpenDIS_BPFL::EulerToEastNorthUp(const float LatInRad, const float LonInRad, const FPsiThetaPhi PsiThetaPhiRadians, FRotator& TaitBryanAnglesOut)
 {
 	TaitBryanAnglesOut.Pitch = GetPitchFromEuler(LatInRad, LonInRad, PsiThetaPhiRadians.Psi, PsiThetaPhiRadians.Theta);
 	TaitBryanAnglesOut.Yaw = GetHeadingFromEuler(LatInRad, LonInRad, PsiThetaPhiRadians.Psi, PsiThetaPhiRadians.Theta);
 	TaitBryanAnglesOut.Roll = GetRollFromEuler(LatInRad, LonInRad, PsiThetaPhiRadians);
 }
 
-void UUEOpenDIS_BPFL::CalculateLatLonHeightFromEcefXYZ(const FEarthCenteredEarthFixedDouble ECEF,	FLatLonHeightDouble& OutLatLonHeightDegreesMeters)
+void UUEOpenDIS_BPFL::CalculateLatLonHeightFromEcefXYZ(const FEarthCenteredEarthFixedDouble Ecef,	FLatLonHeightDouble& OutLatLonHeightDegreesMeters)
 {
 	constexpr double EarthSemiMajorRadiusMeters = 6378137;
 	constexpr double EarthSemiMinorRadiusMeters = 6356752.3142;
 
-	const double Longitude = FMath::RadiansToDegrees(FMath::Atan2(ECEF.Y, ECEF.X));
+	const double Longitude = FMath::RadiansToDegrees(FMath::Atan2(Ecef.Y, Ecef.X));
 	// Latitude accurate to ~5 decimal places
-	const double Latitude = FMath::RadiansToDegrees(FMath::Atan((FMath::Square(EarthSemiMajorRadiusMeters) / FMath::Square(EarthSemiMinorRadiusMeters))*(ECEF.Z / FMath::Sqrt(FMath::Square(ECEF.X) + FMath::Square(ECEF.Y)))));
+	const double Latitude = FMath::RadiansToDegrees(FMath::Atan((FMath::Square(EarthSemiMajorRadiusMeters) / FMath::Square(EarthSemiMinorRadiusMeters))*(Ecef.Z / FMath::Sqrt(FMath::Square(Ecef.X) + FMath::Square(Ecef.Y)))));
 
 	const double EarthSemiMajorRadiusMetersSquare = FMath::Square(EarthSemiMajorRadiusMeters);
 	const double EarthSemiMinorRadiusMetersSquare = FMath::Square(EarthSemiMinorRadiusMeters);
-	const double DistFromXToY = FMath::Sqrt(FMath::Square(ECEF.X) + FMath::Square(ECEF.Y));
+	const double DistFromXToY = FMath::Sqrt(FMath::Square(Ecef.X) + FMath::Square(Ecef.Y));
 	const double CosLatitude = FMath::Cos(FMath::DegreesToRadians(Latitude));
 	const double SinLatitude = FMath::Sin(FMath::DegreesToRadians(Latitude));
 	const double Height = (DistFromXToY / CosLatitude) - (EarthSemiMajorRadiusMetersSquare / FMath::Sqrt(
@@ -108,22 +106,22 @@ void UUEOpenDIS_BPFL::CalculateLatLonHeightFromEcefXYZ(const FEarthCenteredEarth
 
 void UUEOpenDIS_BPFL::CalculateLatLonHeightFromEcefXYZ(const FEarthCenteredEarthFixedFloat ECEF, FLatLonHeightFloat& OutLatLonHeightDegreesMeters)
 {
-	FLatLonHeightDouble latLonHeightDouble;
+	FLatLonHeightDouble LatLonHeightDouble;
 
-	FEarthCenteredEarthFixedDouble ecefDouble;
-	ecefDouble.X = static_cast<double>(ECEF.X);
-	ecefDouble.Y = static_cast<double>(ECEF.Y);
-	ecefDouble.Z = static_cast<double>(ECEF.Z);
+	FEarthCenteredEarthFixedDouble EcefDouble;
+	EcefDouble.X = static_cast<double>(ECEF.X);
+	EcefDouble.Y = static_cast<double>(ECEF.Y);
+	EcefDouble.Z = static_cast<double>(ECEF.Z);
 
-	CalculateLatLonHeightFromEcefXYZ(ecefDouble, latLonHeightDouble);
+	CalculateLatLonHeightFromEcefXYZ(EcefDouble, LatLonHeightDouble);
 
 
-	OutLatLonHeightDegreesMeters.Latitude = latLonHeightDouble.Latitude;
-	OutLatLonHeightDegreesMeters.Longitude = latLonHeightDouble.Longitude;
-	OutLatLonHeightDegreesMeters.Height = latLonHeightDouble.Height;
+	OutLatLonHeightDegreesMeters.Latitude = LatLonHeightDouble.Latitude;
+	OutLatLonHeightDegreesMeters.Longitude = LatLonHeightDouble.Longitude;
+	OutLatLonHeightDegreesMeters.Height = LatLonHeightDouble.Height;
 }
 
-void UUEOpenDIS_BPFL::CalculateEcefXYZFromLatLonHeight(const FLatLonHeightDouble OutLatLonHeightDegreesMeters, FEarthCenteredEarthFixedDouble& OutECEF)
+void UUEOpenDIS_BPFL::CalculateEcefXYZFromLatLonHeight(const FLatLonHeightDouble LatLonHeightDegreesMeters, FEarthCenteredEarthFixedDouble& OutEcef)
 {
 	constexpr double EarthSemiMajorRadiusMeters = 6378137;
 	constexpr double EarthSemiMinorRadiusMeters = 6356752.3142;
@@ -132,13 +130,13 @@ void UUEOpenDIS_BPFL::CalculateEcefXYZFromLatLonHeight(const FLatLonHeightDouble
 	const double SinLatitude = FMath::Sin(FMath::DegreesToRadians(LatitudeDegrees));
 	const double CosLongitude = FMath::Cos(FMath::DegreesToRadians(LongitudeDegrees));
 	const double SinLongitude = FMath::Sin(FMath::DegreesToRadians(LongitudeDegrees));*/
-	const double CosLatitude = glm::cos(glm::radians(OutLatLonHeightDegreesMeters.Latitude));
-	const double SinLatitude = glm::sin(glm::radians(OutLatLonHeightDegreesMeters.Latitude));
-	const double CosLongitude = FMath::Cos(FMath::DegreesToRadians(OutLatLonHeightDegreesMeters.Longitude));
-	const double SinLongitude = FMath::Sin(FMath::DegreesToRadians(OutLatLonHeightDegreesMeters.Longitude));
+	const double CosLatitude = glm::cos(glm::radians(LatLonHeightDegreesMeters.Latitude));
+	const double SinLatitude = glm::sin(glm::radians(LatLonHeightDegreesMeters.Latitude));
+	const double CosLongitude = FMath::Cos(FMath::DegreesToRadians(LatLonHeightDegreesMeters.Longitude));
+	const double SinLongitude = FMath::Sin(FMath::DegreesToRadians(LatLonHeightDegreesMeters.Longitude));
 
-	const double XYBaseConversion = (EarthSemiMajorRadiusMeters / (FMath::Sqrt(FMath::Square(CosLatitude) + ((FMath::Square(EarthSemiMinorRadiusMeters) / FMath::Square(EarthSemiMajorRadiusMeters)) * FMath::Square(SinLatitude))))) + OutLatLonHeightDegreesMeters.Height;
-	const double ZBaseConversion = (EarthSemiMinorRadiusMeters / (((FMath::Sqrt(FMath::Square(CosLatitude) * (FMath::Square(EarthSemiMajorRadiusMeters) / FMath::Square(EarthSemiMinorRadiusMeters)) + FMath::Square(SinLatitude)))))) + OutLatLonHeightDegreesMeters.Height;
+	const double XYBaseConversion = (EarthSemiMajorRadiusMeters / (FMath::Sqrt(FMath::Square(CosLatitude) + ((FMath::Square(EarthSemiMinorRadiusMeters) / FMath::Square(EarthSemiMajorRadiusMeters)) * FMath::Square(SinLatitude))))) + LatLonHeightDegreesMeters.Height;
+	const double ZBaseConversion = (EarthSemiMinorRadiusMeters / (((FMath::Sqrt(FMath::Square(CosLatitude) * (FMath::Square(EarthSemiMajorRadiusMeters) / FMath::Square(EarthSemiMinorRadiusMeters)) + FMath::Square(SinLatitude)))))) + LatLonHeightDegreesMeters.Height;
 
 	DIS::Vector3Double Location;
 
@@ -150,9 +148,9 @@ void UUEOpenDIS_BPFL::CalculateEcefXYZFromLatLonHeight(const FLatLonHeightDouble
 	Location.setY(EcefY);
 	Location.setZ(EcefZ);
 
-	OutECEF.X = EcefX;
-	OutECEF.Y = EcefY;
-	OutECEF.Z = EcefZ;
+	OutEcef.X = EcefX;
+	OutEcef.Y = EcefY;
+	OutEcef.Z = EcefZ;
 }
 
 void UUEOpenDIS_BPFL::CalculateEcefXYZFromLatLonHeight(const FLatLonHeightFloat LatLonHeightDegreesMeters, FEarthCenteredEarthFixedFloat& OutECEF)
@@ -172,7 +170,7 @@ void UUEOpenDIS_BPFL::CalculateEcefXYZFromLatLonHeight(const FLatLonHeightFloat 
 }
 
 
-FMatrix UUEOpenDIS_BPFL::CreateNCrossXMatrix(FVector NVector)
+FMatrix UUEOpenDIS_BPFL::CreateNCrossXMatrix(const FVector NVector)
 {
 	const auto NMatrix = FMatrix(FPlane(0, -NVector.Z, NVector.Y, 0),
 		FPlane(NVector.Z, 0, -NVector.X, 0),
@@ -183,7 +181,7 @@ FMatrix UUEOpenDIS_BPFL::CreateNCrossXMatrix(FVector NVector)
 	return NMatrix;
 }
 
-glm::dmat3x3 UUEOpenDIS_BPFL::CreateNCrossXMatrix(glm::dvec3 NVector)
+glm::dmat3x3 UUEOpenDIS_BPFL::CreateNCrossXMatrix(const glm::dvec3 NVector)
 {
 	return glm::dmat3x3(0, -NVector.z, NVector.y, NVector.z, 0, -NVector.x, -NVector.y, NVector.x, 0);
 }
@@ -196,9 +194,9 @@ void UUEOpenDIS_BPFL::CreateRotationMatrix(const FVector AxisVector, const float
 	OutRotationMatrix = FMatrix(FPlane(FVector(0), 0), FPlane(FVector(0), 0), FVector4(FVector(0), 0), FVector4(FVector(0), 0));
 
 	const auto N = FMatrix(FPlane(AxisVector, 0), FPlane(FVector(0), 0), FVector4(FVector(0), 0), FVector4(FVector(0), 0));
-	FMatrix NTransposeN = N.GetTransposed() * N;
+	const FMatrix NTransposeN = N.GetTransposed() * N;
 
-	FMatrix NCrossX = CreateNCrossXMatrix(AxisVector);
+	const FMatrix NCrossX = CreateNCrossXMatrix(AxisVector);
 
 	auto ScaledTranspose = FMatrix(NTransposeN);
 	ScaledTranspose *= (1 - CosTheta);
@@ -212,7 +210,7 @@ void UUEOpenDIS_BPFL::CreateRotationMatrix(const FVector AxisVector, const float
 	OutRotationMatrix += ScaledTranspose + Identity + ScaledNCrossX;
 }
 
-void UUEOpenDIS_BPFL::CreateRotationMatrix(glm::dvec3 AxisVector, double ThetaRadians, glm::dmat3x3& OutRotationMatrix)
+void UUEOpenDIS_BPFL::CreateRotationMatrix(const glm::dvec3 AxisVector, const double ThetaRadians, glm::dmat3x3& OutRotationMatrix)
 {
 	const double CosTheta = glm::cos(ThetaRadians);
 	const double SinTheta = glm::sin(ThetaRadians);
@@ -226,7 +224,6 @@ void UUEOpenDIS_BPFL::CreateRotationMatrix(glm::dvec3 AxisVector, double ThetaRa
 	OutRotationMatrix = ((1 - CosTheta) * NTransposeN) + (CosTheta * glm::identity<glm::dmat3x3>()) + (SinTheta * NCrossN);
 }
 
-// TODO: Separate this into it's own function and an additional function for applying roll
 void UUEOpenDIS_BPFL::ApplyHeadingPitchToNorthEastDownVector(const float HeadingDegrees, const float PitchDegrees, const FNorthEastDown NorthEastDownVectors, FVector& OutX, FVector& OutY, FVector& OutZ)
 {
 	// Rotate the X and Y vectors around the Z vector by the Heading
@@ -238,7 +235,6 @@ void UUEOpenDIS_BPFL::ApplyHeadingPitchToNorthEastDownVector(const float Heading
 	RotateVectorAroundAxisByDegrees(NorthEastDownVectors.DownVector, PitchDegrees, OutY, OutZ);
 }
 
-// TODO: Implement this
 void UUEOpenDIS_BPFL::ApplyRollToNorthEastDownVector(const float RollDegrees, const FNorthEastDown NorthEastDownVectors, FVector& OutX, FVector& OutY, FVector& OutZ)
 {
 	// Rotate the Y and Z vectors around the X vector by the Roll
@@ -247,34 +243,33 @@ void UUEOpenDIS_BPFL::ApplyRollToNorthEastDownVector(const float RollDegrees, co
 	RotateVectorAroundAxisByDegrees(NorthEastDownVectors.DownVector, RollDegrees, NorthEastDownVectors.NorthVector, OutZ);
 }
 
-void UUEOpenDIS_BPFL::RotateVectorAroundAxisByRadians(glm::dvec3 VectorToRotate, double ThetaRadians, glm::dvec3 AxisVector, glm::dvec3& OutRotatedVector)
+void UUEOpenDIS_BPFL::RotateVectorAroundAxisByRadians(const glm::dvec3 VectorToRotate, const double ThetaRadians, const glm::dvec3 AxisVector, glm::dvec3& OutRotatedVector)
 {
 	auto RotationMatrix = glm::dmat3x3();
 	CreateRotationMatrix(AxisVector, ThetaRadians, RotationMatrix);
 	OutRotatedVector = RotationMatrix * VectorToRotate;
 }
 
-void UUEOpenDIS_BPFL::RotateVectorAroundAxisByDegrees(glm::dvec3 VectorToRotate, float ThetaDegrees, glm::dvec3 AxisVector, glm::dvec3& OutRotatedVector)
+void UUEOpenDIS_BPFL::RotateVectorAroundAxisByDegrees(const glm::dvec3 VectorToRotate, const float ThetaDegrees, const glm::dvec3 AxisVector, glm::dvec3& OutRotatedVector)
 {
 	RotateVectorAroundAxisByRadians(VectorToRotate, glm::radians(ThetaDegrees), AxisVector, OutRotatedVector);
 }
 
-void UUEOpenDIS_BPFL::RotateVectorAroundAxisByRadians(FVector VectorToRotate, float ThetaRadians, FVector AxisVector, FVector& OutRotatedVector)
+void UUEOpenDIS_BPFL::RotateVectorAroundAxisByRadians(const FVector VectorToRotate, const float ThetaRadians, const FVector AxisVector, FVector& OutRotatedVector)
 {
 	const auto ZeroPlane = FPlane(FVector(0), 0);
 	const auto VectorMatrix = FMatrix(FPlane(VectorToRotate, 0), ZeroPlane, ZeroPlane, ZeroPlane);
 	auto RotationMatrix = FMatrix();
 	CreateRotationMatrix(AxisVector, ThetaRadians, RotationMatrix);
-	FMatrix ResMatrix = VectorMatrix * RotationMatrix.GetTransposed();
+	const FMatrix ResMatrix = VectorMatrix * RotationMatrix.GetTransposed();
 	OutRotatedVector = ResMatrix.GetScaledAxis(EAxis::X);
 }
 
-void UUEOpenDIS_BPFL::RotateVectorAroundAxisByDegrees(FVector VectorToRotate, float ThetaDegrees, FVector AxisVector, FVector& OutRotatedVector)
+void UUEOpenDIS_BPFL::RotateVectorAroundAxisByDegrees(const FVector VectorToRotate, const float ThetaDegrees, const FVector AxisVector, FVector& OutRotatedVector)
 {
 	RotateVectorAroundAxisByRadians(VectorToRotate, FMath::DegreesToRadians(ThetaDegrees), AxisVector, OutRotatedVector);
 }
 
-// TODO: Separate into ApplyHeadingPitch... and ApplyRoll...
 void UUEOpenDIS_BPFL::ApplyHeadingPitchRollToNorthEastDownVector(const FHeadingPitchRoll HeadingPitchRollDegrees, const FNorthEastDown NorthEastDownVectors, FVector& OutX, FVector& OutY, FVector& OutZ)
 {
 
@@ -329,22 +324,22 @@ void UUEOpenDIS_BPFL::CalculatePsiThetaPhiDegreesFromHeadingPitchRollDegreesAtLa
 
 void UUEOpenDIS_BPFL::CalculatePsiThetaPhiRadiansFromHeadingPitchRollRadiansAtLatLon(const FHeadingPitchRoll HeadingPitchRollRadians, const float LatitudeDegrees, const float LongitudeDegrees, FPsiThetaPhi& PsiThetaPhiRadians)
 {
-	FHeadingPitchRoll headingPitchRollDegrees;
-	headingPitchRollDegrees.Heading = FMath::RadiansToDegrees(HeadingPitchRollRadians.Heading);
-	headingPitchRollDegrees.Pitch = FMath::RadiansToDegrees(HeadingPitchRollRadians.Pitch);
-	headingPitchRollDegrees.Roll = FMath::RadiansToDegrees(HeadingPitchRollRadians.Roll);
+	FHeadingPitchRoll HeadingPitchRollDegrees;
+	HeadingPitchRollDegrees.Heading = FMath::RadiansToDegrees(HeadingPitchRollRadians.Heading);
+	HeadingPitchRollDegrees.Pitch = FMath::RadiansToDegrees(HeadingPitchRollRadians.Pitch);
+	HeadingPitchRollDegrees.Roll = FMath::RadiansToDegrees(HeadingPitchRollRadians.Roll);
 
-	CalculatePsiThetaPhiRadiansFromHeadingPitchRollDegreesAtLatLon(headingPitchRollDegrees, LatitudeDegrees, LongitudeDegrees, PsiThetaPhiRadians);
+	CalculatePsiThetaPhiRadiansFromHeadingPitchRollDegreesAtLatLon(HeadingPitchRollDegrees, LatitudeDegrees, LongitudeDegrees, PsiThetaPhiRadians);
 }
 
 void UUEOpenDIS_BPFL::CalculatePsiThetaPhiRadiansFromHeadingPitchRollDegreesAtLatLon(const FHeadingPitchRoll HeadingPitchRollDegrees, const float LatitudeDegrees, const float LongitudeDegrees, FPsiThetaPhi& PsiThetaPhiRadians)
 {
-	FPsiThetaPhi psiThetaPhiDegrees;
-	CalculatePsiThetaPhiDegreesFromHeadingPitchRollDegreesAtLatLon(HeadingPitchRollDegrees, LatitudeDegrees, LongitudeDegrees, psiThetaPhiDegrees);
+	FPsiThetaPhi PsiThetaPhiDegrees;
+	CalculatePsiThetaPhiDegreesFromHeadingPitchRollDegreesAtLatLon(HeadingPitchRollDegrees, LatitudeDegrees, LongitudeDegrees, PsiThetaPhiDegrees);
 
-	PsiThetaPhiRadians.Psi = FMath::DegreesToRadians(psiThetaPhiDegrees.Psi);
-	PsiThetaPhiRadians.Theta = FMath::DegreesToRadians(psiThetaPhiDegrees.Theta);
-	PsiThetaPhiRadians.Phi = FMath::DegreesToRadians(psiThetaPhiDegrees.Phi);
+	PsiThetaPhiRadians.Psi = FMath::DegreesToRadians(PsiThetaPhiDegrees.Psi);
+	PsiThetaPhiRadians.Theta = FMath::DegreesToRadians(PsiThetaPhiDegrees.Theta);
+	PsiThetaPhiRadians.Phi = FMath::DegreesToRadians(PsiThetaPhiDegrees.Phi);
 }
 
 void UUEOpenDIS_BPFL::CalculatePsiThetaPhiDegreesFromHeadingPitchRollRadiansAtLatLon(const FHeadingPitchRoll HeadingPitchRollRadians, const float LatitudeDegrees, const float LongitudeDegrees, FPsiThetaPhi& PsiThetaPhiDegrees)
@@ -436,13 +431,12 @@ void UUEOpenDIS_BPFL::GetUnrealRotationFromEntityStatePdu(const FEntityStatePDU 
 	psiThetaPhiRadians.Theta = EntityStatePdu.EntityOrientation.Pitch;
 	psiThetaPhiRadians.Phi = EntityStatePdu.EntityOrientation.Roll;
 
-	FHeadingPitchRoll headingPitchRoll;
-	//NOTE: Roll=Phi, Pitch=Theta, Yaw=Psi
-	CalculateHeadingPitchRollDegreesFromPsiThetaPhiRadiansAtLatLon(psiThetaPhiRadians, LatLonHeightDouble.Latitude, LatLonHeightDouble.Longitude, headingPitchRoll);
+	FHeadingPitchRoll HeadingPitchRollDegrees;
+	CalculateHeadingPitchRollDegreesFromPsiThetaPhiRadiansAtLatLon(psiThetaPhiRadians, LatLonHeightDouble.Latitude, LatLonHeightDouble.Longitude, HeadingPitchRollDegrees);
 
-	EntityRotation.Roll = headingPitchRoll.Roll;
-	EntityRotation.Pitch = headingPitchRoll.Pitch;
-	EntityRotation.Yaw = headingPitchRoll.Heading;
+	EntityRotation.Roll = HeadingPitchRollDegrees.Roll;
+	EntityRotation.Pitch = HeadingPitchRollDegrees.Pitch;
+	EntityRotation.Yaw = HeadingPitchRollDegrees.Heading;
 }
 
 void UUEOpenDIS_BPFL::GetEntityLocationFromEntityStatePdu(const FEntityStatePDU EntityStatePdu, const FLatLonHeightFloat OriginLatLonAlt, const FNorthEastDown OriginNorthEastDown, FVector& EntityLocation)

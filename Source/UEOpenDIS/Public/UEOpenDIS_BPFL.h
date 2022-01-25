@@ -61,7 +61,7 @@ public:
 	static double GetRollFromEuler(double LatitudeRadians, double LongitudeRadians, FPsiThetaPhi PsiThetaPhiRadians);
 
 	UFUNCTION(BlueprintCallable, Category = "OpenDIS|Unit Conversions")
-		static void EulerToENU(float LatInRad, float LonInRad, FPsiThetaPhi PsiThetaPhiRadians, FRotator& TaitBryanAnglesOut);
+		static void EulerToEastNorthUp(float LatInRad, float LonInRad, FPsiThetaPhi PsiThetaPhiRadians, FRotator& TaitBryanAnglesOut);
 
 	/**
 	 * Creates a 4x4 n^x matrix used for creating a rotation matrix
@@ -77,10 +77,10 @@ public:
 
 	/**
 	 * Converts DIS X, Y, Z coordinates (ECEF) to Latitude, Longitude, and Height (LLH) all in double (64-bit) precision
-	 * @param ECEF The ECEF location
+	 * @param Ecef The ECEF location
 	 * @param OutLatLonHeightDegreesMeters The converted latitude in degrees, longitude in degrees, and height in meters
 	 */
-	static void CalculateLatLonHeightFromEcefXYZ(const FEarthCenteredEarthFixedDouble ECEF, FLatLonHeightDouble& OutLatLonHeightDegreesMeters);
+	static void CalculateLatLonHeightFromEcefXYZ(const FEarthCenteredEarthFixedDouble Ecef, FLatLonHeightDouble& OutLatLonHeightDegreesMeters);
 
 	/**
 	 * Converts DIS X, Y, Z coordinates (ECEF) to Latitude, Longitude, and Height (LLH) all in double (32-bit) precision
@@ -93,9 +93,9 @@ public:
 	/**
 	 * Converts Latitude, Longitude, and Height (LLH) to DIS X, Y, Z coordinates (ECEF) all in double (64-bit) precision
 	 * @param LatLonHeightDegreesMeters The latitude in degrees, longitude in degrees, and height in meters
-	 * @param OutECEF The converted ECEF location
+	 * @param OutEcef The converted ECEF location
 	 */
-	static void CalculateEcefXYZFromLatLonHeight(const FLatLonHeightDouble LatLonHeightDegreesMeters, FEarthCenteredEarthFixedDouble& OutECEF);
+	static void CalculateEcefXYZFromLatLonHeight(const FLatLonHeightDouble LatLonHeightDegreesMeters, FEarthCenteredEarthFixedDouble& OutEcef);
 
 	/**
 	 * Converts Latitude, Longitude, and Height (LLH) to DIS X, Y, Z coordinates (ECEF) all in floating point (32-bit) precision
