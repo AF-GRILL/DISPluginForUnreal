@@ -191,6 +191,13 @@ struct FEarthCenteredEarthFixedFloat
 		Y = 0.0f;
 		Z = 0.0f;
 	}
+
+	FEarthCenteredEarthFixedFloat(const float X, const float Y, const float Z)
+	{
+		this->X = X;
+		this->Y = Y;
+		this->Z = Z;
+	}
 };
 
 USTRUCT()
@@ -238,6 +245,13 @@ struct FLatLonHeightFloat
 		Longitude = 0.0f;
 		Height = 0.0f;
 	}
+
+	FLatLonHeightFloat(const float Latitude, const float Longitude, const float Height)
+	{
+		this->Latitude = Latitude;
+		this->Longitude = Longitude;
+		this->Height = Height;
+	}
 };
 
 USTRUCT(BlueprintType)
@@ -254,9 +268,16 @@ struct FEastNorthUp
 
 	FEastNorthUp()
 	{
-		NorthVector = FVector(1, 0, 0);
-		EastVector = FVector(0, 1, 0);
+		NorthVector = FVector(0, 1, 0);
+		EastVector = FVector(1, 0, 0);
 		UpVector = FVector(0, 0, 1);
+	}
+
+	FEastNorthUp(FVector EastVector, FVector NorthVector, FVector UpVector)
+	{
+		this->EastVector = EastVector;
+		this->NorthVector = NorthVector;
+		this->UpVector = UpVector;
 	}
 };
 
@@ -274,9 +295,9 @@ struct FNorthEastDown
 
 	FNorthEastDown()
 	{
-		NorthVector = FVector(1, 0, 0);
-		EastVector = FVector(0, 1, 0);
-		DownVector = FVector(0, 0, 1);
+		NorthVector = FVector(0, 1, 0);
+		EastVector = FVector(1, 0, 0);
+		DownVector = FVector(0, 0, -1);
 	}
 
 	FNorthEastDown(FVector NorthVector, FVector EastVector, FVector DownVector)
@@ -305,6 +326,13 @@ struct FHeadingPitchRoll
 		Pitch = 0.0f;
 		Roll = 0.0f;
 	}
+
+	FHeadingPitchRoll(const float Heading, const float Pitch, const float Roll) 
+	{
+		this->Heading = Heading;
+		this->Pitch = Pitch;
+		this->Roll = Roll;
+	}
 };
 
 USTRUCT(BlueprintType)
@@ -324,6 +352,13 @@ struct FPsiThetaPhi
 		Psi = 0.0f;
 		Theta = 0.0f;
 		Phi = 0.0f;
+	}
+
+	FPsiThetaPhi(const float Psi, const float Theta, const float Phi)
+	{
+		this->Psi = Psi;
+		this->Theta = Theta;
+		this->Phi = Phi;
 	}
 };
 

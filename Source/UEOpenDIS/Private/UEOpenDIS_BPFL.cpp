@@ -195,7 +195,6 @@ void UUEOpenDIS_BPFL::RotateVectorAroundAxisByDegrees(const FVector VectorToRota
 
 void UUEOpenDIS_BPFL::ApplyHeadingPitchRollToNorthEastDownVector(const FHeadingPitchRoll HeadingPitchRollDegrees, const FNorthEastDown NorthEastDownVectors, FVector& OutX, FVector& OutY, FVector& OutZ)
 {
-
 	ApplyHeadingPitchToNorthEastDownVector(HeadingPitchRollDegrees.Heading, HeadingPitchRollDegrees.Pitch, NorthEastDownVectors, OutX, OutY, OutZ);
 
 	ApplyRollToNorthEastDownVector(HeadingPitchRollDegrees.Roll, FNorthEastDown(OutX, OutY, OutZ), OutX, OutY, OutZ);
@@ -218,7 +217,6 @@ void UUEOpenDIS_BPFL::CalculateLatLongFromNorthEastDownVectors(const FNorthEastD
 {
 	LongitudeDegrees = FMath::RadiansToDegrees(FMath::Acos(FVector::DotProduct(FVector::YAxisVector, NorthEastDownVectors.EastVector) / NorthEastDownVectors.EastVector.Size()));
 	LatitudeDegrees = FMath::RadiansToDegrees(FMath::Acos(FVector::DotProduct(FVector::ZAxisVector, NorthEastDownVectors.NorthVector) / NorthEastDownVectors.NorthVector.Size()));
-	
 }
 
 void UUEOpenDIS_BPFL::CalculatePsiThetaPhiDegreesFromHeadingPitchRollDegreesAtLatLon(const FHeadingPitchRoll HeadingPitchRollDegrees, const float LatitudeDegrees, const float LongitudeDegrees, FPsiThetaPhi& PsiThetaPhiDegrees)
@@ -284,17 +282,11 @@ void UUEOpenDIS_BPFL::CalculateHeadingPitchRollDegreesFromPsiThetaPhiDegreesAtLa
 	const auto Y0 = FVector(0, 1, 0);
 	const auto Z0 = FVector(0, 0, 1);
 
-	FNorthEastDown startingVectorsForRotation;
-	startingVectorsForRotation.NorthVector = X0;
-	startingVectorsForRotation.EastVector = Y0;
-	startingVectorsForRotation.DownVector = Z0;
+	FNorthEastDown startingVectorsForRotation = FNorthEastDown(X0, Y0, Z0);
 
 	FVector X3, Y3, Z3, X2, Y2, Z2;
 
-	FHeadingPitchRoll headingPitchRoll;
-	headingPitchRoll.Heading = PsiThetaPhiDegrees.Psi;
-	headingPitchRoll.Pitch = PsiThetaPhiDegrees.Theta;
-	headingPitchRoll.Roll = PsiThetaPhiDegrees.Phi;
+	FHeadingPitchRoll headingPitchRoll = FHeadingPitchRoll(PsiThetaPhiDegrees.Psi, PsiThetaPhiDegrees.Theta, PsiThetaPhiDegrees.Phi);
 
 	ApplyHeadingPitchRollToNorthEastDownVector(headingPitchRoll, startingVectorsForRotation, X3, Y3, Z3);
 
@@ -337,13 +329,9 @@ void UUEOpenDIS_BPFL::CalculateHeadingPitchRollRadiansFromPsiThetaPhiDegreesAtLa
 
 void UUEOpenDIS_BPFL::GetUnrealRotationFromEntityStatePdu(const FEntityStatePDU EntityStatePdu, const FNorthEastDown OriginNorthEastDown, FRotator& EntityRotation)
 {
-	FEarthCenteredEarthFixedDouble EcefDouble;
-	EcefDouble.X = EntityStatePdu.EntityLocationDouble[0];
-	EcefDouble.Y = EntityStatePdu.EntityLocationDouble[1];
-	EcefDouble.Z = EntityStatePdu.EntityLocation[2];
+	FEarthCenteredEarthFixedDouble EcefDouble = FEarthCenteredEarthFixedDouble(EntityStatePdu.EntityLocationDouble[0], EntityStatePdu.EntityLocationDouble[1], EntityStatePdu.EntityLocationDouble[2]);
 
 	FLatLonHeightDouble LatLonHeightDouble;
-
 	CalculateLatLonHeightFromEcefXYZ(EcefDouble, LatLonHeightDouble);
 
 	FNorthEastDown NorthEastDownVectors;
@@ -354,10 +342,7 @@ void UUEOpenDIS_BPFL::GetUnrealRotationFromEntityStatePdu(const FEntityStatePDU 
 	const auto YAxisRotationAngle = FVector::DotProduct(NorthEastDownVectors.DownVector, OriginNorthEastDown.DownVector);
 	const auto ZAxisRotationAngle = FVector::DotProduct(NorthEastDownVectors.NorthVector, OriginNorthEastDown.NorthVector);
 
-	FPsiThetaPhi PsiThetaPhiRadians;
-	PsiThetaPhiRadians.Psi = EntityStatePdu.EntityOrientation.Yaw;
-	PsiThetaPhiRadians.Theta = EntityStatePdu.EntityOrientation.Pitch;
-	PsiThetaPhiRadians.Phi = EntityStatePdu.EntityOrientation.Roll;
+	FPsiThetaPhi PsiThetaPhiRadians = FPsiThetaPhi(EntityStatePdu.EntityOrientation.Yaw, EntityStatePdu.EntityOrientation.Pitch, EntityStatePdu.EntityOrientation.Roll);
 
 	FHeadingPitchRoll HeadingPitchRollDegrees;
 	CalculateHeadingPitchRollDegreesFromPsiThetaPhiRadiansAtLatLon(PsiThetaPhiRadians, LatLonHeightDouble.Latitude, LatLonHeightDouble.Longitude, HeadingPitchRollDegrees);
@@ -379,6 +364,7 @@ void UUEOpenDIS_BPFL::GetEntityLocationFromEntityStatePdu(const FEntityStatePDU 
 	// Convert latitude difference to cm
 	auto EntityEastDistance = (LatLonHeightDouble.Latitude - WorldOriginLLHAndNED.WorldOriginLLH.Latitude) * (10000 / 90.) * 1000 * 100;
 	auto EntityUpDistance = (LatLonHeightDouble.Height * 100) - WorldOriginLLHAndNED.WorldOriginLLH.Height;
+
 	FVector EntityNorthVector, EntityEastVector, EntityUpVector;
 	EntityNorthVector = WorldOriginLLHAndNED.WorldOriginNED.NorthVector * EntityNorthDistance;
 	EntityEastVector = WorldOriginLLHAndNED.WorldOriginNED.EastVector * EntityEastDistance;
