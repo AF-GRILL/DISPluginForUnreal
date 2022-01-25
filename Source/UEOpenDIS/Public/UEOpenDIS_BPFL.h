@@ -255,10 +255,11 @@ public:
 	/**
 	 * Get Unreal rotation from a DIS entity state PDU
 	 * @param EntityStatePdu The DIS PDU struct indicating the current state of the DIS entity
+	 * @param OriginNorthEastDown The vectors representing the north, east, and down directions in the unreal level
 	 * @param EntityRotation The Heading (yaw), Pitch, and Roll calculated from the given entity state
 	 */
 	UFUNCTION(BlueprintPure, Category = "OpenDIS|Unit Conversions")
-		static void GetUnrealRotationFromEntityStatePdu(const FEntityStatePDU EntityStatePdu, FRotator& EntityRotation);
+		static void GetUnrealRotationFromEntityStatePdu(const FEntityStatePDU EntityStatePdu, const FNorthEastDown OriginNorthEastDown, FRotator& EntityRotation);
 
 	/**
 	 * Gets the unreal X, Y, Z coordinates of the entity from the given ECEF values in the DIS entity state pdu
