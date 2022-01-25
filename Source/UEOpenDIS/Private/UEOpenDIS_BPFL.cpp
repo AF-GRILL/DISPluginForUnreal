@@ -364,7 +364,7 @@ void UUEOpenDIS_BPFL::GetUnrealRotationFromEntityStatePdu(const FEntityStatePDU 
 
 	EntityRotation.Roll = HeadingPitchRollDegrees.Roll + XAxisRotationAngle;
 	EntityRotation.Pitch = HeadingPitchRollDegrees.Pitch + YAxisRotationAngle;
-	EntityRotation.Yaw = HeadingPitchRollDegrees.Heading + ZAxisRotationAngle - 90;
+	EntityRotation.Yaw = HeadingPitchRollDegrees.Heading + ZAxisRotationAngle;
 }
 
 void UUEOpenDIS_BPFL::GetEntityLocationFromEntityStatePdu(const FEntityStatePDU EntityStatePdu, const FWorldOrigin WorldOriginLLHAndNED, FVector& EntityLocation)
