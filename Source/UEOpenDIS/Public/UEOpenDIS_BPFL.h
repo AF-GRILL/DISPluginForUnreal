@@ -7,7 +7,6 @@
 #include "CoreMinimal.h"
 #include "DISEnumsAndStructs.h"
 #include "Kismet/BlueprintFunctionLibrary.h"
-#include "DISEnumsAndStructs.h"
 #include "UEOpenDIS_BPFL.generated.h"
 
 /**
@@ -265,6 +264,8 @@ public:
 	 * Gets the unreal X, Y, Z coordinates of the entity from the given ECEF values in the DIS entity state pdu
 	 * @param EntityStatePdu The DIS PDU struct indicating the current state of the DIS entity
 	 * @param OriginLatLonAlt The latitude (in degrees), longitude (in degrees), and altitude (in meters) of the location represented by the Unreal origin
+	 * @param OriginNorthEastDown The vectors representing the north, east, and down directions in the unreal level
+	 * @param EntityLocation The resulting Unreal XYZ location of the entity in Unreal units
 	 */
 	UFUNCTION(BlueprintPure, Category = "OpenDIS|Unit Conversions")
 		static void GetEntityLocationFromEntityStatePdu(const FEntityStatePDU EntityStatePdu, const FLatLonHeightFloat OriginLatLonAlt, const FNorthEastDown OriginNorthEastDown, FVector& EntityLocation);
@@ -272,6 +273,8 @@ public:
 	/**
 	 * Gets the latitude, longitude, height, and unreal rotation from a DIS entity state PDU
 	 * @param EntityStatePdu The DIS PDU struct indicating the current state of the DIS entity
+	 * @param OriginLatLonAlt  The latitude (in degrees), longitude (in degrees), and altitude (in meters) of the location represented by the Unreal origin
+	 * @param NorthEastDownVectors The vectors representing the north, east, and down directions in the unreal level
 	 * @param EntityLocation The location of the entity as a vector where X is Latitude, Y is Longitude, and Z is Height
 	 * @param EntityRotation The desired Yaw, Pitch, and Roll calculated from the given entity state
 	 */
