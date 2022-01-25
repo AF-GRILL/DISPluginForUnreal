@@ -7,7 +7,6 @@
 #include "CoreMinimal.h"
 #include "DISEnumsAndStructs.h"
 #include "Kismet/BlueprintFunctionLibrary.h"
-#include "DISEnumsAndStructs.h"
 #include "UEOpenDIS_BPFL.generated.h"
 
 /**
@@ -57,6 +56,13 @@ private:
 	static void ApplyRollToNorthEastDownVector(const float RollDegrees, const FNorthEastDown NorthEastDownVectors, FVector& OutX, FVector& OutY, FVector& OutZ);
 
 public:
+	static double GetHeadingFromEuler(double LatitudeRadians, double LongitudeRadians, float PsiRadians, float ThetaRadians);
+	static double GetPitchFromEuler(double LatitudeRadians, double LongitudeRadians, float PsiRadians, float ThetaRadians);
+	static double GetRollFromEuler(double LatitudeRadians, double LongitudeRadians, FPsiThetaPhi PsiThetaPhiRadians);
+
+	UFUNCTION(BlueprintCallable, Category = "OpenDIS|Unit Conversions")
+		static void EulerToEastNorthUp(float LatInRad, float LonInRad, FPsiThetaPhi PsiThetaPhiRadians, FRotator& TaitBryanAnglesOut);
+
 	/**
 	 * Creates a 4x4 n^x matrix used for creating a rotation matrix
 	 * @param NVector A 3x1 vector representing the axis of rotation
@@ -71,10 +77,10 @@ public:
 
 	/**
 	 * Converts DIS X, Y, Z coordinates (ECEF) to Latitude, Longitude, and Height (LLH) all in double (64-bit) precision
-	 * @param ECEF The ECEF location
+	 * @param Ecef The ECEF location
 	 * @param OutLatLonHeightDegreesMeters The converted latitude in degrees, longitude in degrees, and height in meters
 	 */
-	static void CalculateLatLonHeightFromEcefXYZ(const FEarthCenteredEarthFixedDouble ECEF, FLatLonHeightDouble& OutLatLonHeightDegreesMeters);
+	static void CalculateLatLonHeightFromEcefXYZ(const FEarthCenteredEarthFixedDouble Ecef, FLatLonHeightDouble& OutLatLonHeightDegreesMeters);
 
 	/**
 	 * Converts DIS X, Y, Z coordinates (ECEF) to Latitude, Longitude, and Height (LLH) all in double (32-bit) precision
@@ -87,9 +93,9 @@ public:
 	/**
 	 * Converts Latitude, Longitude, and Height (LLH) to DIS X, Y, Z coordinates (ECEF) all in double (64-bit) precision
 	 * @param LatLonHeightDegreesMeters The latitude in degrees, longitude in degrees, and height in meters
-	 * @param OutECEF The converted ECEF location
+	 * @param OutEcef The converted ECEF location
 	 */
-	static void CalculateEcefXYZFromLatLonHeight(const FLatLonHeightDouble LatLonHeightDegreesMeters, FEarthCenteredEarthFixedDouble& OutECEF);
+	static void CalculateEcefXYZFromLatLonHeight(const FLatLonHeightDouble LatLonHeightDegreesMeters, FEarthCenteredEarthFixedDouble& OutEcef);
 
 	/**
 	 * Converts Latitude, Longitude, and Height (LLH) to DIS X, Y, Z coordinates (ECEF) all in floating point (32-bit) precision
@@ -255,21 +261,23 @@ public:
 		static void GetUnrealRotationFromEntityStatePdu(const FEntityStatePDU EntityStatePdu, FRotator& EntityRotation);
 
 	/**
-	 * Gets the latitude, longitude, and height of the entity from the given ECEF values in the DIS entity state pdu
+	 * Gets the unreal X, Y, Z coordinates of the entity from the given ECEF values in the DIS entity state pdu
 	 * @param EntityStatePdu The DIS PDU struct indicating the current state of the DIS entity
-	 * @param WorldOriginLLHAndNED The current latitude/longitude in degrees, height in meters, and North, East, Down vectors of the world origin.
-	 * @param EntityLocation The location of the entity in Unreal
+	 * @param OriginLatLonAlt The latitude (in degrees), longitude (in degrees), and altitude (in meters) of the location represented by the Unreal origin
+	 * @param OriginNorthEastDown The vectors representing the north, east, and down directions in the unreal level
+	 * @param EntityLocation The resulting Unreal XYZ location of the entity in Unreal units
 	 */
 	UFUNCTION(BlueprintPure, Category = "OpenDIS|Unit Conversions")
-		static void GetEntityLocationFromEntityStatePdu(const FEntityStatePDU EntityStatePdu, const FWorldOrigin WorldOriginLLHAndNED, FVector& EntityLocation);
+		static void GetEntityLocationFromEntityStatePdu(const FEntityStatePDU EntityStatePdu, const FLatLonHeightFloat OriginLatLonAlt, const FNorthEastDown OriginNorthEastDown, FVector& EntityLocation);
 
 	/**
 	 * Gets the latitude, longitude, height, and unreal rotation from a DIS entity state PDU
 	 * @param EntityStatePdu The DIS PDU struct indicating the current state of the DIS entity
-	 * @param WorldOriginLLHAndNED The current latitude/longitude in degrees, height in meters, and North, East, Down vectors of the world origin.
-	 * @param EntityLocation The location of the entity in Unreal
+	 * @param OriginLatLonAlt  The latitude (in degrees), longitude (in degrees), and altitude (in meters) of the location represented by the Unreal origin
+	 * @param NorthEastDownVectors The vectors representing the north, east, and down directions in the unreal level
+	 * @param EntityLocation The location of the entity as a vector where X is Latitude, Y is Longitude, and Z is Height
 	 * @param EntityRotation The desired Yaw, Pitch, and Roll calculated from the given entity state
 	 */
 	UFUNCTION(BlueprintPure, Category = "OpenDIS|Unit Conversions")
-		static void GetEntityLocationAndOrientation(const FEntityStatePDU EntityStatePdu, const FWorldOrigin WorldOriginLLHAndNED, FVector& EntityLocation, FRotator& EntityRotation);
+		static void GetEntityLocationAndOrientation(const FEntityStatePDU EntityStatePdu, const FLatLonHeightFloat OriginLatLonAlt, const FNorthEastDown NorthEastDownVectors, FVector& EntityLocation, FRotator& EntityRotation);
 };
