@@ -361,9 +361,20 @@ void UUEOpenDIS_BPFL::GetEntityLocationFromEntityStatePdu(const FEntityStatePDU 
 
 	// Multiply by 100 to convert from meters to unreal units (cm)
 	// Convert latitude difference to cm
-	auto EntityNorthDistance = (LatLonHeightDouble.Latitude - WorldOriginLLHAndNED.WorldOriginLLH.Latitude) * 111.045 * 1000 * 100;
+	//auto EntityNorthDistance = (LatLonHeightDouble.Latitude - WorldOriginLLHAndNED.WorldOriginLLH.Latitude) * 111.045 * 1000 * 100;
 	// Convert longitude difference to cm
-	auto EntityEastDistance = (LatLonHeightDouble.Longitude - WorldOriginLLHAndNED.WorldOriginLLH.Longitude) * 87.87018 * 1000 * 100;
+	//auto EntityEastDistance = (LatLonHeightDouble.Longitude - WorldOriginLLHAndNED.WorldOriginLLH.Longitude) * 87.87018 * 1000 * 100;
+
+	// Convert latitude difference to cm
+	double EntityLatitudeDegreeOffset = LatLonHeightDouble.Latitude - WorldOriginLLHAndNED.WorldOriginLLH.Latitude;
+	double MetersPerDegreeAtLat = 111132.92 - 559.82 * FMath::Cos(2 * FMath::DegreesToRadians(WorldOriginLLHAndNED.WorldOriginLLH.Latitude)) + 1.175 * FMath::Cos(4 * FMath::DegreesToRadians(WorldOriginLLHAndNED.WorldOriginLLH.Latitude)) - 0.0023 * FMath::Cos(6 * FMath::DegreesToRadians(WorldOriginLLHAndNED.WorldOriginLLH.Latitude));
+	double EntityNorthDistance = EntityLatitudeDegreeOffset * MetersPerDegreeAtLat * 100;
+
+	// Convert longitude difference to cm
+	double EntityLongitudeDegreeOffset = LatLonHeightDouble.Longitude - WorldOriginLLHAndNED.WorldOriginLLH.Longitude;
+	double MetersPerDegreeAtLong = 111412.84 * FMath::Cos(FMath::DegreesToRadians(WorldOriginLLHAndNED.WorldOriginLLH.Latitude)) - 93.5 * FMath::Cos(3 * FMath::DegreesToRadians(WorldOriginLLHAndNED.WorldOriginLLH.Latitude)) + 0.118 * FMath::Cos(5 * FMath::DegreesToRadians(WorldOriginLLHAndNED.WorldOriginLLH.Latitude));
+	double EntityEastDistance = EntityLongitudeDegreeOffset * MetersPerDegreeAtLong * 100;
+
 	auto EntityUpDistance = (LatLonHeightDouble.Height - WorldOriginLLHAndNED.WorldOriginLLH.Height) * 100;
 
 
