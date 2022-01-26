@@ -329,10 +329,10 @@ void UUEOpenDIS_BPFL::CalculateHeadingPitchRollRadiansFromPsiThetaPhiDegreesAtLa
 
 void UUEOpenDIS_BPFL::GetUnrealRotationFromEntityStatePdu(const FEntityStatePDU EntityStatePdu, const FNorthEastDown OriginNorthEastDown, FRotator& EntityRotation)
 {
-	FEarthCenteredEarthFixedDouble EcefDouble = FEarthCenteredEarthFixedDouble(EntityStatePdu.EntityLocationDouble[0], EntityStatePdu.EntityLocationDouble[1], EntityStatePdu.EntityLocationDouble[2]);
+	FEarthCenteredEarthFixedDouble ecefDouble = FEarthCenteredEarthFixedDouble(EntityStatePdu.EntityLocationDouble[0], EntityStatePdu.EntityLocationDouble[1], EntityStatePdu.EntityLocationDouble[2]);
 
 	FLatLonHeightDouble LatLonHeightDouble;
-	CalculateLatLonHeightFromEcefXYZ(EcefDouble, LatLonHeightDouble);
+	CalculateLatLonHeightFromEcefXYZ(ecefDouble, LatLonHeightDouble);
 
 	FNorthEastDown NorthEastDownVectors;
 	CalculateNorthEastDownVectorsFromLatLon(LatLonHeightDouble.Latitude, LatLonHeightDouble.Longitude, NorthEastDownVectors);
@@ -354,19 +354,21 @@ void UUEOpenDIS_BPFL::GetUnrealRotationFromEntityStatePdu(const FEntityStatePDU 
 
 void UUEOpenDIS_BPFL::GetEntityLocationFromEntityStatePdu(const FEntityStatePDU EntityStatePdu, const FWorldOrigin WorldOriginLLHAndNED, FVector& EntityLocation)
 {
-	auto EntityLocationDouble = FEarthCenteredEarthFixedDouble(EntityStatePdu.EntityLocationDouble[0], EntityStatePdu.EntityLocationDouble[1], EntityStatePdu.EntityLocationDouble[2]);
+	FEarthCenteredEarthFixedDouble ecefDouble = FEarthCenteredEarthFixedDouble(EntityStatePdu.EntityLocationDouble[0], EntityStatePdu.EntityLocationDouble[1], EntityStatePdu.EntityLocationDouble[2]);
+
 	FLatLonHeightDouble LatLonHeightDouble;
-	CalculateLatLonHeightFromEcefXYZ(EntityLocationDouble, LatLonHeightDouble);
+	CalculateLatLonHeightFromEcefXYZ(ecefDouble, LatLonHeightDouble);
 
 	// Multiply by 100 to convert from meters to unreal units (cm)
-	// Convert longitude difference to cm
-	auto EntityNorthDistance = (LatLonHeightDouble.Longitude - WorldOriginLLHAndNED.WorldOriginLLH.Longitude) * (10000 / 90.) * 1000 * 100;
 	// Convert latitude difference to cm
-	auto EntityEastDistance = (LatLonHeightDouble.Latitude - WorldOriginLLHAndNED.WorldOriginLLH.Latitude) * (10000 / 90.) * 1000 * 100;
-	auto EntityUpDistance = (LatLonHeightDouble.Height * 100) - WorldOriginLLHAndNED.WorldOriginLLH.Height;
+	auto EntityNorthDistance = (LatLonHeightDouble.Latitude - WorldOriginLLHAndNED.WorldOriginLLH.Latitude) * 111.045 * 1000 * 100;
+	// Convert longitude difference to cm
+	auto EntityEastDistance = (LatLonHeightDouble.Longitude - WorldOriginLLHAndNED.WorldOriginLLH.Longitude) * 87.87018 * 1000 * 100;
+	auto EntityUpDistance = (LatLonHeightDouble.Height - WorldOriginLLHAndNED.WorldOriginLLH.Height) * 100;
+
 
 	FVector EntityNorthVector, EntityEastVector, EntityUpVector;
-	EntityNorthVector = WorldOriginLLHAndNED.WorldOriginNED.NorthVector * EntityNorthDistance;
+	EntityNorthVector = -WorldOriginLLHAndNED.WorldOriginNED.NorthVector * EntityNorthDistance;
 	EntityEastVector = WorldOriginLLHAndNED.WorldOriginNED.EastVector * EntityEastDistance;
 	EntityUpVector = -WorldOriginLLHAndNED.WorldOriginNED.DownVector * EntityUpDistance;
 
