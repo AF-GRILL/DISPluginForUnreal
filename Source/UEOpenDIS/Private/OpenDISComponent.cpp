@@ -341,7 +341,7 @@ bool UOpenDISComponent::DeadReckoning(FEntityStatePDU EntityPDUToDeadReckon, flo
 				double PsiRadians, ThetaRadians, PhiRadians;
 				CalculateDeadReckonedOrientation(EntityPDUToDeadReckon.EntityOrientation.Yaw, EntityPDUToDeadReckon.EntityOrientation.Pitch, EntityPDUToDeadReckon.EntityOrientation.Roll, AngularVelocityVector, DeltaTime, PsiRadians, ThetaRadians, PhiRadians);
 
-				//DeadReckonedEntityPDU.EntityOrientation = FRotator(ThetaRadians, PsiRadians, PhiRadians);
+				DeadReckonedEntityPDU.EntityOrientation = FRotator(ThetaRadians, PsiRadians, PhiRadians);
 			}
 			break;
 		}
