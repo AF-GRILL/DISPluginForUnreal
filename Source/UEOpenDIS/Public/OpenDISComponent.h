@@ -34,7 +34,13 @@ class UEOPENDIS_API UOpenDISComponent : public UActorComponent
 
 	bool DeadReckoning(FEntityStatePDU EntityPDUToDeadReckon, float DeltaTime, FEntityStatePDU& DeadReckonedEntityPDU);
 
-	FRotator GetRotationForDeadReckoning(FEntityStatePDU EntityPDUToDeadReckon, float DeltaTime);
+	/**
+	 * Clamps an entity to the ground. Verifies that the entity is of ground domain, is not a munition, and is owned by a different sim prior to clamping.
+	 * Returns whether or not ground clamping was successful.
+	 * @param ClampLocation - The location to ground clamp to.
+	 * @param ClampRotation - The rotation to ground clamp to.
+	 */
+	virtual bool SimpleGroundClamping_Implementation(FVector& ClampLocation, FRotator& ClampRotation);
 
 public:
 	// Sets default values for this component's properties
@@ -87,14 +93,13 @@ public:
 		FReceivedRemoveEntityPDU OnReceivedRemoveEntityPDU;
 
 	/**
-	 * Clamps an entity to the ground. Verifies that the entity is of ground domain and is not a munition prior to clamping.
+	 * Clamps an entity to the ground.
 	 * Returns whether or not ground clamping was successful.
-	 * @param EntityClampDirection - The direction vector to ground clamp the entity towards.
 	 * @param ClampLocation - The location to ground clamp to.
 	 * @param ClampRotation - The rotation to ground clamp to.
-	 */
-	UFUNCTION(BlueprintCallable)
-		bool SimpleGroundClamping(FVector EntityClampDirection, FVector& ClampLocation, FRotator& ClampRotation);
+	 */	
+	UFUNCTION(BlueprintNativeEvent)
+		bool SimpleGroundClamping(FVector& ClampLocation, FRotator& ClampRotation);
 	
 	/**
 	 * The most recent Entity State PDU that has been received by the OpenDISComponent.
@@ -139,6 +144,11 @@ public:
 	 */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DIS Settings")
 		bool PerformDeadReckoning = true;
+	/**
+	 * Whether or not ground clamping should be performed for this entity.
+	 */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DIS Settings")
+		bool PerformGroundClamping = true;
 	/**
 	 * The collision channel to use for ground clamping.
 	 */
