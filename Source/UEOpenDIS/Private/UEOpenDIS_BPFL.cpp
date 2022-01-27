@@ -49,10 +49,6 @@ void UUEOpenDIS_BPFL::CalculateEcefXYZFromLatLonHeight(const FLatLonHeightDouble
 	constexpr double EarthSemiMajorRadiusMeters = 6378137;
 	constexpr double EarthSemiMinorRadiusMeters = 6356752.3142;
 
-	/*const double CosLatitude = FMath::Cos(FMath::DegreesToRadians(LatitudeDegrees));
-	const double SinLatitude = FMath::Sin(FMath::DegreesToRadians(LatitudeDegrees));
-	const double CosLongitude = FMath::Cos(FMath::DegreesToRadians(LongitudeDegrees));
-	const double SinLongitude = FMath::Sin(FMath::DegreesToRadians(LongitudeDegrees));*/
 	const double CosLatitude = glm::cos(glm::radians(LatLonHeightDegreesMeters.Latitude));
 	const double SinLatitude = glm::sin(glm::radians(LatLonHeightDegreesMeters.Latitude));
 	const double CosLongitude = FMath::Cos(FMath::DegreesToRadians(LatLonHeightDegreesMeters.Longitude));
@@ -327,7 +323,31 @@ void UUEOpenDIS_BPFL::CalculateHeadingPitchRollRadiansFromPsiThetaPhiDegreesAtLa
 	HeadingPitchRollRadians.Roll = FMath::DegreesToRadians(HeadingPitchRollDegrees.Roll);
 }
 
-void UUEOpenDIS_BPFL::GetUnrealRotationFromEntityStatePdu(const FEntityStatePDU EntityStatePdu, const FNorthEastDown OriginNorthEastDown, FRotator& EntityRotation)
+void UUEOpenDIS_BPFL::CalculateEcefXYZFromUnrealLocation(const FVector UELocation, AGeoReferencingSystem* GeoReferencingSystem, FEarthCenteredEarthFixedFloat& ECEF)
+{
+	FCartesianCoordinates cartCoords;
+	GeoReferencingSystem->EngineToECEF(UELocation, cartCoords);
+
+	ECEF.X = cartCoords.X;
+	ECEF.Y = cartCoords.Y;
+	ECEF.Z = cartCoords.Z;
+}
+
+void UUEOpenDIS_BPFL::CalculateLatLonHeightFromUnrealLocation(const FVector UELocation, AGeoReferencingSystem* GeoReferencingSystem, FLatLonHeightFloat& LatLonHeightDegreesMeters)
+{
+	FCartesianCoordinates cartCoords;
+	GeoReferencingSystem->EngineToECEF(UELocation, cartCoords);
+
+	FEarthCenteredEarthFixedDouble ecefDouble = FEarthCenteredEarthFixedDouble(cartCoords.X, cartCoords.Y, cartCoords.Z);
+	FLatLonHeightDouble llhDouble;
+	CalculateLatLonHeightFromEcefXYZ(ecefDouble, llhDouble);
+
+	LatLonHeightDegreesMeters.Latitude = llhDouble.Latitude;
+	LatLonHeightDegreesMeters.Longitude = llhDouble.Longitude;
+	LatLonHeightDegreesMeters.Height = llhDouble.Height;
+}
+
+void UUEOpenDIS_BPFL::GetUnrealRotationFromEntityStatePdu(const FEntityStatePDU EntityStatePdu, AGeoReferencingSystem* GeoReferencingSystem, FRotator& EntityRotation)
 {
 	FEarthCenteredEarthFixedDouble ecefDouble = FEarthCenteredEarthFixedDouble(EntityStatePdu.EntityLocationDouble[0], EntityStatePdu.EntityLocationDouble[1], EntityStatePdu.EntityLocationDouble[2]);
 
@@ -337,10 +357,16 @@ void UUEOpenDIS_BPFL::GetUnrealRotationFromEntityStatePdu(const FEntityStatePDU 
 	FNorthEastDown NorthEastDownVectors;
 	CalculateNorthEastDownVectorsFromLatLon(LatLonHeightDouble.Latitude, LatLonHeightDouble.Longitude, NorthEastDownVectors);
 
+	FCartesianCoordinates cartCoords = FCartesianCoordinates(GeoReferencingSystem->OriginProjectedCoordinatesEasting, GeoReferencingSystem->OriginProjectedCoordinatesNorthing, GeoReferencingSystem->OriginProjectedCoordinatesUp);
+	FNorthEastDown originNorthEastDown;
+
+	GeoReferencingSystem->GetENUVectorsAtProjectedLocation(cartCoords, originNorthEastDown.EastVector, originNorthEastDown.NorthVector, originNorthEastDown.DownVector);
+	originNorthEastDown.DownVector *= -1;
+
 	// Get the rotational difference between calculated NED and Unreal origin NED
-	const auto XAxisRotationAngle = FVector::DotProduct(NorthEastDownVectors.EastVector, OriginNorthEastDown.EastVector);
-	const auto YAxisRotationAngle = FVector::DotProduct(NorthEastDownVectors.DownVector, OriginNorthEastDown.DownVector);
-	const auto ZAxisRotationAngle = FVector::DotProduct(NorthEastDownVectors.NorthVector, OriginNorthEastDown.NorthVector);
+	const auto XAxisRotationAngle = FVector::DotProduct(NorthEastDownVectors.EastVector, originNorthEastDown.EastVector);
+	const auto YAxisRotationAngle = FVector::DotProduct(NorthEastDownVectors.DownVector, originNorthEastDown.DownVector);
+	const auto ZAxisRotationAngle = FVector::DotProduct(NorthEastDownVectors.NorthVector, originNorthEastDown.NorthVector);
 
 	FPsiThetaPhi PsiThetaPhiRadians = FPsiThetaPhi(EntityStatePdu.EntityOrientation.Yaw, EntityStatePdu.EntityOrientation.Pitch, EntityStatePdu.EntityOrientation.Roll);
 
@@ -352,38 +378,17 @@ void UUEOpenDIS_BPFL::GetUnrealRotationFromEntityStatePdu(const FEntityStatePDU 
 	EntityRotation.Yaw = HeadingPitchRollDegrees.Heading + ZAxisRotationAngle;
 }
 
-void UUEOpenDIS_BPFL::GetEntityLocationFromEntityStatePdu(const FEntityStatePDU EntityStatePdu, const FWorldOrigin WorldOriginLLHAndNED, FVector& EntityLocation)
+void UUEOpenDIS_BPFL::GetEntityUnrealLocationFromEntityStatePdu(const FEntityStatePDU EntityStatePdu, AGeoReferencingSystem* GeoReferencingSystem, FVector& EntityLocation)
 {
 	FEarthCenteredEarthFixedDouble ecefDouble = FEarthCenteredEarthFixedDouble(EntityStatePdu.EntityLocationDouble[0], EntityStatePdu.EntityLocationDouble[1], EntityStatePdu.EntityLocationDouble[2]);
 
-	FLatLonHeightDouble LatLonHeightDouble;
-	CalculateLatLonHeightFromEcefXYZ(ecefDouble, LatLonHeightDouble);
+	FCartesianCoordinates cartCoords = FCartesianCoordinates(ecefDouble.X, ecefDouble.Y, ecefDouble.Z);
 
-	double latInRadians = FMath::DegreesToRadians(WorldOriginLLHAndNED.WorldOriginLLH.Latitude);
-
-	// Convert latitude difference to cm
-	double EntityLatitudeDegreeOffset = LatLonHeightDouble.Latitude - WorldOriginLLHAndNED.WorldOriginLLH.Latitude;
-	double MetersPerDegreeAtLat = 111132.92 - 559.82 * FMath::Cos(2 * latInRadians) + 1.175 * FMath::Cos(4 * latInRadians) - 0.0023 * FMath::Cos(6 * latInRadians);
-	double EntityNorthDistance = EntityLatitudeDegreeOffset * MetersPerDegreeAtLat * 100;
-
-	// Convert longitude difference to cm
-	double EntityLongitudeDegreeOffset = LatLonHeightDouble.Longitude - WorldOriginLLHAndNED.WorldOriginLLH.Longitude;
-	double MetersPerDegreeAtLong = 111412.84 * FMath::Cos(latInRadians) - 93.5 * FMath::Cos(3 * latInRadians) + 0.118 * FMath::Cos(5 * latInRadians);
-	double EntityEastDistance = EntityLongitudeDegreeOffset * MetersPerDegreeAtLong * 100;
-
-	auto EntityUpDistance = (LatLonHeightDouble.Height - WorldOriginLLHAndNED.WorldOriginLLH.Height) * 100;
-
-
-	FVector EntityNorthVector, EntityEastVector, EntityUpVector;
-	EntityNorthVector = -WorldOriginLLHAndNED.WorldOriginNED.NorthVector * EntityNorthDistance;
-	EntityEastVector = WorldOriginLLHAndNED.WorldOriginNED.EastVector * EntityEastDistance;
-	EntityUpVector = -WorldOriginLLHAndNED.WorldOriginNED.DownVector * EntityUpDistance;
-
-	EntityLocation = EntityNorthVector + EntityEastVector + EntityUpVector;
+	GeoReferencingSystem->ECEFToEngine(cartCoords, EntityLocation);
 }
 
-void UUEOpenDIS_BPFL::GetEntityLocationAndOrientation(const FEntityStatePDU EntityStatePdu, const FWorldOrigin WorldOriginLLHAndNED, FVector& EntityLocation, FRotator& EntityRotation)
+void UUEOpenDIS_BPFL::GetEntityUnrealLocationAndOrientation(const FEntityStatePDU EntityStatePdu, AGeoReferencingSystem* GeoReferencingSystem, FVector& EntityLocation, FRotator& EntityRotation)
 {
-	GetEntityLocationFromEntityStatePdu(EntityStatePdu, WorldOriginLLHAndNED, EntityLocation);
-	GetUnrealRotationFromEntityStatePdu(EntityStatePdu, WorldOriginLLHAndNED.WorldOriginNED, EntityRotation);
+	GetEntityUnrealLocationFromEntityStatePdu(EntityStatePdu, GeoReferencingSystem, EntityLocation);
+	GetUnrealRotationFromEntityStatePdu(EntityStatePdu, GeoReferencingSystem, EntityRotation);
 }

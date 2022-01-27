@@ -15,7 +15,9 @@ public class UEOpenDIS : ModuleRules
 			{
 				"Core",
 				"Sockets",
-				"Networking"
+				"Networking",
+				"GeoReferencing",
+				"GeometricObjects"
 				// ... add other public dependencies that you statically link with here ...
 			}
 			);
