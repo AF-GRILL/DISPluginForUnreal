@@ -187,6 +187,17 @@ private:
 	static glm::dvec3 CalculateDeadReckonedPosition(glm::dvec3 PositionVector, glm::dvec3 VelocityVector, glm::dvec3 AccelerationVector, double DeltaTime);
 
 	/**
+	 * Calculates the new position vector using the given velocity, acceleration, and time increment given in body coordinates
+	 * @param InitialPositionVector The initial position of the entity in body coordinates
+	 * @param BodyVelocityVector The initial velocity in body coordinates
+	 * @param BodyLinearAccelerationVector The initial linear acceleration in body coordinates
+	 * @param BodyAngularAccelerationVector The initial angular acceleration in body coordinates
+	 * @param EntityOrientation The orientation of the entity (Psi[Yaw]/Theta[Pitch]/Phi[Roll]) in radians
+	 * @param DeltaTime the time increment for dead reckoning calculation
+	 */
+	static glm::dvec3 GetEntityBodyDeadReckonedPosition(glm::dvec3 InitialPositionVector, glm::dvec3 BodyVelocityVector, glm::dvec3 BodyLinearAccelerationVector, glm::dvec3 BodyAngularAccelerationVector, glm::dvec3 EntityOrientation, double DeltaTime);
+
+	/**
 	 * Calculates and returns the dead reckoning matrix used for calculating entity rotation
 	 * @param AngularVelocityVector The angular velocity vector in body coordinates
 	 * @param DeltaTime The time increment for dead reckoning calculations
