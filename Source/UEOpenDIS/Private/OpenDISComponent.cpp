@@ -152,6 +152,13 @@ void UOpenDISComponent::TickComponent(float DeltaTime, ELevelTick TickType, FAct
 		DeadReckoningEntityStatePDU = deadReckonedPDU;
 		OnDeadReckoningUpdate.Broadcast(DeadReckoningEntityStatePDU, DeltaTimeSinceLastEntityStatePDU);
 	}
+
+	FVector clampLocation;
+	FRotator clampRotation;
+	if (SimpleGroundClamping_Implementation(clampLocation, clampRotation))
+	{
+		GetOwner()->SetActorLocationAndRotation(clampLocation, clampRotation, false, (FHitResult*) nullptr, ETeleportType::TeleportPhysics);
+	}
 }
 
 void UOpenDISComponent::HandleEntityStatePDU(FEntityStatePDU NewEntityStatePDU)
@@ -314,8 +321,6 @@ bool UOpenDISComponent::DeadReckoning(FEntityStatePDU EntityPDUToDeadReckon, flo
 			FQuat EntityRotation;
 			bool bUseOtherParams = GetLocalQuaternionAngles(DeadReckonedEntityPDU.DeadReckoningParameters.OtherParameters, EntityRotation);
 
-			DeadReckonedEntityPDU.EntityOrientation = GetRotationForDeadReckoning(EntityPDUToDeadReckon, DeltaTime);
-
 			// Calculate and set entity location
 			glm::dvec3 PositionVector = glm::dvec3(EntityPDUToDeadReckon.EntityLocationDouble[0], EntityPDUToDeadReckon.EntityLocationDouble[1], EntityPDUToDeadReckon.EntityLocationDouble[2]);
 			glm::dvec3 VelocityVector = glm::dvec3(EntityPDUToDeadReckon.EntityLinearVelocity.X, EntityPDUToDeadReckon.EntityLinearVelocity.Y, EntityPDUToDeadReckon.EntityLinearVelocity.Z);
@@ -435,27 +440,30 @@ bool UOpenDISComponent::DeadReckoning(FEntityStatePDU EntityPDUToDeadReckon, flo
 	return bSupported;
 }
 
-FRotator UOpenDISComponent::GetRotationForDeadReckoning(FEntityStatePDU EntityPDUToDeadReckon, float DeltaTime)
-{
-	// TODO: Implement DeadReckoning for the rotation change of the actor.
-	// This should probably stay in Euler and leave conversions from euler to UE4 rotation to the end user of the plugin.
-
-	return EntityPDUToDeadReckon.EntityOrientation;
-}
-
-bool UOpenDISComponent::SimpleGroundClamping(FVector EntityClampDirection, FVector& ClampLocation, FRotator& ClampRotation)
+bool UOpenDISComponent::SimpleGroundClamping_Implementation(FVector& ClampLocation, FRotator& ClampRotation)
 {
 	bool groundClampSuccessful = false;
 
-	//Verify that the entity is of the ground domain, and that it is not a munition
-	if (EntityType.Domain == 1 && EntityType.EntityKind != 2)
+	//Verify that ground clamping is enabled, the entity is owned by another sim, is of the ground domain, and that it is not a munition
+	if (PerformGroundClamping && SpawnedFromNetwork && EntityType.Domain == 1 && EntityType.EntityKind != 2)
 	{
-		EntityClampDirection.Normalize();
+		//Get the most recent calculated ECEF location of the entity from the dead reckoned ESPDU
+		FEarthCenteredEarthFixedDouble ecefDouble = FEarthCenteredEarthFixedDouble(DeadReckoningEntityStatePDU.EntityLocationDouble[0], DeadReckoningEntityStatePDU.EntityLocationDouble[1], DeadReckoningEntityStatePDU.EntityLocationDouble[2]);
+
+		//Get the LLH location of the entity from the ECEF location
+		FLatLonHeightDouble llhDouble;
+		UUEOpenDIS_BPFL::CalculateLatLonHeightFromEcefXYZ(ecefDouble, llhDouble);
+
+		//Get the North East Down vectors from the calculated LLH
+		FNorthEastDown northEastDownVectors;
+		UUEOpenDIS_BPFL::CalculateNorthEastDownVectorsFromLatLon(llhDouble.Latitude, llhDouble.Longitude, northEastDownVectors);
+		//Set clamp direction using the North East Down down vector
+		FVector clampDirection = northEastDownVectors.DownVector;
 
 		FHitResult lineTraceHitResult;
 		FVector actorLocation = GetOwner()->GetActorLocation();
-		FVector endLocation = (EntityClampDirection * 100000) + actorLocation;
-		FVector aboveActorStartLocation = (EntityClampDirection * -100000) + actorLocation;
+		FVector endLocation = (clampDirection * 100000) + actorLocation;
+		FVector aboveActorStartLocation = (clampDirection * -100000) + actorLocation;
 
 		FCollisionQueryParams queryParams = FCollisionQueryParams(FName("Ground Clamping"), false, GetOwner());
 		//Find colliding point above/below the actor

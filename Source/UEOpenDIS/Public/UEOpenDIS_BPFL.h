@@ -247,7 +247,7 @@ public:
 		static void CalculateHeadingPitchRollRadiansFromPsiThetaPhiDegreesAtLatLon(const FPsiThetaPhi PsiThetaPhiDegrees, const float LatitudeDegrees, const float LongitudeDegrees, FHeadingPitchRoll& HeadingPitchRollRadians);
 
 	/**
-	* Calculate the ECEF location of the given UE location
+	 * Calculate the ECEF location of the given UE location
 	 * @param UELocation The UE location to convert to ECEF.
 	 * @param GeoReferencingSystem The GeoReferencing Subsystem reference.
 	 * @param ECEF The ECEF location of the given UE location.
@@ -256,7 +256,7 @@ public:
 		static void CalculateEcefXYZFromUnrealLocation(const FVector UELocation, AGeoReferencingSystem* GeoReferencingSystem, FEarthCenteredEarthFixedFloat& ECEF);
 
 	/**
-	* Calculate the latitude in degrees, longitude in degrees, and height in meters of the given UE location
+	 * Calculate the latitude in degrees, longitude in degrees, and height in meters of the given UE location
 	 * @param UELocation The UE location to convert to latitude, longitude, height.
 	 * @param GeoReferencingSystem The GeoReferencing Subsystem reference.
 	 * @param LatLonHeightDegreesMeters The latitude in degrees, longitude in degrees, and height in meters of the given UE location.
