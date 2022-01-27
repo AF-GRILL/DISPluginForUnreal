@@ -102,7 +102,7 @@ FMatrix UUEOpenDIS_BPFL::CreateNCrossXMatrix(const FVector NVector)
 
 glm::dmat3x3 UUEOpenDIS_BPFL::CreateNCrossXMatrix(const glm::dvec3 NVector)
 {
-	return glm::dmat3x3(0, -NVector.z, NVector.y, NVector.z, 0, -NVector.x, -NVector.y, NVector.x, 0);
+	return glm::dmat3x3(0, NVector.z, -NVector.y, -NVector.z, 0, NVector.x, NVector.y, -NVector.x, 0);
 }
 
 void UUEOpenDIS_BPFL::CreateRotationMatrix(const FVector AxisVector, const float ThetaRadians, FMatrix& OutRotationMatrix)
