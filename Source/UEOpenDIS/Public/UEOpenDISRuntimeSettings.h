@@ -23,7 +23,7 @@ struct FOpenDISEnumerationMappings
 /**
  * 
  */
-UCLASS(ClassGroup = "OpenDISRuntimeSettings", config = EditorPerProjectUserSettings)
+UCLASS(ClassGroup = "OpenDISRuntimeSettings", config = Game, defaultconfig)
 class UEOPENDIS_API UUEOpenDISRuntimeSettings : public UObject
 {
 public:

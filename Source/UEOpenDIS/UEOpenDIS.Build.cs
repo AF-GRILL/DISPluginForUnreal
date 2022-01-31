@@ -5,10 +5,14 @@ using System.IO;
 
 public class UEOpenDIS : ModuleRules
 {
+	private string ThirdPartyPath
+    {
+        get { return Path.GetFullPath(Path.Combine(ModuleDirectory, "../ThirdParty/")); }
+    }
+		
 	public UEOpenDIS(ReadOnlyTargetRules Target) : base(Target)
 	{
-		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
-
+		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;		
 
 		PublicDependencyModuleNames.AddRange(
 			new string[]
@@ -18,7 +22,6 @@ public class UEOpenDIS : ModuleRules
 				"Networking",
 				"GeoReferencing",
 				"GeometricObjects"
-				// ... add other public dependencies that you statically link with here ...
 			}
 			);
 			
@@ -30,15 +33,15 @@ public class UEOpenDIS : ModuleRules
 				"CoreUObject",
 				"Engine",
 				"SlateCore"
-				// ... add private dependencies that you statically link with here ...	
 			}
 			);
-
-        var BasePath = Path.GetDirectoryName(RulesCompiler.GetFileNameFromType(GetType()));
-        string ThirdPartyPath = Path.Combine(BasePath, "..", "..", "ThirdParty");
+		
         string BinaryPath = Path.Combine(ThirdPartyPath, "Binaries");
-        PublicLibraryPaths.Add(Path.Combine(BinaryPath, "Win64"));
-        PublicAdditionalLibraries.Add("OpenDIS6.lib");
+		string WinPath = Path.Combine(BinaryPath, "Win64");
+        PublicSystemLibraryPaths.Add(WinPath);
+        PublicAdditionalLibraries.Add(Path.Combine(WinPath, "OpenDIS6.lib"));
         PublicIncludePaths.Add(Path.Combine(ThirdPartyPath, "include"));
+		
+		//RuntimeDependencies.Add(new RuntimeDependency(Path.Combine(WinPath, "OpenDIS6.dll")));
 	}
 }

@@ -681,7 +681,6 @@ struct FEntityStateUpdatePDU
 		int32 NumberOfArticulationParameters;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		int32 EntityAppearance;
-
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		int32 Padding;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
@@ -699,6 +698,8 @@ struct FEntityStateUpdatePDU
 		EntityLinearVelocity = FVector(0, 0, 0);
 		EntityAppearance = 0;
 		NumberOfArticulationParameters = 0;
+		Padding = 0;
+		Padding1 = 0;
 	}
 
 	operator FEntityStatePDU() const 
@@ -853,6 +854,7 @@ struct FStopFreezePDU
 	{
 		Reason = EReason::Other;
 		FrozenBehavior = 0;
+		Padding = 0;
 		RequestID = 0;
 	}
 };
