@@ -42,6 +42,7 @@ public class UEOpenDIS : ModuleRules
         PublicAdditionalLibraries.Add(Path.Combine(WinPath, "OpenDIS6.lib"));
         PublicIncludePaths.Add(Path.Combine(ThirdPartyPath, "include"));
 		
-		//RuntimeDependencies.Add(new RuntimeDependency(Path.Combine(WinPath, "OpenDIS6.dll")));
+		PublicDelayLoadDLLs.Add("OpenDIS6.dll");
+		RuntimeDependencies.Add(new RuntimeDependency(Path.Combine(WinPath, "OpenDIS6.dll")));
 	}
 }
