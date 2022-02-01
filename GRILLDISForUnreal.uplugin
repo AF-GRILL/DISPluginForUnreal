@@ -9,10 +9,11 @@
 	"CreatedByURL": "https://www.af-grill.com/",
 	"DocsURL": "",
 	"MarketplaceURL": "",
-	"SupportURL": "",
-	"CanContainContent": true,
+	"SupportURL": "https://www.af-grill.com/work-with-us/else",
+	"EngineVersion": "4.27.0",
 	"IsBetaVersion": true,
 	"IsExperimentalVersion": false,
+	"CanContainContent": true,
 	"Installed": false,
 	"Modules": [
 		{
