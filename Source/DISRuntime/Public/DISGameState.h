@@ -25,31 +25,31 @@ public:
 	 * Delegates the given Entity State PDU to the appropriate DIS Entity actor.
 	 * @param EntityStatePDUIn - The Entity State PDU to pass to the appropriate entity.
 	 */
-	UFUNCTION(BlueprintCallable, Category = "GRILL DIS")
+	UFUNCTION(BlueprintCallable, Category = "GRILL DIS|Game State")
 		void HandleEntityStatePDU(FEntityStatePDU EntityStatePDUIn);
 	/**
 	 * Delegates the given Entity State Update PDU to the appropriate DIS Entity actor.
 	 * @param EntityStateUpdatePDUIn - The Entity State Update PDU to pass to the appropriate entity.
 	 */
-	UFUNCTION(BlueprintCallable, Category = "GRILL DIS")
+	UFUNCTION(BlueprintCallable, Category = "GRILL DIS|Game State")
 		void HandleEntityStateUpdatePDU(FEntityStateUpdatePDU EntityStateUpdatePDUIn);
 	/**
 	 * Delegates the given Fire PDU to the appropriate DIS Entity actor.
 	 * @param FirePDUIn - The Fire PDU to pass to the appropriate entity.
 	 */
-	UFUNCTION(BlueprintCallable, Category = "GRILL DIS")
+	UFUNCTION(BlueprintCallable, Category = "GRILL DIS|Game State")
 		void HandleFirePDU(FFirePDU FirePDUIn);
 	/**
 	 * Delegates the given Detonation PDU to the appropriate DIS Entity actor.
 	 * @param DetonationPDUIn - The Detonation PDU to pass to the appropriate entity.
 	 */
-	UFUNCTION(BlueprintCallable, Category = "GRILL DIS")
+	UFUNCTION(BlueprintCallable, Category = "GRILL DIS|Game State")
 		void HandleDetonationPDU(FDetonationPDU DetonationPDUIn);
 	/**
 	 * Delegates the given Remove Entity PDU to the appropriate DIS Entity actor.
 	 * @param RemoveEntityPDUIn - The Remove Entity PDU to pass to the appropriate entity.
 	 */
-	UFUNCTION(BlueprintCallable, Category = "GRILL DIS")
+	UFUNCTION(BlueprintCallable, Category = "GRILL DIS|Game State")
 		void HandleRemoveEntityPDU(FRemoveEntityPDU RemoveEntityPDUIn);
 
 	/**
@@ -57,14 +57,14 @@ public:
 	 * @param EntityIDToAdd - The Entity ID to key the given entity under in the map.
 	 * @param EntityToAdd - The entity to add to the entity map.
 	 */
-	UFUNCTION(BlueprintCallable, Category = "GRILL DIS")
+	UFUNCTION(BlueprintCallable, Category = "GRILL DIS|Game State")
 		void AddDISEntityToMap(FEntityID EntityIDToAdd, ADISEntity_Base* EntityToAdd);
 	/**
 	 * Removes the entry correlating to the given Entity ID from the DIS Entity map.
 	 * Returns whether or not an entry was removed.
 	 * @param EntityIDToRemove - The Entity ID of the DIS entity that needs removed from the entity map.
 	 */
-	UFUNCTION(BlueprintCallable, Category = "GRILL DIS")
+	UFUNCTION(BlueprintCallable, Category = "GRILL DIS|Game State")
 		bool RemoveDISEntityFromMap(FEntityID EntityIDToRemove);
 
 protected:
