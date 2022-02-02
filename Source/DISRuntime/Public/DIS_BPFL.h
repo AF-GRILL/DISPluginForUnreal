@@ -291,4 +291,34 @@ public:
 	 */
 	UFUNCTION(BlueprintPure, Category = "GRILL DIS|Unit Conversions")
 		static void GetEntityUnrealLocationAndOrientation(const FEntityStatePDU EntityStatePdu, AGeoReferencingSystem* GeoReferencingSystem, FVector& EntityLocation, FRotator& EntityRotation);
+
+	/**
+	 * Get the East, North, and Up vectors from the North, East, and Down vector struct
+	 * @param NorthEastDownVectors The North, East, and Down vectors representing the current orientation
+	 * @param EastNorthUpVectors The resulting East, North, and Up vectors representing the current orientation
+	 */
+	UFUNCTION(BlueprintPure, Category = "GRILL DIS|Unit Conversions")
+	static void GetEastNorthUpVectorsFromNorthEastDownVectors(FNorthEastDown NorthEastDownVectors, FEastNorthUp& EastNorthUpVectors);
+
+	/**
+	 * Get the North, East, and Down vectors from the East, North, and Up vector struct
+	 * @param EastNorthUpVectors The East, North, and Up vectors representing the current orientation
+	 * @param NorthEastDownVectors The resulting North, East, and Down vectors representing the current orientation
+	 */
+	UFUNCTION(BlueprintPure, Category = "GRILL DIS|Unit Conversions")
+	static void GetNorthEastDownVectorsFromEastNorthUpVectors(FEastNorthUp EastNorthUpVectors, FNorthEastDown& NorthEastDownVectors);
+
+	/**
+	 * Convert between North, East, Down and East, North, Up orientation representation using double values
+	 * @param StartingVectors The matrix representation of the starting vectors (each vector is a column)
+	 * @return The resulting conversion of swapping the first two vectors and negating the last
+	 */
+	static glm::dmat3 ConvertNedAndEnu(glm::dmat3 StartingVectors);
+
+	/**
+	 * Convert between North, East, Down and East, North, Up orientation representation using double values
+	 * @param StartingVectors The matrix representation of the starting vectors (each vector is a column and the final vector is 0)
+	 * @return The resulting conversion of swapping the first two vectors and negating the third
+	 */
+	static FMatrix ConvertNedAndEnu(FMatrix StartingVectors);
 };

@@ -392,3 +392,35 @@ void UDIS_BPFL::GetEntityUnrealLocationAndOrientation(const FEntityStatePDU Enti
 	GetEntityUnrealLocationFromEntityStatePdu(EntityStatePdu, GeoReferencingSystem, EntityLocation);
 	GetUnrealRotationFromEntityStatePdu(EntityStatePdu, GeoReferencingSystem, EntityRotation);
 }
+
+void UDIS_BPFL::GetEastNorthUpVectorsFromNorthEastDownVectors(FNorthEastDown NorthEastDownVectors,
+	FEastNorthUp& EastNorthUpVectors)
+{
+	const FMatrix NorthEastDownMatrix(NorthEastDownVectors.NorthVector, NorthEastDownVectors.EastVector, NorthEastDownVectors.DownVector, FVector(0));
+	const FMatrix EastNorthUpMatrix = ConvertNedAndEnu(NorthEastDownMatrix);
+	FVector NorthVector, EastVector, DownVector;
+	EastNorthUpMatrix.GetUnitAxes(NorthVector, EastVector, DownVector);
+	EastNorthUpVectors = FEastNorthUp(NorthVector, EastVector, DownVector);
+}
+
+void UDIS_BPFL::GetNorthEastDownVectorsFromEastNorthUpVectors(FEastNorthUp EastNorthUpVectors,
+	FNorthEastDown& NorthEastDownVectors)
+{
+	const FMatrix EastNorthUpMatrix(EastNorthUpVectors.EastVector, EastNorthUpVectors.NorthVector, EastNorthUpVectors.UpVector, FVector(0));
+	const FMatrix NorthEastDownMatrix = ConvertNedAndEnu(EastNorthUpMatrix);
+	FVector NorthVector, EastVector, DownVector;
+	NorthEastDownMatrix.GetUnitAxes(NorthVector, EastVector, DownVector);
+	NorthEastDownVectors = FNorthEastDown(NorthVector, EastVector, DownVector);
+}
+
+glm::dmat3 UDIS_BPFL::ConvertNedAndEnu(const glm::dmat3 StartingVectors)
+{
+	const glm::dmat3 ConversionMatrix = glm::dmat3(0, 1, 0, 1, 0, 0, 0, 0, -1);
+	return StartingVectors * ConversionMatrix;
+}
+
+FMatrix UDIS_BPFL::ConvertNedAndEnu(const FMatrix StartingVectors)
+{
+	const FMatrix ConversionMatrix = FMatrix(FVector(0, 1, 0), FVector(1, 0, 0), FVector(0, 0, -1), FVector(0));
+	return StartingVectors * ConversionMatrix;
+}
