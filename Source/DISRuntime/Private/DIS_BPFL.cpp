@@ -414,6 +414,29 @@ void UDIS_BPFL::GetEastNorthUpVectorsFromUnrealLocation(const FVector UnrealLoca
 	GetEastNorthUpVectorsFromNorthEastDownVectors(NorthEastDownVectors, EastNorthUpVectors);
 }
 
+void UDIS_BPFL::GetHeadingPitchRollFromUnrealRotation(const FRotator EntityUnrealRotation,
+	const FVector EntityUnrealLocation, AGeoReferencingSystem* GeoReferencingSystem, FHeadingPitchRoll& HeadingPitchRollDegrees)
+{
+	FNorthEastDown NorthEastDownVectors;
+	GetNorthEastDownVectorsFromUnrealLocation(EntityUnrealLocation, GeoReferencingSystem, NorthEastDownVectors);
+
+	const FCartesianCoordinates CartCoords = FCartesianCoordinates(GeoReferencingSystem->OriginProjectedCoordinatesEasting, GeoReferencingSystem->OriginProjectedCoordinatesNorthing, GeoReferencingSystem->OriginProjectedCoordinatesUp);
+	FNorthEastDown OriginNorthEastDown;
+
+	GeoReferencingSystem->GetENUVectorsAtProjectedLocation(CartCoords, OriginNorthEastDown.EastVector, OriginNorthEastDown.NorthVector, OriginNorthEastDown.DownVector);
+	OriginNorthEastDown.DownVector *= -1;
+
+	// Get the rotational difference between calculated NED and Unreal origin NED
+	const auto XAxisRotationAngle = FVector::DotProduct(NorthEastDownVectors.EastVector, OriginNorthEastDown.EastVector);
+	const auto YAxisRotationAngle = FVector::DotProduct(NorthEastDownVectors.DownVector, OriginNorthEastDown.DownVector);
+	const auto ZAxisRotationAngle = FVector::DotProduct(NorthEastDownVectors.NorthVector, OriginNorthEastDown.NorthVector);
+
+
+	HeadingPitchRollDegrees.Roll = EntityUnrealRotation.Roll - XAxisRotationAngle;
+	HeadingPitchRollDegrees.Pitch = EntityUnrealRotation.Pitch - YAxisRotationAngle;
+	HeadingPitchRollDegrees.Heading = EntityUnrealRotation.Yaw - ZAxisRotationAngle;
+}
+
 void UDIS_BPFL::GetEastNorthUpVectorsFromNorthEastDownVectors(const FNorthEastDown NorthEastDownVectors,
                                                               FEastNorthUp& EastNorthUpVectors)
 {

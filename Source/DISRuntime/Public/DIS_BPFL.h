@@ -311,6 +311,16 @@ public:
 		static void GetEastNorthUpVectorsFromUnrealLocation(FVector UnrealLocation, AGeoReferencingSystem* GeoReferencingSystem, FEastNorthUp& EastNorthUpVectors);
 
 	/**
+	 * Gets the Heading, Pitch, and Roll in degrees of the given unreal rotation at the given unreal location
+	 * @param EntityUnrealRotation The unreal rotation rotator of the entity
+	 * @param EntityUnrealLocation The unreal location of the entity relative to the origin
+	 * @param GeoReferencingSystem The GeoReferencing Subsystem reference.
+	 * @param HeadingPitchRollDegrees The entity's heading from North, its pitch, and its roll in degrees
+	 */
+	UFUNCTION(BlueprintPure, Category = "GRILL DIS|Unit Conversions")
+	static void GetHeadingPitchRollFromUnrealRotation(const FRotator EntityUnrealRotation, const FVector EntityUnrealLocation, AGeoReferencingSystem* GeoReferencingSystem, FHeadingPitchRoll& HeadingPitchRollDegrees);
+
+	/**
 	 * Get the East, North, and Up vectors from the North, East, and Down vector struct
 	 * @param NorthEastDownVectors The North, East, and Down vectors representing the current orientation
 	 * @param EastNorthUpVectors The resulting East, North, and Up vectors representing the current orientation
