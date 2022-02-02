@@ -192,7 +192,7 @@ void UDISComponent::HandleEntityStatePDU(FEntityStatePDU NewEntityStatePDU)
 		GetOwner()->Destroy();
 	}
 
-	latestPDUTimestamp = FDateTime::Now();
+	LatestEntityStatePDUTimestamp = FDateTime::Now();
 	mostRecentEntityStatePDU = NewEntityStatePDU;
 	DeadReckoningEntityStatePDU = mostRecentEntityStatePDU;
 
@@ -225,7 +225,7 @@ void UDISComponent::HandleEntityStateUpdatePDU(FEntityStateUpdatePDU NewEntitySt
 	mostRecentEntityStatePDU.EntityAppearance = NewEntityStateUpdatePDU.EntityAppearance;
 	mostRecentEntityStatePDU.ArticulationParameters = NewEntityStateUpdatePDU.ArticulationParameters;
 
-	latestPDUTimestamp = FDateTime::Now();
+	LatestEntityStatePDUTimestamp = FDateTime::Now();
 	mostRecentEntityStatePDU = NewEntityStateUpdatePDU;
 	DeadReckoningEntityStatePDU = mostRecentEntityStatePDU;
 
