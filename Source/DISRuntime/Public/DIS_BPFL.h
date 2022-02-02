@@ -267,7 +267,7 @@ public:
 	/**
 	 * Get Unreal rotation from a DIS entity state PDU
 	 * @param EntityStatePdu The DIS PDU struct indicating the current state of the DIS entity
-	 * @param OriginNorthEastDown The vectors representing the north, east, and down directions in the unreal level
+	 * @param GeoReferencingSystem The GeoReferencing Subsystem reference.
 	 * @param EntityRotation The Heading (yaw), Pitch, and Roll calculated from the given entity state
 	 */
 	UFUNCTION(BlueprintPure, Category = "GRILL DIS|Unit Conversions")
