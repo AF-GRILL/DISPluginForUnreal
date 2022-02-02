@@ -393,8 +393,29 @@ void UDIS_BPFL::GetEntityUnrealLocationAndOrientation(const FEntityStatePDU Enti
 	GetUnrealRotationFromEntityStatePdu(EntityStatePdu, GeoReferencingSystem, EntityRotation);
 }
 
-void UDIS_BPFL::GetEastNorthUpVectorsFromNorthEastDownVectors(FNorthEastDown NorthEastDownVectors,
-	FEastNorthUp& EastNorthUpVectors)
+void UDIS_BPFL::GetNorthEastDownVectorsFromUnrealLocation(const FVector UnrealLocation,
+	AGeoReferencingSystem* GeoReferencingSystem, FNorthEastDown& NorthEastDownVectors)
+{
+	FCartesianCoordinates EcefLocation;
+	GeoReferencingSystem->EngineToECEF(UnrealLocation, EcefLocation);
+
+	const FEarthCenteredEarthFixedDouble EcefDouble(EcefLocation.X, EcefLocation.Y, EcefLocation.Z);
+	FLatLonHeightDouble LatLonHeightDouble;
+	CalculateLatLonHeightFromEcefXYZ(EcefDouble, LatLonHeightDouble);
+
+	CalculateNorthEastDownVectorsFromLatLon(LatLonHeightDouble.Latitude, LatLonHeightDouble.Longitude, NorthEastDownVectors);
+}
+
+void UDIS_BPFL::GetEastNorthUpVectorsFromUnrealLocation(const FVector UnrealLocation,
+	AGeoReferencingSystem* GeoReferencingSystem, FEastNorthUp& EastNorthUpVectors)
+{
+	FNorthEastDown NorthEastDownVectors;
+	GetNorthEastDownVectorsFromUnrealLocation(UnrealLocation, GeoReferencingSystem, NorthEastDownVectors);
+	GetEastNorthUpVectorsFromNorthEastDownVectors(NorthEastDownVectors, EastNorthUpVectors);
+}
+
+void UDIS_BPFL::GetEastNorthUpVectorsFromNorthEastDownVectors(const FNorthEastDown NorthEastDownVectors,
+                                                              FEastNorthUp& EastNorthUpVectors)
 {
 	const FMatrix NorthEastDownMatrix(NorthEastDownVectors.NorthVector, NorthEastDownVectors.EastVector, NorthEastDownVectors.DownVector, FVector(0));
 	const FMatrix EastNorthUpMatrix = ConvertNedAndEnu(NorthEastDownMatrix);
@@ -403,7 +424,7 @@ void UDIS_BPFL::GetEastNorthUpVectorsFromNorthEastDownVectors(FNorthEastDown Nor
 	EastNorthUpVectors = FEastNorthUp(NorthVector, EastVector, DownVector);
 }
 
-void UDIS_BPFL::GetNorthEastDownVectorsFromEastNorthUpVectors(FEastNorthUp EastNorthUpVectors,
+void UDIS_BPFL::GetNorthEastDownVectorsFromEastNorthUpVectors(const FEastNorthUp EastNorthUpVectors,
 	FNorthEastDown& NorthEastDownVectors)
 {
 	const FMatrix EastNorthUpMatrix(EastNorthUpVectors.EastVector, EastNorthUpVectors.NorthVector, EastNorthUpVectors.UpVector, FVector(0));

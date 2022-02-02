@@ -293,6 +293,24 @@ public:
 		static void GetEntityUnrealLocationAndOrientation(const FEntityStatePDU EntityStatePdu, AGeoReferencingSystem* GeoReferencingSystem, FVector& EntityLocation, FRotator& EntityRotation);
 
 	/**
+	 * Gets the North, East, and Down vector representation of the given Unreal location
+	 * @param UnrealLocation The location in Unreal units
+	 * @param GeoReferencingSystem The GeoReferencing Subsystem reference.
+	 * @param NorthEastDownVectors The North, East, and Down vectors for the given unreal location
+	 */
+	UFUNCTION(BlueprintPure, Category = "GRILL DIS|Unit Conversions")
+		static void GetNorthEastDownVectorsFromUnrealLocation(FVector UnrealLocation, AGeoReferencingSystem* GeoReferencingSystem, FNorthEastDown& NorthEastDownVectors);
+
+	/**
+	 * Gets the East, North, and Up vector representation of the given Unreal location
+	 * @param UnrealLocation The location in Unreal units
+	 * @param GeoReferencingSystem The GeoReferencing Subsystem reference.
+	 * @param EastNorthUpVectors The East, North, and Up vectors for the given unreal location
+	 */
+	UFUNCTION(BlueprintPure, Category = "GRILL DIS|Unit Conversions")
+		static void GetEastNorthUpVectorsFromUnrealLocation(FVector UnrealLocation, AGeoReferencingSystem* GeoReferencingSystem, FEastNorthUp& EastNorthUpVectors);
+
+	/**
 	 * Get the East, North, and Up vectors from the North, East, and Down vector struct
 	 * @param NorthEastDownVectors The North, East, and Down vectors representing the current orientation
 	 * @param EastNorthUpVectors The resulting East, North, and Up vectors representing the current orientation
