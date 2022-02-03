@@ -118,36 +118,46 @@ void UPDUProcessor::ProcessDISPacket(TArray<uint8> InData)
 }
 
 // TODO: Implement additional PDU conversions to bytes to support sending of more types.
-void UPDUProcessor::ConvertESPDU2Bytes(int Exercise, FEntityStatePDU EntityStatePDUIn, TArray<uint8>& BytesOut)
+void UPDUProcessor::ConvertEntityStatePDUtoBytes(int Exercise, FEntityStatePDU EntityStatePDUIn, TArray<uint8>& BytesOut)
 {
 	DIS::DataStream buffer(BigEndian);
 
 	//protocol and exercise
-	DIS::EntityStatePdu tempEntity;
-	tempEntity.setProtocolVersion(6);
-	tempEntity.setExerciseID(Exercise);
+	DIS::EntityStatePdu entityStatePDUToSend;
+	entityStatePDUToSend.setProtocolVersion(6);
+	entityStatePDUToSend.setExerciseID(Exercise);
 
 	//entity id
 	DIS::EntityID tempID;
 	tempID.setSite(EntityStatePDUIn.EntityID.Site);
 	tempID.setApplication(EntityStatePDUIn.EntityID.Application);
 	tempID.setEntity(EntityStatePDUIn.EntityID.Entity);
-	tempEntity.setEntityID(tempID);
+	entityStatePDUToSend.setEntityID(tempID);
 
-	//entity type
-	DIS::EntityType tempType;
-	tempType.setCategory(EntityStatePDUIn.EntityType.Category);
-	tempType.setCountry(EntityStatePDUIn.EntityType.Country);
-	tempType.setDomain(EntityStatePDUIn.EntityType.Domain);
-	tempType.setEntityKind(EntityStatePDUIn.EntityType.EntityKind);
-	tempType.setExtra(EntityStatePDUIn.EntityType.Extra);
-	tempType.setSpecific(EntityStatePDUIn.EntityType.Specific);
-	tempType.setSubcategory(EntityStatePDUIn.EntityType.Subcategory);
-	tempEntity.setEntityType(tempType);
+	//Location
+	DIS::Vector3Double tempDouble;
+	tempDouble.setX(EntityStatePDUIn.EntityLocation[0]);
+	tempDouble.setY(EntityStatePDUIn.EntityLocation[1]);
+	tempDouble.setZ(EntityStatePDUIn.EntityLocation[2]);
+	entityStatePDUToSend.setEntityLocation(tempDouble);
+
+	//Orientation
+	DIS::Orientation tempOri;
+	tempOri.setPhi(EntityStatePDUIn.EntityOrientation.Roll);
+	tempOri.setPsi(EntityStatePDUIn.EntityOrientation.Yaw);
+	tempOri.setTheta(EntityStatePDUIn.EntityOrientation.Pitch);
+	entityStatePDUToSend.setEntityOrientation(tempOri);
+
+	//Linear Velocity
+	DIS::Vector3Float tempVelocity;
+	tempVelocity.setX(EntityStatePDUIn.EntityLinearVelocity[0]);
+	tempVelocity.setY(EntityStatePDUIn.EntityLinearVelocity[1]);
+	tempVelocity.setZ(EntityStatePDUIn.EntityLinearVelocity[2]);
+	entityStatePDUToSend.setEntityLinearVelocity(tempVelocity);
 
 	//dead reckoning
 	DIS::DeadReckoningParameter drp;
-	drp.setDeadReckoningAlgorithm(4);
+	drp.setDeadReckoningAlgorithm(EntityStatePDUIn.DeadReckoningParameters.DeadReckoningAlgorithm);
 	DIS::Vector3Float tempFloat;
 	tempFloat.setX(EntityStatePDUIn.DeadReckoningParameters.EntityAngularVelocity.X);
 	tempFloat.setY(EntityStatePDUIn.DeadReckoningParameters.EntityAngularVelocity.Y);
@@ -157,30 +167,63 @@ void UPDUProcessor::ConvertESPDU2Bytes(int Exercise, FEntityStatePDU EntityState
 	tempFloat.setY(EntityStatePDUIn.DeadReckoningParameters.EntityLinearAcceleration.Y);
 	tempFloat.setZ(EntityStatePDUIn.DeadReckoningParameters.EntityLinearAcceleration.Z);
 	drp.setEntityLinearAcceleration(tempFloat);
-	tempEntity.setDeadReckoningParameters(drp);
+	// TODO: figure out how to get the character buffer of 15 8bits and put it into tarray of 15 elements each with 8bits
+	//drp.setOtherParameters(EntityStatePDUIn.DeadReckoningParameters.OtherParameters);
+	entityStatePDUToSend.setDeadReckoningParameters(drp);
 
-	// TODO: location FIX TO USE DOUBLE LATER, USING FLOAT FOR SIMPLE TESTING
-	DIS::Vector3Double tempDouble;
-	tempDouble.setX(EntityStatePDUIn.EntityLocation[0]);
-	tempDouble.setY(EntityStatePDUIn.EntityLocation[1]);
-	tempDouble.setZ(EntityStatePDUIn.EntityLocation[2]);
-	tempEntity.setEntityLocation(tempDouble);
+	//single vars
+	entityStatePDUToSend.setForceId(static_cast<unsigned char>(EntityStatePDUIn.ForceID));
 
-	//rotation
-	DIS::Orientation tempOri;
-	tempOri.setPhi(0.0);
-	tempOri.setPsi(0.0);
-	tempOri.setTheta(0.0);
-	tempEntity.setEntityOrientation(tempOri);
-
-	//marking
 	DIS::Marking tempMarking;
 	tempMarking.setCharacterSet(1);
 	tempMarking.setByStringCharacters(TCHAR_TO_ANSI(*EntityStatePDUIn.Marking));
-	tempEntity.setMarking(tempMarking);
+	entityStatePDUToSend.setMarking(tempMarking);
+
+	entityStatePDUToSend.setPduType(static_cast<unsigned char>(EntityStatePDUIn.PduType));
+	entityStatePDUToSend.setEntityAppearance(EntityStatePDUIn.EntityAppearance);
+	//entityStatePDUToSend.NumberOfArticulationParameters = EntityStatePDUIn->getNumberOfArticulationParameters();
+	entityStatePDUToSend.setCapabilities(EntityStatePDUIn.Capabilities);
+
+	//Entity Type
+	DIS::EntityType tempType;
+	tempType.setCategory(EntityStatePDUIn.EntityType.Category);
+	tempType.setCountry(EntityStatePDUIn.EntityType.Country);
+	tempType.setDomain(EntityStatePDUIn.EntityType.Domain);
+	tempType.setEntityKind(EntityStatePDUIn.EntityType.EntityKind);
+	tempType.setExtra(EntityStatePDUIn.EntityType.Extra);
+	tempType.setSpecific(EntityStatePDUIn.EntityType.Specific);
+	tempType.setSubcategory(EntityStatePDUIn.EntityType.Subcategory);
+	entityStatePDUToSend.setEntityType(tempType);
+
+	//Alternate Entity Type
+	DIS::EntityType altTempType;
+	altTempType.setCategory(EntityStatePDUIn.AlternativeEntityType.Category);
+	altTempType.setCountry(EntityStatePDUIn.AlternativeEntityType.Country);
+	altTempType.setDomain(EntityStatePDUIn.AlternativeEntityType.Domain);
+	altTempType.setEntityKind(EntityStatePDUIn.AlternativeEntityType.EntityKind);
+	altTempType.setExtra(EntityStatePDUIn.AlternativeEntityType.Extra);
+	altTempType.setSpecific(EntityStatePDUIn.AlternativeEntityType.Specific);
+	altTempType.setSubcategory(EntityStatePDUIn.AlternativeEntityType.Subcategory);
+	entityStatePDUToSend.setAlternativeEntityType(altTempType);
+
+	//Articulation Parameters
+	std::vector<DIS::ArticulationParameter> artParams;
+	for (int i = 0; i < EntityStatePDUIn.ArticulationParameters.Num(); i++)
+	{
+		FArticulationParameters tempArtParam = EntityStatePDUIn.ArticulationParameters[i];
+		DIS::ArticulationParameter newArtParam;
+		newArtParam.setChangeIndicator(tempArtParam.ChangeIndicator);
+		newArtParam.setParameterType(tempArtParam.ParameterType);
+		newArtParam.setParameterTypeDesignator(tempArtParam.ParameterTypeDesignator);
+		newArtParam.setParameterValue(tempArtParam.ParameterValue);
+		newArtParam.setPartAttachedTo(tempArtParam.PartAttachedTo);
+
+		artParams.push_back(newArtParam);
+	}
+	entityStatePDUToSend.setArticulationParameters(artParams);
 
 	//marshal
-	tempEntity.marshal(buffer);
+	entityStatePDUToSend.marshal(buffer);
 	TArray<uint8> tempBytes;
 	tempBytes.Init(0, buffer.size());
 	for (int i = 0; i < buffer.size(); i++) {
@@ -197,8 +240,9 @@ FEntityStatePDU UPDUProcessor::ConvertEntityStatePDUtoBPStruct(DIS::EntityStateP
 
 	DIS::Vector3Double& position = EntityStatePDUIn->getEntityLocation();
 	DIS::Orientation& rotation = EntityStatePDUIn->getEntityOrientation();
-	const DIS::EntityID EntityID = EntityStatePDUIn->getEntityID();
-	const DIS::EntityType EntityType = EntityStatePDUIn->getEntityType();
+	const DIS::EntityID entityID = EntityStatePDUIn->getEntityID();
+	const DIS::EntityType entityType = EntityStatePDUIn->getEntityType();
+	const DIS::EntityType altEntityType = EntityStatePDUIn->getAlternativeEntityType();
 
 	//pure since unsupported in BP
 	entityStatePDU.EntityLocationDouble[0] = position.getX();
@@ -206,9 +250,9 @@ FEntityStatePDU UPDUProcessor::ConvertEntityStatePDUtoBPStruct(DIS::EntityStateP
 	entityStatePDU.EntityLocationDouble[2] = position.getZ();
 
 	//entity id
-	entityStatePDU.EntityID.Site = EntityID.getSite();
-	entityStatePDU.EntityID.Application = EntityID.getApplication();
-	entityStatePDU.EntityID.Entity = EntityID.getEntity();
+	entityStatePDU.EntityID.Site = entityID.getSite();
+	entityStatePDU.EntityID.Application = entityID.getApplication();
+	entityStatePDU.EntityID.Entity = entityID.getEntity();
 
 	//location
 	entityStatePDU.EntityLocation[0] = position.getX();
@@ -239,19 +283,41 @@ FEntityStatePDU UPDUProcessor::ConvertEntityStatePDUtoBPStruct(DIS::EntityStateP
 	//single vars
 	entityStatePDU.ForceID = static_cast<EForceID>(EntityStatePDUIn->getForceId());
 	entityStatePDU.Marking = FString(EntityStatePDUIn->getMarking().getCharacters());
-	//entityStatePDU.PduType = EntityStatePDUIn->getPduType();
+	entityStatePDU.PduType = static_cast<EPDUType>(EntityStatePDUIn->getPduType());
 	entityStatePDU.EntityAppearance = EntityStatePDUIn->getEntityAppearance();
-	entityStatePDU.NumberOfArticulationParameters = EntityStatePDUIn->getNumberOfArticulationParameters();
 	entityStatePDU.Capabilities = EntityStatePDUIn->getCapabilities();
 
 	//Entity type
-	entityStatePDU.EntityType.EntityKind = EntityType.getEntityKind();
-	entityStatePDU.EntityType.Domain = EntityType.getDomain();
-	entityStatePDU.EntityType.Country = EntityType.getCountry();
-	entityStatePDU.EntityType.Category = EntityType.getCategory();
-	entityStatePDU.EntityType.Subcategory = EntityType.getSubcategory();
-	entityStatePDU.EntityType.Specific = EntityType.getSpecific();
-	entityStatePDU.EntityType.Extra = EntityType.getExtra();
+	entityStatePDU.EntityType.EntityKind = entityType.getEntityKind();
+	entityStatePDU.EntityType.Domain = entityType.getDomain();
+	entityStatePDU.EntityType.Country = entityType.getCountry();
+	entityStatePDU.EntityType.Category = entityType.getCategory();
+	entityStatePDU.EntityType.Subcategory = entityType.getSubcategory();
+	entityStatePDU.EntityType.Specific = entityType.getSpecific();
+	entityStatePDU.EntityType.Extra = entityType.getExtra();
+
+	//Alternative Entity type
+	entityStatePDU.AlternativeEntityType.EntityKind = altEntityType.getEntityKind();
+	entityStatePDU.AlternativeEntityType.Domain = altEntityType.getDomain();
+	entityStatePDU.AlternativeEntityType.Country = altEntityType.getCountry();
+	entityStatePDU.AlternativeEntityType.Category = altEntityType.getCategory();
+	entityStatePDU.AlternativeEntityType.Subcategory = altEntityType.getSubcategory();
+	entityStatePDU.AlternativeEntityType.Specific = altEntityType.getSpecific();
+	entityStatePDU.AlternativeEntityType.Extra = altEntityType.getExtra();
+
+	//Articulation Parameters
+	for (int i = 0; i < EntityStatePDUIn->getNumberOfArticulationParameters(); i++) 
+	{
+		DIS::ArticulationParameter tempArtParam = EntityStatePDUIn->getArticulationParameters()[i];
+		FArticulationParameters newArtParam;
+		newArtParam.ChangeIndicator = tempArtParam.getChangeIndicator();
+		newArtParam.ParameterType = tempArtParam.getParameterType();
+		newArtParam.ParameterTypeDesignator = tempArtParam.getParameterTypeDesignator();
+		newArtParam.ParameterValue = tempArtParam.getParameterValue();
+		newArtParam.PartAttachedTo = tempArtParam.getPartAttachedTo();
+
+		entityStatePDU.ArticulationParameters.Add(newArtParam);
+	}
 
 	return entityStatePDU;
 }
@@ -263,6 +329,7 @@ FEntityStateUpdatePDU UPDUProcessor::ConvertEntityStateUpdatePDUtoBPStruct(DIS::
 	DIS::Vector3Double& position = EntityStateUpdatePDUIn->getEntityLocation();
 	DIS::Orientation& rotation = EntityStateUpdatePDUIn->getEntityOrientation();
 	const DIS::EntityID EntityID = EntityStateUpdatePDUIn->getEntityID();
+
 
 	//pure since unsupported in BP
 	entityStateUpdatePDU.EntityLocationDouble[0] = position.getX();
@@ -289,10 +356,25 @@ FEntityStateUpdatePDU UPDUProcessor::ConvertEntityStateUpdatePDUtoBPStruct(DIS::
 	entityStateUpdatePDU.EntityLinearVelocity[1] = EntityStateUpdatePDUIn->getEntityLinearVelocity().getY();
 	entityStateUpdatePDU.EntityLinearVelocity[2] = EntityStateUpdatePDUIn->getEntityLinearVelocity().getZ();
 
+	//Single Vars
+	entityStateUpdatePDU.PduType = static_cast<EPDUType>(EntityStateUpdatePDUIn->getPduType());
 	entityStateUpdatePDU.Padding = EntityStateUpdatePDUIn->getPadding();
 	entityStateUpdatePDU.Padding1 = EntityStateUpdatePDUIn->getPadding1();
 	entityStateUpdatePDU.EntityAppearance = EntityStateUpdatePDUIn->getEntityAppearance();
-	entityStateUpdatePDU.NumberOfArticulationParameters = EntityStateUpdatePDUIn->getNumberOfArticulationParameters();
+
+	//Articulation Parameters
+	for (int i = 0; i < EntityStateUpdatePDUIn->getNumberOfArticulationParameters(); i++)
+	{
+		DIS::ArticulationParameter tempArtParam = EntityStateUpdatePDUIn->getArticulationParameters()[i];
+		FArticulationParameters newArtParam;
+		newArtParam.ChangeIndicator = tempArtParam.getChangeIndicator();
+		newArtParam.ParameterType = tempArtParam.getParameterType();
+		newArtParam.ParameterTypeDesignator = tempArtParam.getParameterTypeDesignator();
+		newArtParam.ParameterValue = tempArtParam.getParameterValue();
+		newArtParam.PartAttachedTo = tempArtParam.getPartAttachedTo();
+
+		entityStateUpdatePDU.ArticulationParameters.Add(newArtParam);
+	}
 
 	return entityStateUpdatePDU;
 }
@@ -302,6 +384,7 @@ FFirePDU UPDUProcessor::ConvertFirePDUtoBPStruct(DIS::FirePdu* FirePDUIn)
 	FFirePDU firePDU;
 
 	//single vars
+	firePDU.PduType = static_cast<EPDUType>(FirePDUIn->getPduType());
 	firePDU.FireMissionIndex = FirePDUIn->getFireMissionIndex();
 	firePDU.Range = FirePDUIn->getRange();
 
@@ -394,9 +477,23 @@ FDetonationPDU UPDUProcessor::ConvertDetonationPDUtoBPStruct(DIS::DetonationPdu*
 	detonationPDU.BurstDescriptor.EntityType.Extra = DetPDUIn->getBurstDescriptor().getMunition().getExtra();
 
 	//single vars
+	detonationPDU.PduType = static_cast<EPDUType>(DetPDUIn->getPduType());
 	detonationPDU.DetonationResult = DetPDUIn->getDetonationResult();
-	detonationPDU.NumberOfArticulationParameters = DetPDUIn->getNumberOfArticulationParameters();
 	detonationPDU.Pad = DetPDUIn->getPad();
+
+	//Articulation Parameters
+	for (int i = 0; i < DetPDUIn->getNumberOfArticulationParameters(); i++)
+	{
+		DIS::ArticulationParameter tempArtParam = DetPDUIn->getArticulationParameters()[i];
+		FArticulationParameters newArtParam;
+		newArtParam.ChangeIndicator = tempArtParam.getChangeIndicator();
+		newArtParam.ParameterType = tempArtParam.getParameterType();
+		newArtParam.ParameterTypeDesignator = tempArtParam.getParameterTypeDesignator();
+		newArtParam.ParameterValue = tempArtParam.getParameterValue();
+		newArtParam.PartAttachedTo = tempArtParam.getPartAttachedTo();
+
+		detonationPDU.ArticulationParameters.Add(newArtParam);
+	}
 
 	return detonationPDU;
 }
@@ -405,6 +502,7 @@ FRemoveEntityPDU UPDUProcessor::ConvertRemoveEntityPDUtoBPStruct(DIS::RemoveEnti
 {
 	FRemoveEntityPDU removeEntityPDU;
 
+	removeEntityPDU.PduType = static_cast<EPDUType>(RemovePDUIn->getPduType());
 	removeEntityPDU.OriginatingEntityID.Site = RemovePDUIn->getOriginatingEntityID().getSite();
 	removeEntityPDU.OriginatingEntityID.Application = RemovePDUIn->getOriginatingEntityID().getApplication();
 	removeEntityPDU.OriginatingEntityID.Entity = RemovePDUIn->getOriginatingEntityID().getEntity();
@@ -419,6 +517,8 @@ FRemoveEntityPDU UPDUProcessor::ConvertRemoveEntityPDUtoBPStruct(DIS::RemoveEnti
 FStartResumePDU UPDUProcessor::ConvertStartResumePDUtoBPStruct(DIS::StartResumePdu* StartResumePDUIn) 
 {
 	FStartResumePDU startResumePDU;
+
+	startResumePDU.PduType = static_cast<EPDUType>(StartResumePDUIn->getPduType());
 
 	DIS::ClockTime RealWorldTime = StartResumePDUIn->getRealWorldTime();
 	DIS::ClockTime SimulationTime = StartResumePDUIn->getRealWorldTime();
@@ -439,7 +539,9 @@ FStopFreezePDU UPDUProcessor::ConvertStopFreezePDUtoBPStruct(DIS::StopFreezePdu*
 	FStopFreezePDU stopFreezePDU;
 
 	DIS::ClockTime RealWorldTime = StopFreezePDUIn->getRealWorldTime();
-	
+
+	stopFreezePDU.PduType = static_cast<EPDUType>(StopFreezePDUIn->getPduType());
+
 	stopFreezePDU.RealWorldTime.Hour = RealWorldTime.getHour();
 	stopFreezePDU.RealWorldTime.TimePastHour = RealWorldTime.getTimePastHour();
 

@@ -221,7 +221,6 @@ void UDISComponent::HandleEntityStateUpdatePDU(FEntityStateUpdatePDU NewEntitySt
 	mostRecentEntityStatePDU.EntityLocation = NewEntityStateUpdatePDU.EntityLocation;
 	mostRecentEntityStatePDU.EntityOrientation = NewEntityStateUpdatePDU.EntityOrientation;
 	mostRecentEntityStatePDU.EntityLinearVelocity = NewEntityStateUpdatePDU.EntityLinearVelocity;
-	mostRecentEntityStatePDU.NumberOfArticulationParameters = NewEntityStateUpdatePDU.NumberOfArticulationParameters;
 	mostRecentEntityStatePDU.EntityAppearance = NewEntityStateUpdatePDU.EntityAppearance;
 	mostRecentEntityStatePDU.ArticulationParameters = NewEntityStateUpdatePDU.ArticulationParameters;
 

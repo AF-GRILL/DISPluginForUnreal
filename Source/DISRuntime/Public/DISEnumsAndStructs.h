@@ -457,30 +457,24 @@ struct FEntityType
 {
 	GENERATED_BODY()
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		/** Kind of entity */
+	/** Kind of entity */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)		
 		int32 EntityKind;
-
 	/** Domain of entity (air, surface, subsurface, space, etc) */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		int32 Domain;
-
-	/** country to which the design of the entity is attributed */
+	/** Country to which the design of the entity is attributed */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		int32 Country;
-
-	/** category of entity */
+	/** Category of entity */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		int32 Category;
-
-	/** subcategory of entity */
+	/** Subcategory of entity */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		int32 Subcategory;
-
-	/** specific info based on subcategory field */
+	/** Specific info based on subcategory field */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		int32 Specific;
-
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		int32 Extra;
 
@@ -654,16 +648,13 @@ struct FEntityStatePDU : public FPdu
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		FEntityType EntityType;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		int32 NumberOfArticulationParameters;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		int32 EntityAppearance;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		int32 Capabilities;
-
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		FEntityType AlternativeEntityType;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		FArticulationParameters ArticulationParameters;
+		TArray<FArticulationParameters> ArticulationParameters;
 
 	FEntityStatePDU()
 	{
@@ -676,7 +667,6 @@ struct FEntityStatePDU : public FPdu
 		EntityLocationDouble.Init(0, 3);
 		EntityLinearVelocity = FVector(0, 0, 0);
 		EntityAppearance = 0;
-		NumberOfArticulationParameters = 0;
 		Capabilities = 0;
 	}
 };
@@ -700,15 +690,13 @@ struct FEntityStateUpdatePDU : public FPdu
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		FVector EntityLinearVelocity;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		int32 NumberOfArticulationParameters;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		int32 EntityAppearance;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		int32 Padding;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		int32 Padding1;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		FArticulationParameters ArticulationParameters;
+		TArray<FArticulationParameters> ArticulationParameters;
 
 	FEntityStateUpdatePDU()
 	{
@@ -719,7 +707,6 @@ struct FEntityStateUpdatePDU : public FPdu
 		EntityLocationDouble.Init(0, 3);
 		EntityLinearVelocity = FVector(0, 0, 0);
 		EntityAppearance = 0;
-		NumberOfArticulationParameters = 0;
 		Padding = 0;
 		Padding1 = 0;
 	}
@@ -733,7 +720,6 @@ struct FEntityStateUpdatePDU : public FPdu
 		newEntityStatePDU.EntityLocation = EntityLocation;
 		newEntityStatePDU.EntityOrientation = EntityOrientation;
 		newEntityStatePDU.EntityLinearVelocity = EntityLinearVelocity;
-		newEntityStatePDU.NumberOfArticulationParameters = NumberOfArticulationParameters;
 		newEntityStatePDU.EntityAppearance = EntityAppearance;
 		newEntityStatePDU.ArticulationParameters = ArticulationParameters;
 
@@ -815,9 +801,9 @@ struct FDetonationPDU : public FPdu
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		uint8 DetonationResult;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		int32 NumberOfArticulationParameters;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		int32 Pad;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		TArray<FArticulationParameters> ArticulationParameters;
 
 	FDetonationPDU()
 	{
@@ -827,7 +813,6 @@ struct FDetonationPDU : public FPdu
 		Location = FVector(0, 0, 0);
 		LocationInEntityCoords = FVector(0, 0, 0);
 		DetonationResult = 0U;
-		NumberOfArticulationParameters = 0;
 		Pad = 0;
 	}
 };
@@ -837,6 +822,8 @@ struct FStartResumePDU : public FPdu
 {
 	GENERATED_BODY()
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		EPDUType PduType;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		FClockTime RealWorldTime;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
@@ -856,6 +843,8 @@ struct FStopFreezePDU : public FPdu
 {
 	GENERATED_BODY()
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		EPDUType PduType;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		FClockTime RealWorldTime;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
