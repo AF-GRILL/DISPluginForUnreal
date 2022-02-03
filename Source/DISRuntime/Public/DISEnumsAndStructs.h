@@ -457,30 +457,24 @@ struct FEntityType
 {
 	GENERATED_BODY()
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		/** Kind of entity */
+	/** Kind of entity */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)		
 		int32 EntityKind;
-
 	/** Domain of entity (air, surface, subsurface, space, etc) */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		int32 Domain;
-
-	/** country to which the design of the entity is attributed */
+	/** Country to which the design of the entity is attributed */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		int32 Country;
-
-	/** category of entity */
+	/** Category of entity */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		int32 Category;
-
-	/** subcategory of entity */
+	/** Subcategory of entity */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		int32 Subcategory;
-
-	/** specific info based on subcategory field */
+	/** Specific info based on subcategory field */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		int32 Specific;
-
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		int32 Extra;
 
@@ -630,16 +624,13 @@ struct FEntityStatePDU
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		FEntityType EntityType;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		int32 NumberOfArticulationParameters;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		int32 EntityAppearance;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		int32 Capabilities;
-
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		FEntityType AlternativeEntityType;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		FArticulationParameters ArticulationParameters;
+		TArray<FArticulationParameters> ArticulationParameters;
 
 	FEntityStatePDU()
 	{
@@ -652,7 +643,6 @@ struct FEntityStatePDU
 		EntityLocationDouble.Init(0, 3);
 		EntityLinearVelocity = FVector(0, 0, 0);
 		EntityAppearance = 0;
-		NumberOfArticulationParameters = 0;
 		Capabilities = 0;
 	}
 };
@@ -678,15 +668,13 @@ struct FEntityStateUpdatePDU
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		FVector EntityLinearVelocity;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		int32 NumberOfArticulationParameters;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		int32 EntityAppearance;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		int32 Padding;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		int32 Padding1;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		FArticulationParameters ArticulationParameters;
+		TArray<FArticulationParameters> ArticulationParameters;
 
 	FEntityStateUpdatePDU()
 	{
@@ -697,7 +685,6 @@ struct FEntityStateUpdatePDU
 		EntityLocationDouble.Init(0, 3);
 		EntityLinearVelocity = FVector(0, 0, 0);
 		EntityAppearance = 0;
-		NumberOfArticulationParameters = 0;
 		Padding = 0;
 		Padding1 = 0;
 	}
@@ -711,7 +698,6 @@ struct FEntityStateUpdatePDU
 		newEntityStatePDU.EntityLocation = EntityLocation;
 		newEntityStatePDU.EntityOrientation = EntityOrientation;
 		newEntityStatePDU.EntityLinearVelocity = EntityLinearVelocity;
-		newEntityStatePDU.NumberOfArticulationParameters = NumberOfArticulationParameters;
 		newEntityStatePDU.EntityAppearance = EntityAppearance;
 		newEntityStatePDU.ArticulationParameters = ArticulationParameters;
 

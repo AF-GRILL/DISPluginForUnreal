@@ -40,7 +40,7 @@ public:
 	 * @param BytesOut - The given Entity State PDU in bytes.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "GRILL DIS|PDU Processor")
-		void ConvertESPDU2Bytes(int Exercise, FEntityStatePDU EntityStatePDUIn, TArray<uint8>& BytesOut);
+		void ConvertEntityStatePDUtoBytes(int Exercise, FEntityStatePDU EntityStatePDUIn, TArray<uint8>& BytesOut);
 	
 	/**
 	 * Called after an Entity State PDU is processed.
