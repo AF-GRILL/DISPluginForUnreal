@@ -33,6 +33,7 @@ public:
 	 */
 	UFUNCTION(BlueprintCallable, Category = "GRILL DIS|PDU Processor")
 		void ProcessDISPacket(TArray<uint8> InData);
+
 	/**
 	 * Converts the given Entity State PDU to bytes. Useful if sending the packet over UDP is desired.
 	 * @param Exercise - The exercise number that the given Entity State PDU is associated with.
@@ -41,6 +42,15 @@ public:
 	 */
 	UFUNCTION(BlueprintCallable, Category = "GRILL DIS|PDU Processor")
 		void ConvertEntityStatePDUtoBytes(int Exercise, FEntityStatePDU EntityStatePDUIn, TArray<uint8>& BytesOut);
+
+	/**
+	 * Converts the given Entity State PDU to bytes. Useful if sending the packet over UDP is desired.
+	 * @param Exercise - The exercise number that the given Entity State PDU is associated with.
+	 * @param EntityStateUpdatePDUIn - The Entity State PDU to convert to bytes.
+	 * @param BytesOut - The given Entity State PDU in bytes.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "GRILL DIS|PDU Processor")
+		void ConvertEntityStateUpdatePDUtoBytes(int Exercise, FEntityStateUpdatePDU EntityStateUpdatePDUIn, TArray<uint8>& BytesOut);
 	
 	/**
 	 * Called after an Entity State PDU is processed.

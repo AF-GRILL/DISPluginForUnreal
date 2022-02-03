@@ -430,6 +430,15 @@ struct FEntityID
 	{
 		return FString::FromInt(Site) + ":" + FString::FromInt(Application) + ':' + FString::FromInt(Entity);
 	}
+
+	DIS::EntityID ToDIS() const
+	{
+		DIS::EntityID OutID;
+		OutID.setSite(Site);
+		OutID.setApplication(Application);
+		OutID.setEntity(Entity);
+		return OutID;
+	}
 };
 
 USTRUCT(BlueprintType)
@@ -449,6 +458,15 @@ struct FEventID
 		Site = 0;
 		Application = 0;
 		EventID = 0;
+	}
+
+	DIS::EventID ToDIS() const
+	{
+		DIS::EventID OutID;
+		OutID.setSite(Site);
+		OutID.setApplication(Application);
+		OutID.setEventNumber(EventID);
+		return OutID;
 	}
 };
 
@@ -519,6 +537,19 @@ struct FEntityType
 		return FString::FromInt(EntityKind) + ":" + FString::FromInt(Domain) + ':' + FString::FromInt(Country) + ":" +
 			FString::FromInt(Category) + ":" + FString::FromInt(Subcategory) + ':' + FString::FromInt(Specific) + ":" + FString::FromInt(Extra);
 	}
+
+	DIS::EntityType ToDIS() const
+	{
+		DIS::EntityType OutType;
+		OutType.setEntityKind(EntityKind);
+		OutType.setDomain(Domain);
+		OutType.setCountry(Country);
+		OutType.setCategory(Category);
+		OutType.setSubcategory(Subcategory);
+		OutType.setSpecific(Specific);
+		OutType.setExtra(Extra);
+		return OutType;
+	}
 };
 
 USTRUCT(BlueprintType)
@@ -545,6 +576,17 @@ struct FArticulationParameters
 		ParameterType = 0;
 		ParameterValue = 0;
 	}
+
+	DIS::ArticulationParameter ToDIS() const
+	{
+		DIS::ArticulationParameter OutParam;
+		OutParam.setParameterTypeDesignator(ParameterTypeDesignator);
+		OutParam.setChangeIndicator(ChangeIndicator);
+		OutParam.setPartAttachedTo(PartAttachedTo);
+		OutParam.setParameterType(ParameterType);
+		OutParam.setParameterValue(ParameterValue);
+		return OutParam;
+	}
 };
 
 USTRUCT(BlueprintType)
@@ -570,6 +612,17 @@ struct FBurstDescriptor
 		Quantity = 0;
 		Rate = 0;
 	}
+
+	DIS::BurstDescriptor ToDIS() const
+	{
+		DIS::BurstDescriptor OutDescriptor;
+		OutDescriptor.setMunition(EntityType.ToDIS());
+		OutDescriptor.setWarhead(Warhead);
+		OutDescriptor.setFuse(Fuse);
+		OutDescriptor.setQuantity(Quantity);
+		OutDescriptor.setRate(Rate);
+		return OutDescriptor;
+	}
 };
 
 USTRUCT(BlueprintType)
@@ -593,9 +646,27 @@ struct FDeadReckoningParameters
 		EntityLinearAcceleration = FVector(0, 0, 0);
 		EntityAngularVelocity = FVector(0, 0, 0);
 	}
+
+	DIS::DeadReckoningParameter ToDIS() const
+	{
+		DIS::DeadReckoningParameter OutParam;
+		OutParam.setDeadReckoningAlgorithm(DeadReckoningAlgorithm);
+		OutParam.setOtherParameters(reinterpret_cast<const char*>(OtherParameters.GetData()));
+		DIS::Vector3Float OutLinearAcceleration;
+		OutLinearAcceleration.setX(EntityLinearAcceleration.X);
+		OutLinearAcceleration.setY(EntityLinearAcceleration.Y);
+		OutLinearAcceleration.setZ(EntityLinearAcceleration.Z);
+		OutParam.setEntityLinearAcceleration(OutLinearAcceleration);
+		DIS::Vector3Float OutAngularVelocity;
+		OutAngularVelocity.setX(EntityAngularVelocity.X);
+		OutAngularVelocity.setY(EntityAngularVelocity.Y);
+		OutAngularVelocity.setZ(EntityAngularVelocity.Z);
+		OutParam.setEntityAngularVelocity(OutAngularVelocity);
+		return OutParam;
+	}
 };
 
-USTRUCT()
+USTRUCT(BlueprintType)
 struct FPdu
 {
 	GENERATED_BODY()
@@ -613,12 +684,22 @@ struct FPdu
 
 	unsigned int Timestamp;
 
-	/** Lenght, in bytes, of the PDU */
+	/** Length, in bytes, of the PDU */
 	unsigned short Length;
 
 	/** Zero-filled array of padding */
 	short Padding;
 
+	FPdu()
+	{
+		ProtocolVersion = 6;
+		ExerciseID = 0;
+		PduType = EPDUType::Other;
+		ProtocolFamily = 0;
+		Timestamp = 0;
+		Length = 0;
+		Padding = 0;
+	}
 };
 
 USTRUCT(BlueprintType)
@@ -668,6 +749,55 @@ struct FEntityStatePDU : public FPdu
 		EntityLinearVelocity = FVector(0, 0, 0);
 		EntityAppearance = 0;
 		Capabilities = 0;
+	}
+
+	DIS::EntityStatePdu ToDIS() const
+	{
+		DIS::EntityStatePdu OutPdu;
+
+		// Common PDU setup
+		OutPdu.setProtocolVersion(ProtocolVersion);
+		OutPdu.setExerciseID(ExerciseID);
+		OutPdu.setPduType(static_cast<unsigned char>(PduType));
+		OutPdu.setProtocolFamily(ProtocolFamily);
+		OutPdu.setTimestamp(Timestamp);
+		OutPdu.setLength(Length);
+		OutPdu.setPadding(Padding);
+
+		// Specific PDU setup
+		OutPdu.setEntityID(EntityID.ToDIS());
+		OutPdu.setForceId(static_cast<unsigned char>(ForceID));
+		OutPdu.setEntityType(EntityType.ToDIS());
+		OutPdu.setAlternativeEntityType(AlternativeEntityType.ToDIS());
+		DIS::Vector3Float OutLinearVelocity;
+		OutLinearVelocity.setX(EntityLinearVelocity.X);
+		OutLinearVelocity.setY(EntityLinearVelocity.Y);
+		OutLinearVelocity.setZ(EntityLinearVelocity.Z);
+		OutPdu.setEntityLinearVelocity(OutLinearVelocity);
+		DIS::Vector3Double OutLocation;
+		OutLocation.setX(EntityLocationDouble[0]);
+		OutLocation.setY(EntityLocationDouble[1]);
+		OutLocation.setZ(EntityLocationDouble[2]);
+		OutPdu.setEntityLocation(OutLocation);
+		DIS::Orientation OutOrientation;
+		OutOrientation.setPsi(EntityOrientation.Yaw);
+		OutOrientation.setTheta(EntityOrientation.Pitch);
+		OutOrientation.setPhi(EntityOrientation.Roll);
+		OutPdu.setEntityOrientation(OutOrientation);
+		OutPdu.setEntityAppearance(EntityAppearance);
+		OutPdu.setDeadReckoningParameters(DeadReckoningParameters.ToDIS());
+		DIS::Marking OutMarking;
+		OutMarking.setCharacterSet(1);
+		OutMarking.setByStringCharacters(TCHAR_TO_ANSI(*Marking.Left(11)));
+		OutPdu.setMarking(OutMarking);
+		OutPdu.setCapabilities(Capabilities);
+		std::vector<DIS::ArticulationParameter> OutArtParams;
+		for (FArticulationParameters Param : ArticulationParameters)
+		{
+			OutArtParams.push_back(Param.ToDIS());
+		}
+		OutPdu.setArticulationParameters(OutArtParams);
+		return OutPdu;
 	}
 };
 
@@ -724,6 +854,47 @@ struct FEntityStateUpdatePDU : public FPdu
 		newEntityStatePDU.ArticulationParameters = ArticulationParameters;
 
 		return newEntityStatePDU;
+	}
+
+	DIS::EntityStateUpdatePdu ToDIS() const
+	{
+		DIS::EntityStateUpdatePdu OutPdu;
+
+		// Common PDU setup
+		OutPdu.setProtocolVersion(ProtocolVersion);
+		OutPdu.setExerciseID(ExerciseID);
+		OutPdu.setPduType(static_cast<unsigned char>(PduType));
+		OutPdu.setProtocolFamily(ProtocolFamily);
+		OutPdu.setTimestamp(Timestamp);
+		OutPdu.setLength(Length);
+		OutPdu.setPadding(Padding);
+
+		// Specific PDU setup
+		OutPdu.setEntityID(EntityID.ToDIS());
+		OutPdu.setPadding1(Padding1);
+		DIS::Vector3Float OutLinearVelocity;
+		OutLinearVelocity.setX(EntityLinearVelocity.X);
+		OutLinearVelocity.setY(EntityLinearVelocity.Y);
+		OutLinearVelocity.setZ(EntityLinearVelocity.Z);
+		OutPdu.setEntityLinearVelocity(OutLinearVelocity);
+		DIS::Vector3Double OutLocation;
+		OutLocation.setX(EntityLocationDouble[0]);
+		OutLocation.setY(EntityLocationDouble[1]);
+		OutLocation.setZ(EntityLocationDouble[2]);
+		OutPdu.setEntityLocation(OutLocation);
+		DIS::Orientation OutOrientation;
+		OutOrientation.setPsi(EntityOrientation.Yaw);
+		OutOrientation.setTheta(EntityOrientation.Pitch);
+		OutOrientation.setPhi(EntityOrientation.Roll);
+		OutPdu.setEntityOrientation(OutOrientation);
+		OutPdu.setEntityAppearance(EntityAppearance);
+		std::vector<DIS::ArticulationParameter> OutArtParams;
+		for (FArticulationParameters ArticulationParameter : ArticulationParameters)
+		{
+			OutArtParams.push_back(ArticulationParameter.ToDIS());
+		}
+		OutPdu.setArticulationParameters(OutArtParams);
+		return OutPdu;
 	}
 };
 

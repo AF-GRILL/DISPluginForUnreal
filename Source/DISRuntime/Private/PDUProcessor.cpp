@@ -120,107 +120,12 @@ void UPDUProcessor::ProcessDISPacket(TArray<uint8> InData)
 // TODO: Implement additional PDU conversions to bytes to support sending of more types.
 void UPDUProcessor::ConvertEntityStatePDUtoBytes(int Exercise, FEntityStatePDU EntityStatePDUIn, TArray<uint8>& BytesOut)
 {
+	EntityStatePDUIn.ProtocolVersion = 6;
+	EntityStatePDUIn.ExerciseID = Exercise;
+
+	DIS::EntityStatePdu entityStatePDUToSend = EntityStatePDUIn.ToDIS();
+
 	DIS::DataStream buffer(BigEndian);
-
-	//protocol and exercise
-	DIS::EntityStatePdu entityStatePDUToSend;
-	entityStatePDUToSend.setProtocolVersion(6);
-	entityStatePDUToSend.setExerciseID(Exercise);
-
-	//entity id
-	DIS::EntityID tempID;
-	tempID.setSite(EntityStatePDUIn.EntityID.Site);
-	tempID.setApplication(EntityStatePDUIn.EntityID.Application);
-	tempID.setEntity(EntityStatePDUIn.EntityID.Entity);
-	entityStatePDUToSend.setEntityID(tempID);
-
-	//Location
-	DIS::Vector3Double tempDouble;
-	tempDouble.setX(EntityStatePDUIn.EntityLocation[0]);
-	tempDouble.setY(EntityStatePDUIn.EntityLocation[1]);
-	tempDouble.setZ(EntityStatePDUIn.EntityLocation[2]);
-	entityStatePDUToSend.setEntityLocation(tempDouble);
-
-	//Orientation
-	DIS::Orientation tempOri;
-	tempOri.setPhi(EntityStatePDUIn.EntityOrientation.Roll);
-	tempOri.setPsi(EntityStatePDUIn.EntityOrientation.Yaw);
-	tempOri.setTheta(EntityStatePDUIn.EntityOrientation.Pitch);
-	entityStatePDUToSend.setEntityOrientation(tempOri);
-
-	//Linear Velocity
-	DIS::Vector3Float tempVelocity;
-	tempVelocity.setX(EntityStatePDUIn.EntityLinearVelocity[0]);
-	tempVelocity.setY(EntityStatePDUIn.EntityLinearVelocity[1]);
-	tempVelocity.setZ(EntityStatePDUIn.EntityLinearVelocity[2]);
-	entityStatePDUToSend.setEntityLinearVelocity(tempVelocity);
-
-	//dead reckoning
-	DIS::DeadReckoningParameter drp;
-	drp.setDeadReckoningAlgorithm(EntityStatePDUIn.DeadReckoningParameters.DeadReckoningAlgorithm);
-	DIS::Vector3Float tempFloat;
-	tempFloat.setX(EntityStatePDUIn.DeadReckoningParameters.EntityAngularVelocity.X);
-	tempFloat.setY(EntityStatePDUIn.DeadReckoningParameters.EntityAngularVelocity.Y);
-	tempFloat.setZ(EntityStatePDUIn.DeadReckoningParameters.EntityAngularVelocity.Z);
-	drp.setEntityAngularVelocity(tempFloat);
-	tempFloat.setX(EntityStatePDUIn.DeadReckoningParameters.EntityLinearAcceleration.X);
-	tempFloat.setY(EntityStatePDUIn.DeadReckoningParameters.EntityLinearAcceleration.Y);
-	tempFloat.setZ(EntityStatePDUIn.DeadReckoningParameters.EntityLinearAcceleration.Z);
-	drp.setEntityLinearAcceleration(tempFloat);
-	// TODO: figure out how to get the character buffer of 15 8bits and put it into tarray of 15 elements each with 8bits
-	//drp.setOtherParameters(EntityStatePDUIn.DeadReckoningParameters.OtherParameters);
-	entityStatePDUToSend.setDeadReckoningParameters(drp);
-
-	//single vars
-	entityStatePDUToSend.setForceId(static_cast<unsigned char>(EntityStatePDUIn.ForceID));
-
-	DIS::Marking tempMarking;
-	tempMarking.setCharacterSet(1);
-	tempMarking.setByStringCharacters(TCHAR_TO_ANSI(*EntityStatePDUIn.Marking));
-	entityStatePDUToSend.setMarking(tempMarking);
-
-	entityStatePDUToSend.setPduType(static_cast<unsigned char>(EntityStatePDUIn.PduType));
-	entityStatePDUToSend.setEntityAppearance(EntityStatePDUIn.EntityAppearance);
-	//entityStatePDUToSend.NumberOfArticulationParameters = EntityStatePDUIn->getNumberOfArticulationParameters();
-	entityStatePDUToSend.setCapabilities(EntityStatePDUIn.Capabilities);
-
-	//Entity Type
-	DIS::EntityType tempType;
-	tempType.setCategory(EntityStatePDUIn.EntityType.Category);
-	tempType.setCountry(EntityStatePDUIn.EntityType.Country);
-	tempType.setDomain(EntityStatePDUIn.EntityType.Domain);
-	tempType.setEntityKind(EntityStatePDUIn.EntityType.EntityKind);
-	tempType.setExtra(EntityStatePDUIn.EntityType.Extra);
-	tempType.setSpecific(EntityStatePDUIn.EntityType.Specific);
-	tempType.setSubcategory(EntityStatePDUIn.EntityType.Subcategory);
-	entityStatePDUToSend.setEntityType(tempType);
-
-	//Alternate Entity Type
-	DIS::EntityType altTempType;
-	altTempType.setCategory(EntityStatePDUIn.AlternativeEntityType.Category);
-	altTempType.setCountry(EntityStatePDUIn.AlternativeEntityType.Country);
-	altTempType.setDomain(EntityStatePDUIn.AlternativeEntityType.Domain);
-	altTempType.setEntityKind(EntityStatePDUIn.AlternativeEntityType.EntityKind);
-	altTempType.setExtra(EntityStatePDUIn.AlternativeEntityType.Extra);
-	altTempType.setSpecific(EntityStatePDUIn.AlternativeEntityType.Specific);
-	altTempType.setSubcategory(EntityStatePDUIn.AlternativeEntityType.Subcategory);
-	entityStatePDUToSend.setAlternativeEntityType(altTempType);
-
-	//Articulation Parameters
-	std::vector<DIS::ArticulationParameter> artParams;
-	for (int i = 0; i < EntityStatePDUIn.ArticulationParameters.Num(); i++)
-	{
-		FArticulationParameters tempArtParam = EntityStatePDUIn.ArticulationParameters[i];
-		DIS::ArticulationParameter newArtParam;
-		newArtParam.setChangeIndicator(tempArtParam.ChangeIndicator);
-		newArtParam.setParameterType(tempArtParam.ParameterType);
-		newArtParam.setParameterTypeDesignator(tempArtParam.ParameterTypeDesignator);
-		newArtParam.setParameterValue(tempArtParam.ParameterValue);
-		newArtParam.setPartAttachedTo(tempArtParam.PartAttachedTo);
-
-		artParams.push_back(newArtParam);
-	}
-	entityStatePDUToSend.setArticulationParameters(artParams);
 
 	//marshal
 	entityStatePDUToSend.marshal(buffer);
@@ -232,6 +137,27 @@ void UPDUProcessor::ConvertEntityStatePDUtoBytes(int Exercise, FEntityStatePDU E
 	buffer.clear();
 
 	BytesOut = tempBytes;
+}
+
+void UPDUProcessor::ConvertEntityStateUpdatePDUtoBytes(int Exercise, FEntityStateUpdatePDU EntityStateUpdatePDUIn,
+	TArray<uint8>& BytesOut)
+{
+	EntityStateUpdatePDUIn.ExerciseID = Exercise;
+
+	const DIS::EntityStateUpdatePdu PduToSend = EntityStateUpdatePDUIn.ToDIS();
+
+	DIS::DataStream Buffer(BigEndian);
+
+	PduToSend.marshal(Buffer);
+	TArray<uint8> BytesToSend;
+	BytesToSend.Init(0, Buffer.size());
+	for (int i = 0; i < Buffer.size(); i++)
+	{
+		BytesToSend[i] = Buffer[i];
+	}
+	Buffer.clear();
+
+	BytesOut = BytesToSend;
 }
 
 FEntityStatePDU UPDUProcessor::ConvertEntityStatePDUtoBPStruct(DIS::EntityStatePdu* EntityStatePDUIn)
@@ -271,8 +197,7 @@ FEntityStatePDU UPDUProcessor::ConvertEntityStatePDUtoBPStruct(DIS::EntityStateP
 
 	//Dead reckoning
 	entityStatePDU.DeadReckoningParameters.DeadReckoningAlgorithm = EntityStatePDUIn->getDeadReckoningParameters().getDeadReckoningAlgorithm();
-	// TODO: figure out how to get the character buffer of 15 8bits and put it into tarray of 15 elements each with 8bits
-	//returnStruct.DeadReckoningParameters.OtherParameters = espdu.getDeadReckoningParameters().getOtherParameters();
+	entityStatePDU.DeadReckoningParameters.OtherParameters = TArray<uint8>(reinterpret_cast<uint8*>(EntityStatePDUIn->getDeadReckoningParameters().getOtherParameters()), 15);
 	entityStatePDU.DeadReckoningParameters.EntityLinearAcceleration[0] = EntityStatePDUIn->getDeadReckoningParameters().getEntityLinearAcceleration().getX();
 	entityStatePDU.DeadReckoningParameters.EntityLinearAcceleration[1] = EntityStatePDUIn->getDeadReckoningParameters().getEntityLinearAcceleration().getY();
 	entityStatePDU.DeadReckoningParameters.EntityLinearAcceleration[2] = EntityStatePDUIn->getDeadReckoningParameters().getEntityLinearAcceleration().getZ();
