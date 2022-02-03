@@ -384,6 +384,7 @@ FFirePDU UPDUProcessor::ConvertFirePDUtoBPStruct(DIS::FirePdu* FirePDUIn)
 	FFirePDU firePDU;
 
 	//single vars
+	firePDU.PduType = static_cast<EPDUType>(FirePDUIn->getPduType());
 	firePDU.FireMissionIndex = FirePDUIn->getFireMissionIndex();
 	firePDU.Range = FirePDUIn->getRange();
 
@@ -476,9 +477,23 @@ FDetonationPDU UPDUProcessor::ConvertDetonationPDUtoBPStruct(DIS::DetonationPdu*
 	detonationPDU.BurstDescriptor.EntityType.Extra = DetPDUIn->getBurstDescriptor().getMunition().getExtra();
 
 	//single vars
+	detonationPDU.PduType = static_cast<EPDUType>(DetPDUIn->getPduType());
 	detonationPDU.DetonationResult = DetPDUIn->getDetonationResult();
-	detonationPDU.NumberOfArticulationParameters = DetPDUIn->getNumberOfArticulationParameters();
 	detonationPDU.Pad = DetPDUIn->getPad();
+
+	//Articulation Parameters
+	for (int i = 0; i < DetPDUIn->getNumberOfArticulationParameters(); i++)
+	{
+		DIS::ArticulationParameter tempArtParam = DetPDUIn->getArticulationParameters()[i];
+		FArticulationParameters newArtParam;
+		newArtParam.ChangeIndicator = tempArtParam.getChangeIndicator();
+		newArtParam.ParameterType = tempArtParam.getParameterType();
+		newArtParam.ParameterTypeDesignator = tempArtParam.getParameterTypeDesignator();
+		newArtParam.ParameterValue = tempArtParam.getParameterValue();
+		newArtParam.PartAttachedTo = tempArtParam.getPartAttachedTo();
+
+		detonationPDU.ArticulationParameters.Add(newArtParam);
+	}
 
 	return detonationPDU;
 }
@@ -487,6 +502,7 @@ FRemoveEntityPDU UPDUProcessor::ConvertRemoveEntityPDUtoBPStruct(DIS::RemoveEnti
 {
 	FRemoveEntityPDU removeEntityPDU;
 
+	removeEntityPDU.PduType = static_cast<EPDUType>(RemovePDUIn->getPduType());
 	removeEntityPDU.OriginatingEntityID.Site = RemovePDUIn->getOriginatingEntityID().getSite();
 	removeEntityPDU.OriginatingEntityID.Application = RemovePDUIn->getOriginatingEntityID().getApplication();
 	removeEntityPDU.OriginatingEntityID.Entity = RemovePDUIn->getOriginatingEntityID().getEntity();
@@ -501,6 +517,8 @@ FRemoveEntityPDU UPDUProcessor::ConvertRemoveEntityPDUtoBPStruct(DIS::RemoveEnti
 FStartResumePDU UPDUProcessor::ConvertStartResumePDUtoBPStruct(DIS::StartResumePdu* StartResumePDUIn) 
 {
 	FStartResumePDU startResumePDU;
+
+	startResumePDU.PduType = static_cast<EPDUType>(StartResumePDUIn->getPduType());
 
 	DIS::ClockTime RealWorldTime = StartResumePDUIn->getRealWorldTime();
 	DIS::ClockTime SimulationTime = StartResumePDUIn->getRealWorldTime();
@@ -521,7 +539,9 @@ FStopFreezePDU UPDUProcessor::ConvertStopFreezePDUtoBPStruct(DIS::StopFreezePdu*
 	FStopFreezePDU stopFreezePDU;
 
 	DIS::ClockTime RealWorldTime = StopFreezePDUIn->getRealWorldTime();
-	
+
+	stopFreezePDU.PduType = static_cast<EPDUType>(StopFreezePDUIn->getPduType());
+
 	stopFreezePDU.RealWorldTime.Hour = RealWorldTime.getHour();
 	stopFreezePDU.RealWorldTime.TimePastHour = RealWorldTime.getTimePastHour();
 

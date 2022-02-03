@@ -785,9 +785,9 @@ struct FDetonationPDU
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		uint8 DetonationResult;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		int32 NumberOfArticulationParameters;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		int32 Pad;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		TArray<FArticulationParameters> ArticulationParameters;
 
 	FDetonationPDU()
 	{
@@ -797,7 +797,6 @@ struct FDetonationPDU
 		Location = FVector(0, 0, 0);
 		LocationInEntityCoords = FVector(0, 0, 0);
 		DetonationResult = 0U;
-		NumberOfArticulationParameters = 0;
 		Pad = 0;
 	}
 };
@@ -808,6 +807,8 @@ struct FStartResumePDU
 	GENERATED_BODY()
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		EPDUType PduType;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		FClockTime RealWorldTime;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		FClockTime SimulationTime;
@@ -816,6 +817,7 @@ struct FStartResumePDU
 
 	FStartResumePDU() 
 	{
+		PduType = EPDUType::Start_Resume;
 		RequestID = 0;
 	}
 };
@@ -825,6 +827,8 @@ struct FStopFreezePDU
 {
 	GENERATED_BODY()
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		EPDUType PduType;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		FClockTime RealWorldTime;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
@@ -838,6 +842,7 @@ struct FStopFreezePDU
 
 	FStopFreezePDU() 
 	{
+		PduType = EPDUType::Stop_Freeze;
 		Reason = EReason::Other;
 		FrozenBehavior = 0;
 		Padding = 0;
