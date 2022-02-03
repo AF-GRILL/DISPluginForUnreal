@@ -16,7 +16,7 @@
     - **Site ID**: The site ID of this DIS sim.
     - **Application ID**: The application ID of this DIS sim.
     - **Auto Connect Send**: Whether or not the UDP socket for sending DIS packets should be auto connected.
-    - **Auto Send IP Address**: The IP address to send UDP packets from if Auto Connect Send is enabled.
+    - **Auto Send IP Address**: The IP address to send UDP packets to if Auto Connect Send is enabled.
     - **Auto Send Port**: The port for sending UDP packets on.
     - **Auto Connect Receive**: Whether or not the UDP socket for receiving DIS packets should be auto connected.
     - **Auto Receive IP Address**: The IP address to receive UDP packets from if Auto Connect Receive is enabled.

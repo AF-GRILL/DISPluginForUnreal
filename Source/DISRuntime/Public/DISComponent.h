@@ -59,37 +59,37 @@ public:
 	 * Called after a dead reckoning update is performed by the component.
 	 * Passes out an Entity State PDU with updated dead reckoning variables and a float containing the delta time since the last Entity State PDU was received in seconds as parameters.
 	 */
-	UPROPERTY(BlueprintAssignable, Category = "DIS Component|Event")
+	UPROPERTY(BlueprintAssignable, Category = "GRILL DIS|DIS Component|Event")
 		FDeadReckoningUpdate OnDeadReckoningUpdate;
 	/**
 	 * Called after an Entity State PDU is received by the component. The component updates associated variables prior to broadcasting this event.
 	 * Passes the Entity State PDU that was received as a parameter.
 	 */
-	UPROPERTY(BlueprintAssignable, Category = "DIS Component|Event")
+	UPROPERTY(BlueprintAssignable, Category = "GRILL DIS|DIS Component|Event")
 		FReceivedEntityStatePDU OnReceivedEntityStatePDU;
 	/**
 	 * Called after an Entity State Update PDU is received by the component. The component updates associated variables prior to broadcasting this event.
 	 * Passes the Entity State Update PDU that was received as a parameter.
 	 */
-	UPROPERTY(BlueprintAssignable, Category = "DIS Component|Event")
+	UPROPERTY(BlueprintAssignable, Category = "GRILL DIS|DIS Component|Event")
 		FReceivedEntityStatePDU OnReceivedEntityStateUpdatePDU;
 	/**
 	 * Called after a Detonation PDU is received by the component.
 	 * Passes the Detonation PDU that was received as a parameter.
 	 */
-	UPROPERTY(BlueprintAssignable, Category = "DIS Component|Event")
+	UPROPERTY(BlueprintAssignable, Category = "GRILL DIS|DIS Component|Event")
 		FReceivedDetonationPDU OnReceivedDetonationPDU;
 	/**
 	 * Called after a Fire PDU is received by the component.
 	 * Passes the Fire PDU that was received as a parameter.
 	 */
-	UPROPERTY(BlueprintAssignable, Category = "DIS Component|Event")
+	UPROPERTY(BlueprintAssignable, Category = "GRILL DIS|DIS Component|Event")
 		FReceivedFirePDU OnReceivedFirePDU;
 	/**
 	 * Called after a Remove Entity PDU is received by the component.
 	 * Passes the Remove Entity PDU that was received as a parameter.
 	 */
-	UPROPERTY(BlueprintAssignable, Category = "DIS Component|Event")
+	UPROPERTY(BlueprintAssignable, Category = "GRILL DIS|DIS Component|Event")
 		FReceivedRemoveEntityPDU OnReceivedRemoveEntityPDU;
 
 	/**
@@ -98,61 +98,61 @@ public:
 	 * @param ClampLocation - The location to ground clamp to.
 	 * @param ClampRotation - The rotation to ground clamp to.
 	 */	
-	UFUNCTION(BlueprintNativeEvent, Category = "DIS Component")
+	UFUNCTION(BlueprintNativeEvent, Category = "GRILL DIS|DIS Component")
 		bool SimpleGroundClamping(FVector& ClampLocation, FRotator& ClampRotation);
 	
 	/**
 	 * The most recent Entity State PDU that has been received by the DISComponent.
 	 */
-	UPROPERTY(BlueprintReadWrite, Category = "DIS Info")
+	UPROPERTY(BlueprintReadWrite, Category = "GRILL DIS|DIS Component|DIS Info")
 		FEntityStatePDU mostRecentEntityStatePDU;
 
 	/**
 	 * The most recent Entity State PDU that has been dead reckoned if activated by the DISComponent.
 	 */
-	UPROPERTY(BlueprintReadWrite, Category = "DIS Info")
+	UPROPERTY(BlueprintReadWrite, Category = "GRILL DIS|DIS Component|DIS Info")
 		FEntityStatePDU DeadReckoningEntityStatePDU;
 	/**
 	 * The timestamp that the most recent Entity State PDU was received at by the DISComponent.
 	 */
-	UPROPERTY(BlueprintReadWrite, Category = "DIS Info")
+	UPROPERTY(BlueprintReadWrite, Category = "GRILL DIS|DIS Component|DIS Info")
 		FDateTime LatestEntityStatePDUTimestamp;
 	/**
 	 * Whether or not the associated entity was spawned by the network or not.
 	 */
-	UPROPERTY(BlueprintReadWrite, Category = "DIS Info")
+	UPROPERTY(BlueprintReadWrite, Category = "GRILL DIS|DIS Component|DIS Info")
 		bool SpawnedFromNetwork = false;
 
 	/**
 	 * The time to live for the entity. Gets reset every time a new Entity State PDU is received by the sim.
 	 */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DIS Info")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|DIS Component|DIS Info")
 		float DISHeartbeat = 30.0f;
 	/**
 	 * The Entity Type of the associated entity. Specifies the kind of entity, the country of design, 
 	 * the domain, the specific identification of the entity, and any extra information necessary for describing the entity.
 	 */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DIS Info")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|DIS Component|DIS Info")
 		FEntityType EntityType;
 	/**
 	 * The Entity ID of the associated entity. Each Entity ID should be unique to an entity in the sim.
 	 */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DIS Info")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|DIS Component|DIS Info")
 		FEntityID EntityID;
 	/**
 	 * Whether or not dead reckoning should be performed for this entity.
 	 */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DIS Settings")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|DIS Component|DIS Settings")
 		bool PerformDeadReckoning = true;
 	/**
 	 * Whether or not ground clamping should be performed for this entity.
 	 */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DIS Settings")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|DIS Component|DIS Settings")
 		bool PerformGroundClamping = true;
 	/**
 	 * The collision channel to use for ground clamping.
 	 */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DIS Settings")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|DIS Component|DIS Settings")
 		TEnumAsByte<ETraceTypeQuery> GoundClampingCollisionChannel = UEngineTypes::ConvertToTraceType(ECollisionChannel::ECC_Visibility);
 
 protected:
