@@ -375,7 +375,8 @@ void UDIS_BPFL::GetUnrealRotationFromEntityStatePdu(const FEntityStatePDU Entity
 
 	EntityRotation.Roll = HeadingPitchRollDegrees.Roll + XAxisRotationAngle;
 	EntityRotation.Pitch = HeadingPitchRollDegrees.Pitch + YAxisRotationAngle;
-	EntityRotation.Yaw = HeadingPitchRollDegrees.Heading + ZAxisRotationAngle;
+	//Heading of 0 is East, but heading of 0 in Unreal is North. Subtract 90 to make up for the offset
+	EntityRotation.Yaw = HeadingPitchRollDegrees.Heading + ZAxisRotationAngle - 90;
 }
 
 void UDIS_BPFL::GetEntityUnrealLocationFromEntityStatePdu(const FEntityStatePDU EntityStatePdu, AGeoReferencingSystem* GeoReferencingSystem, FVector& EntityLocation)
@@ -434,7 +435,8 @@ void UDIS_BPFL::GetHeadingPitchRollFromUnrealRotation(const FRotator EntityUnrea
 
 	HeadingPitchRollDegrees.Roll = EntityUnrealRotation.Roll - XAxisRotationAngle;
 	HeadingPitchRollDegrees.Pitch = EntityUnrealRotation.Pitch - YAxisRotationAngle;
-	HeadingPitchRollDegrees.Heading = EntityUnrealRotation.Yaw - ZAxisRotationAngle;
+	//Heading of 0 is East, but heading of 0 in Unreal is North. Add 90 to make up for the offset
+	HeadingPitchRollDegrees.Heading = EntityUnrealRotation.Yaw - ZAxisRotationAngle + 90;
 }
 
 void UDIS_BPFL::GetEastNorthUpVectorsFromNorthEastDownVectors(const FNorthEastDown NorthEastDownVectors,

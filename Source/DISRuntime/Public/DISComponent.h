@@ -16,6 +16,7 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FReceivedEntityStateUpdatePDU, FEnti
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FReceivedDetonationPDU, FDetonationPDU, DetonationPDU);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FReceivedFirePDU, FFirePDU, FirePDU);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FReceivedRemoveEntityPDU, FRemoveEntityPDU, RemoveEntityPDU);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FGroundClampingUpdate, TArray<FTransform>, ClampTransforms);
 
 /**
  * The DISComponent handles basic DIS functionality.
@@ -36,11 +37,9 @@ class DISRUNTIME_API UDISComponent : public UActorComponent
 
 	/**
 	 * Clamps an entity to the ground. Verifies that the entity is of ground domain, is not a munition, and is owned by a different sim prior to clamping.
-	 * Returns whether or not ground clamping was successful.
-	 * @param ClampLocation - The location to ground clamp to.
-	 * @param ClampRotation - The rotation to ground clamp to.
+	 * Calls OnGroundClampingUpdate event when finished.
 	 */
-	virtual bool SimpleGroundClamping_Implementation(FVector& ClampLocation, FRotator& ClampRotation);
+	virtual void GroundClamping_Implementation();
 
 public:
 	// Sets default values for this component's properties
@@ -91,15 +90,19 @@ public:
 	 */
 	UPROPERTY(BlueprintAssignable, Category = "GRILL DIS|DIS Component|Event")
 		FReceivedRemoveEntityPDU OnReceivedRemoveEntityPDU;
+	/**
+	 * Called after Ground Clamping is performed by the component.
+	 * Passes ground clamp transforms (if clamping multiple points) as a parameter.
+	 */
+	UPROPERTY(BlueprintAssignable, Category = "GRILL DIS|DIS Component|Event")
+		FGroundClampingUpdate OnGroundClampingUpdate;
 
 	/**
-	 * Clamps an entity to the ground.
+	 * Clamps an entity to the ground. Should call OnGroundClampingUpdate event when finished.
 	 * Returns whether or not ground clamping was successful.
-	 * @param ClampLocation - The location to ground clamp to.
-	 * @param ClampRotation - The rotation to ground clamp to.
 	 */	
 	UFUNCTION(BlueprintNativeEvent, Category = "GRILL DIS|DIS Component")
-		bool SimpleGroundClamping(FVector& ClampLocation, FRotator& ClampRotation);
+		void GroundClamping();
 	
 	/**
 	 * The most recent Entity State PDU that has been received by the DISComponent.

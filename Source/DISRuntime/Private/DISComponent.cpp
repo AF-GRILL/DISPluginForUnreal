@@ -173,13 +173,8 @@ void UDISComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorCo
 	{
 		DeadReckoningEntityStatePDU = deadReckonedPDU;
 		OnDeadReckoningUpdate.Broadcast(DeadReckoningEntityStatePDU, DeltaTimeSinceLastEntityStatePDU);
-	}
 
-	FVector clampLocation;
-	FRotator clampRotation;
-	if (SimpleGroundClamping_Implementation(clampLocation, clampRotation))
-	{
-		GetOwner()->SetActorLocationAndRotation(clampLocation, clampRotation, false, (FHitResult*) nullptr, ETeleportType::TeleportPhysics);
+		GroundClamping_Implementation();
 	}
 }
 
@@ -204,6 +199,8 @@ void UDISComponent::HandleEntityStatePDU(FEntityStatePDU NewEntityStatePDU)
 	GetOwner()->SetLifeSpan(DISHeartbeat);
 
 	OnReceivedEntityStatePDU.Broadcast(NewEntityStatePDU);
+
+	GroundClamping_Implementation();
 }
 
 void UDISComponent::HandleEntityStateUpdatePDU(FEntityStateUpdatePDU NewEntityStateUpdatePDU)
@@ -233,6 +230,8 @@ void UDISComponent::HandleEntityStateUpdatePDU(FEntityStateUpdatePDU NewEntitySt
 	GetOwner()->SetLifeSpan(DISHeartbeat);
 
 	OnReceivedEntityStateUpdatePDU.Broadcast(NewEntityStateUpdatePDU);
+
+	GroundClamping_Implementation();
 }
 
 void UDISComponent::HandleFirePDU(FFirePDU FirePDUIn)
@@ -544,10 +543,8 @@ bool UDISComponent::DeadReckoning(FEntityStatePDU EntityPDUToDeadReckon, float D
 	return bSupported;
 }
 
-bool UDISComponent::SimpleGroundClamping_Implementation(FVector& ClampLocation, FRotator& ClampRotation)
+void UDISComponent::GroundClamping_Implementation()
 {
-	bool groundClampSuccessful = false;
-
 	//Verify that ground clamping is enabled, the entity is owned by another sim, is of the ground domain, and that it is not a munition
 	if (PerformGroundClamping && SpawnedFromNetwork && EntityType.Domain == 1 && EntityType.EntityKind != 2)
 	{
@@ -573,16 +570,19 @@ bool UDISComponent::SimpleGroundClamping_Implementation(FVector& ClampLocation, 
 		//Find colliding point above/below the actor
 		if (GetWorld()->LineTraceSingleByChannel(lineTraceHitResult, aboveActorStartLocation, endLocation, UEngineTypes::ConvertToCollisionChannel(GoundClampingCollisionChannel), queryParams))
 		{
-			ClampLocation = lineTraceHitResult.Location;
+			FVector clampLocation = lineTraceHitResult.Location;
 			//Calculate what the new forward and right vectors should be based on the impact normal
 			FVector newForward = FVector::CrossProduct(GetOwner()->GetActorRightVector(), lineTraceHitResult.ImpactNormal);
 			FVector newRight = FVector::CrossProduct(lineTraceHitResult.ImpactNormal, newForward);
 
-			ClampRotation = UKismetMathLibrary::MakeRotationFromAxes(newForward, newRight, lineTraceHitResult.ImpactNormal);
+			FRotator clampRotation = UKismetMathLibrary::MakeRotationFromAxes(newForward, newRight, lineTraceHitResult.ImpactNormal);
 
-			groundClampSuccessful = true;
+			//Create clamp transform and broadcast
+			FTransform clampTransform = FTransform(clampRotation, clampLocation);
+			TArray<FTransform> allClampTransforms;
+			allClampTransforms.Add(clampTransform);
+
+			OnGroundClampingUpdate.Broadcast(allClampTransforms);
 		}
 	}
-
-	return groundClampSuccessful;
 }
