@@ -601,13 +601,37 @@ struct FDeadReckoningParameters
 	}
 };
 
-USTRUCT(BlueprintType)
-struct FEntityStatePDU
+USTRUCT()
+struct FPdu
 {
 	GENERATED_BODY()
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		EPDUType PduType;
+	/** The version of the protocol. 5=DIS-1995, 6=DIS-1998. */
+	unsigned char ProtocolVersion;
+
+	unsigned char ExerciseID;
+
+	/** Type of pdu, unique for each PDU struct */
+	EPDUType PduType;
+
+	/** Value that refers to the protocol family, e.g. SimulationManagement, etc. */
+	unsigned char ProtocolFamily;
+
+	unsigned int Timestamp;
+
+	/** Lenght, in bytes, of the PDU */
+	unsigned short Length;
+
+	/** Zero-filled array of padding */
+	short Padding;
+
+};
+
+USTRUCT(BlueprintType)
+struct FEntityStatePDU : public FPdu
+{
+	GENERATED_BODY()
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		FEntityID EntityID;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
@@ -658,12 +682,10 @@ struct FEntityStatePDU
 };
 
 USTRUCT(BlueprintType)
-struct FEntityStateUpdatePDU
+struct FEntityStateUpdatePDU : public FPdu
 {
 	GENERATED_BODY()
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		EPDUType PduType;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		FEntityID EntityID;
 	/** The location of the entity in ECEF - double (64-bit) precision */
@@ -720,12 +742,10 @@ struct FEntityStateUpdatePDU
 };
 
 USTRUCT(BlueprintType)
-struct FFirePDU
+struct FFirePDU : public FPdu
 {
 	GENERATED_BODY()
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		EPDUType PduType;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		int32 FireMissionIndex;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
@@ -755,12 +775,10 @@ struct FFirePDU
 };
 
 USTRUCT(BlueprintType)
-struct FRemoveEntityPDU
+struct FRemoveEntityPDU : public FPdu
 {
 	GENERATED_BODY()
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		EPDUType PduType;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		FEntityID OriginatingEntityID;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
@@ -776,12 +794,10 @@ struct FRemoveEntityPDU
 };
 
 USTRUCT(BlueprintType)
-struct FDetonationPDU
+struct FDetonationPDU : public FPdu
 {
 	GENERATED_BODY()
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		EPDUType PduType;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		FEntityID MunitionEntityID;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
@@ -817,7 +833,7 @@ struct FDetonationPDU
 };
 
 USTRUCT(BlueprintType)
-struct FStartResumePDU
+struct FStartResumePDU : public FPdu
 {
 	GENERATED_BODY()
 
@@ -830,12 +846,13 @@ struct FStartResumePDU
 
 	FStartResumePDU() 
 	{
+		PduType = EPDUType::Start_Resume;
 		RequestID = 0;
 	}
 };
 
 USTRUCT(BlueprintType)
-struct FStopFreezePDU
+struct FStopFreezePDU : public FPdu
 {
 	GENERATED_BODY()
 
@@ -852,6 +869,7 @@ struct FStopFreezePDU
 
 	FStopFreezePDU() 
 	{
+		PduType = EPDUType::Stop_Freeze;
 		Reason = EReason::Other;
 		FrozenBehavior = 0;
 		Padding = 0;
