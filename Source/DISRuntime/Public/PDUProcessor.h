@@ -44,13 +44,53 @@ public:
 		void ConvertEntityStatePDUtoBytes(int Exercise, FEntityStatePDU EntityStatePDUIn, TArray<uint8>& BytesOut);
 
 	/**
-	 * Converts the given Entity State PDU to bytes. Useful if sending the packet over UDP is desired.
+	 * Converts the given Entity State Update PDU to bytes. Useful if sending the packet over UDP is desired.
 	 * @param Exercise - The exercise number that the given Entity State PDU is associated with.
-	 * @param EntityStateUpdatePDUIn - The Entity State PDU to convert to bytes.
-	 * @param BytesOut - The given Entity State PDU in bytes.
+	 * @param EntityStateUpdatePDUIn - The Entity State Update PDU to convert to bytes.
+	 * @param BytesOut - The given Entity State Update PDU in bytes.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "GRILL DIS|PDU Processor")
 		void ConvertEntityStateUpdatePDUtoBytes(int Exercise, FEntityStateUpdatePDU EntityStateUpdatePDUIn, TArray<uint8>& BytesOut);
+	/**
+	 * Converts the given Fire PDU to bytes. Useful if sending the packet over UDP is desired.
+	 * @param Exercise - The exercise number that the given Entity State PDU is associated with.
+	 * @param FirePDUIn - The Fire PDU to convert to bytes.
+	 * @param BytesOut - The given Fire PDU in bytes.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "GRILL DIS|PDU Processor")
+		void ConvertFirePDUtoBytes(int Exercise, FFirePDU FirePDUIn, TArray<uint8>& BytesOut);
+	/**
+	 * Converts the given Remove Entity PDU to bytes. Useful if sending the packet over UDP is desired.
+	 * @param Exercise - The exercise number that the given Entity State PDU is associated with.
+	 * @param RemoveEntityPDUIn - The Remove Entity PDU to convert to bytes.
+	 * @param BytesOut - The given Remove Entity PDU in bytes.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "GRILL DIS|PDU Processor")
+		void ConvertRemoveEntityPDUtoBytes(int Exercise, FRemoveEntityPDU RemoveEntityPDUIn, TArray<uint8>& BytesOut);
+	/**
+	 * Converts the given Detonation PDU to bytes. Useful if sending the packet over UDP is desired.
+	 * @param Exercise - The exercise number that the given Entity State PDU is associated with.
+	 * @param DetonationPDUIn - The Detonation PDU to convert to bytes.
+	 * @param BytesOut - The given Detonation PDU in bytes.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "GRILL DIS|PDU Processor")
+		void ConvertDetonationPDUtoBytes(int Exercise, FDetonationPDU DetonationPDUIn, TArray<uint8>& BytesOut);
+	/**
+	 * Converts the given Start Resume PDU to bytes. Useful if sending the packet over UDP is desired.
+	 * @param Exercise - The exercise number that the given Entity State PDU is associated with.
+	 * @param StartResumePDUIn - The Start Resume PDU to convert to bytes.
+	 * @param BytesOut - The given Start Resume PDU in bytes.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "GRILL DIS|PDU Processor")
+		void ConvertStartResumePDUtoBytes(int Exercise, FStartResumePDU StartResumePDUIn, TArray<uint8>& BytesOut);
+	/**
+	 * Converts the given Stop Freeze PDU to bytes. Useful if sending the packet over UDP is desired.
+	 * @param Exercise - The exercise number that the given Entity State PDU is associated with.
+	 * @param StopFreezePDUIn - The Stop Freeze PDU to convert to bytes.
+	 * @param BytesOut - The given Stop Freeze PDU in bytes.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "GRILL DIS|PDU Processor")
+		void ConvertStopFreezePDUtoBytes(int Exercise, FStopFreezePDU StopFreezePDUIn, TArray<uint8>& BytesOut);
 	
 	/**
 	 * Called after an Entity State PDU is processed.

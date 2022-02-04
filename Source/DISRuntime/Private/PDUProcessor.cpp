@@ -139,12 +139,111 @@ void UPDUProcessor::ConvertEntityStatePDUtoBytes(int Exercise, FEntityStatePDU E
 	BytesOut = tempBytes;
 }
 
-void UPDUProcessor::ConvertEntityStateUpdatePDUtoBytes(int Exercise, FEntityStateUpdatePDU EntityStateUpdatePDUIn,
-	TArray<uint8>& BytesOut)
+void UPDUProcessor::ConvertEntityStateUpdatePDUtoBytes(int Exercise, FEntityStateUpdatePDU EntityStateUpdatePDUIn, TArray<uint8>& BytesOut)
 {
 	EntityStateUpdatePDUIn.ExerciseID = Exercise;
 
 	const DIS::EntityStateUpdatePdu PduToSend = EntityStateUpdatePDUIn.ToDIS();
+
+	DIS::DataStream Buffer(BigEndian);
+
+	PduToSend.marshal(Buffer);
+	TArray<uint8> BytesToSend;
+	BytesToSend.Init(0, Buffer.size());
+	for (int i = 0; i < Buffer.size(); i++)
+	{
+		BytesToSend[i] = Buffer[i];
+	}
+	Buffer.clear();
+
+	BytesOut = BytesToSend;
+}
+
+void UPDUProcessor::ConvertFirePDUtoBytes(int Exercise, FFirePDU FirePDUIn, TArray<uint8>& BytesOut)
+{
+	FirePDUIn.ExerciseID = Exercise;
+
+	const DIS::FirePdu PduToSend = FirePDUIn.ToDIS();
+
+	DIS::DataStream Buffer(BigEndian);
+
+	PduToSend.marshal(Buffer);
+	TArray<uint8> BytesToSend;
+	BytesToSend.Init(0, Buffer.size());
+	for (int i = 0; i < Buffer.size(); i++)
+	{
+		BytesToSend[i] = Buffer[i];
+	}
+	Buffer.clear();
+
+	BytesOut = BytesToSend;
+}
+
+void UPDUProcessor::ConvertRemoveEntityPDUtoBytes(int Exercise, FRemoveEntityPDU RemoveEntityPDUIn, TArray<uint8>& BytesOut)
+{
+	RemoveEntityPDUIn.ExerciseID = Exercise;
+
+	const DIS::RemoveEntityPdu PduToSend = RemoveEntityPDUIn.ToDIS();
+
+	DIS::DataStream Buffer(BigEndian);
+
+	PduToSend.marshal(Buffer);
+	TArray<uint8> BytesToSend;
+	BytesToSend.Init(0, Buffer.size());
+	for (int i = 0; i < Buffer.size(); i++)
+	{
+		BytesToSend[i] = Buffer[i];
+	}
+	Buffer.clear();
+
+	BytesOut = BytesToSend;
+}
+
+void UPDUProcessor::ConvertDetonationPDUtoBytes(int Exercise, FDetonationPDU DetonationPDUIn, TArray<uint8>& BytesOut)
+{
+	DetonationPDUIn.ExerciseID = Exercise;
+
+	const DIS::DetonationPdu PduToSend = DetonationPDUIn.ToDIS();
+
+	DIS::DataStream Buffer(BigEndian);
+
+	PduToSend.marshal(Buffer);
+	TArray<uint8> BytesToSend;
+	BytesToSend.Init(0, Buffer.size());
+	for (int i = 0; i < Buffer.size(); i++)
+	{
+		BytesToSend[i] = Buffer[i];
+	}
+	Buffer.clear();
+
+	BytesOut = BytesToSend;
+}
+
+void UPDUProcessor::ConvertStartResumePDUtoBytes(int Exercise, FStartResumePDU StartResumePDUIn, TArray<uint8>& BytesOut)
+{
+	StartResumePDUIn.ExerciseID = Exercise;
+
+	const DIS::StartResumePdu PduToSend = StartResumePDUIn.ToDIS();
+
+	DIS::DataStream Buffer(BigEndian);
+
+	PduToSend.marshal(Buffer);
+	TArray<uint8> BytesToSend;
+	BytesToSend.Init(0, Buffer.size());
+	for (int i = 0; i < Buffer.size(); i++)
+	{
+		BytesToSend[i] = Buffer[i];
+	}
+	Buffer.clear();
+
+	BytesOut = BytesToSend;
+}
+
+void UPDUProcessor::ConvertStopFreezePDUtoBytes(int Exercise, FStopFreezePDU StopFreezePDUIn, TArray<uint8>& BytesOut)
+{
+	StopFreezePDUIn.ExerciseID = Exercise;
+
+	const DIS::StopFreezePdu PduToSend = StopFreezePDUIn.ToDIS();
 
 	DIS::DataStream Buffer(BigEndian);
 
@@ -401,6 +500,14 @@ FDetonationPDU UPDUProcessor::ConvertDetonationPDUtoBPStruct(DIS::DetonationPdu*
 	detonationPDU.BurstDescriptor.EntityType.Specific = DetPDUIn->getBurstDescriptor().getMunition().getSpecific();
 	detonationPDU.BurstDescriptor.EntityType.Extra = DetPDUIn->getBurstDescriptor().getMunition().getExtra();
 
+	detonationPDU.TargetEntityID.Site = DetPDUIn->getTargetEntityID().getSite();
+	detonationPDU.TargetEntityID.Application = DetPDUIn->getTargetEntityID().getApplication();
+	detonationPDU.TargetEntityID.Entity = DetPDUIn->getTargetEntityID().getEntity();
+
+	detonationPDU.FiringEntityID.Site = DetPDUIn->getFiringEntityID().getSite();
+	detonationPDU.FiringEntityID.Application = DetPDUIn->getFiringEntityID().getApplication();
+	detonationPDU.FiringEntityID.Entity = DetPDUIn->getFiringEntityID().getEntity();
+
 	//single vars
 	detonationPDU.PduType = static_cast<EPDUType>(DetPDUIn->getPduType());
 	detonationPDU.DetonationResult = DetPDUIn->getDetonationResult();
@@ -448,6 +555,14 @@ FStartResumePDU UPDUProcessor::ConvertStartResumePDUtoBPStruct(DIS::StartResumeP
 	DIS::ClockTime RealWorldTime = StartResumePDUIn->getRealWorldTime();
 	DIS::ClockTime SimulationTime = StartResumePDUIn->getRealWorldTime();
 
+	startResumePDU.ReceivingEntityID.Site = StartResumePDUIn->getReceivingEntityID().getSite();
+	startResumePDU.ReceivingEntityID.Application = StartResumePDUIn->getReceivingEntityID().getApplication();
+	startResumePDU.ReceivingEntityID.Entity = StartResumePDUIn->getReceivingEntityID().getEntity();
+
+	startResumePDU.OriginatingEntityID.Site = StartResumePDUIn->getOriginatingEntityID().getSite();
+	startResumePDU.OriginatingEntityID.Application = StartResumePDUIn->getOriginatingEntityID().getApplication();
+	startResumePDU.OriginatingEntityID.Entity = StartResumePDUIn->getOriginatingEntityID().getEntity();
+
 	startResumePDU.RealWorldTime.Hour = RealWorldTime.getHour();
 	startResumePDU.RealWorldTime.TimePastHour = RealWorldTime.getTimePastHour();
 
@@ -472,7 +587,7 @@ FStopFreezePDU UPDUProcessor::ConvertStopFreezePDUtoBPStruct(DIS::StopFreezePdu*
 
 	stopFreezePDU.Reason = static_cast<EReason>(StopFreezePDUIn->getReason());
 	stopFreezePDU.FrozenBehavior = StopFreezePDUIn->getFrozenBehavior();
-	stopFreezePDU.Padding = StopFreezePDUIn->getPadding1();
+	stopFreezePDU.PaddingOne = StopFreezePDUIn->getPadding1();
 	stopFreezePDU.RequestID = StopFreezePDUIn->getRequestID();
 
 	return stopFreezePDU;

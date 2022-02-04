@@ -388,6 +388,16 @@ struct FClockTime
 		Hour = 0;
 		TimePastHour = 0;
 	}
+
+	DIS::ClockTime ToDIS() const
+	{
+		DIS::ClockTime OutClockTime;
+
+		OutClockTime.setHour(Hour);
+		OutClockTime.setTimePastHour(TimePastHour);
+
+		return OutClockTime;
+	}
 };
 
 USTRUCT(BlueprintType)
@@ -718,7 +728,35 @@ struct FPdu
 };
 
 USTRUCT(BlueprintType)
-struct FEntityStatePDU : public FPdu
+struct FWarfareFamilyPdu : public FPdu
+{
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		FEntityID FiringEntityID;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		FEntityID TargetEntityID;
+};
+
+USTRUCT(BlueprintType)
+struct FSimulationManagementFamilyPdu : public FPdu
+{
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		FEntityID OriginatingEntityID;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		FEntityID ReceivingEntityID;
+};
+
+USTRUCT(BlueprintType)
+struct FEntityInformationFamilyPdu : public FPdu
+{
+	GENERATED_BODY()
+};
+
+USTRUCT(BlueprintType)
+struct FEntityStatePDU : public FEntityInformationFamilyPdu
 {
 	GENERATED_BODY()
 
@@ -828,7 +866,7 @@ struct FEntityStatePDU : public FPdu
 };
 
 USTRUCT(BlueprintType)
-struct FEntityStateUpdatePDU : public FPdu
+struct FEntityStateUpdatePDU : public FEntityInformationFamilyPdu
 {
 	GENERATED_BODY()
 
@@ -904,9 +942,20 @@ struct FEntityStateUpdatePDU : public FPdu
 		OutLinearVelocity.setZ(EntityLinearVelocity.Z);
 		OutPdu.setEntityLinearVelocity(OutLinearVelocity);
 		DIS::Vector3Double OutLocation;
-		OutLocation.setX(EntityLocationDouble[0]);
-		OutLocation.setY(EntityLocationDouble[1]);
-		OutLocation.setZ(EntityLocationDouble[2]);
+		if (FMath::IsNearlyEqual(static_cast<float>(EntityLocationDouble[0]), EntityLocation.X) &&
+			FMath::IsNearlyEqual(static_cast<float>(EntityLocationDouble[1]), EntityLocation.Y) &&
+			FMath::IsNearlyEqual(static_cast<float>(EntityLocationDouble[2]), EntityLocation.Z))
+		{
+			OutLocation.setX(EntityLocationDouble[0]);
+			OutLocation.setY(EntityLocationDouble[1]);
+			OutLocation.setZ(EntityLocationDouble[2]);
+		}
+		else
+		{
+			OutLocation.setX(EntityLocation.X);
+			OutLocation.setY(EntityLocation.Y);
+			OutLocation.setZ(EntityLocation.Z);
+		}
 		OutPdu.setEntityLocation(OutLocation);
 		DIS::Orientation OutOrientation;
 		OutOrientation.setPsi(EntityOrientation.Yaw);
@@ -925,7 +974,7 @@ struct FEntityStateUpdatePDU : public FPdu
 };
 
 USTRUCT(BlueprintType)
-struct FFirePDU : public FPdu
+struct FFirePDU : public FWarfareFamilyPdu
 {
 	GENERATED_BODY()
 
@@ -955,17 +1004,57 @@ struct FFirePDU : public FPdu
 		Location = FVector(0, 0, 0);
 		Velocity = FVector(0, 0, 0);
 	}
+
+	DIS::FirePdu ToDIS() const
+	{
+		DIS::FirePdu OutPdu;
+
+		// Common PDU setup
+		OutPdu.setProtocolVersion(ProtocolVersion);
+		OutPdu.setExerciseID(ExerciseID);
+		OutPdu.setPduType(static_cast<unsigned char>(PduType));
+		OutPdu.setProtocolFamily(ProtocolFamily);
+		OutPdu.setTimestamp(Timestamp);
+		OutPdu.setLength(Length);
+		OutPdu.setPadding(Padding);
+
+		// Specific PDU setup
+		OutPdu.setMunitionID(MunitionEntityID.ToDIS());
+		OutPdu.setFireMissionIndex(FireMissionIndex);
+		OutPdu.setRange(Range);
+		DIS::Vector3Float OutVelocity;
+		OutVelocity.setX(Velocity.X);
+		OutVelocity.setY(Velocity.Y);
+		OutVelocity.setZ(Velocity.Z);
+		DIS::Vector3Double OutLocation;
+		if (FMath::IsNearlyEqual(static_cast<float>(LocationDouble[0]), Location.X) &&
+			FMath::IsNearlyEqual(static_cast<float>(LocationDouble[1]), Location.Y) &&
+			FMath::IsNearlyEqual(static_cast<float>(LocationDouble[2]), Location.Z))
+		{
+			OutLocation.setX(LocationDouble[0]);
+			OutLocation.setY(LocationDouble[1]);
+			OutLocation.setZ(LocationDouble[2]);
+		}
+		else
+		{
+			OutLocation.setX(Location.X);
+			OutLocation.setY(Location.Y);
+			OutLocation.setZ(Location.Z);
+		}
+		OutPdu.setLocationInWorldCoordinates(OutLocation);
+		OutPdu.setEventID(EventID.ToDIS());
+		OutPdu.setBurstDescriptor(BurstDescriptor.ToDIS());
+		OutPdu.setFiringEntityID(FiringEntityID.ToDIS());
+		OutPdu.setTargetEntityID(TargetEntityID.ToDIS());
+		return OutPdu;
+	}
 };
 
 USTRUCT(BlueprintType)
-struct FRemoveEntityPDU : public FPdu
+struct FRemoveEntityPDU : public FSimulationManagementFamilyPdu
 {
 	GENERATED_BODY()
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		FEntityID OriginatingEntityID;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		FEntityID ReceivingEntityID;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		int64 RequestID;
 
@@ -974,10 +1063,31 @@ struct FRemoveEntityPDU : public FPdu
 		PduType = EPDUType::RemoveEntity;
 		RequestID = 0;
 	}
+
+	DIS::RemoveEntityPdu ToDIS() const
+	{
+		DIS::RemoveEntityPdu OutPdu;
+
+		// Common PDU setup
+		OutPdu.setProtocolVersion(ProtocolVersion);
+		OutPdu.setExerciseID(ExerciseID);
+		OutPdu.setPduType(static_cast<unsigned char>(PduType));
+		OutPdu.setProtocolFamily(ProtocolFamily);
+		OutPdu.setTimestamp(Timestamp);
+		OutPdu.setLength(Length);
+		OutPdu.setPadding(Padding);
+
+		// Specific PDU setup
+		OutPdu.setOriginatingEntityID(OriginatingEntityID.ToDIS());
+		OutPdu.setReceivingEntityID(ReceivingEntityID.ToDIS());
+		OutPdu.setRequestID(RequestID);
+
+		return OutPdu;
+	}
 };
 
 USTRUCT(BlueprintType)
-struct FDetonationPDU : public FPdu
+struct FDetonationPDU : public FWarfareFamilyPdu
 {
 	GENERATED_BODY()
 
@@ -1012,15 +1122,69 @@ struct FDetonationPDU : public FPdu
 		DetonationResult = 0U;
 		Pad = 0;
 	}
+
+	DIS::DetonationPdu ToDIS() const
+	{
+		DIS::DetonationPdu OutPdu;
+
+		// Common PDU setup
+		OutPdu.setProtocolVersion(ProtocolVersion);
+		OutPdu.setExerciseID(ExerciseID);
+		OutPdu.setPduType(static_cast<unsigned char>(PduType));
+		OutPdu.setProtocolFamily(ProtocolFamily);
+		OutPdu.setTimestamp(Timestamp);
+		OutPdu.setLength(Length);
+		OutPdu.setPadding(Padding);
+
+		// Specific PDU setup
+		OutPdu.setEventID(EventID.ToDIS());
+		OutPdu.setMunitionID(MunitionEntityID.ToDIS());
+		DIS::Vector3Float OutVelocity;
+		OutVelocity.setX(Velocity.X);
+		OutVelocity.setY(Velocity.Y);
+		OutVelocity.setZ(Velocity.Z);
+		OutPdu.setVelocity(OutVelocity);
+		DIS::Vector3Double OutLocation;
+		if (FMath::IsNearlyEqual(static_cast<float>(LocationDouble[0]), Location.X) &&
+			FMath::IsNearlyEqual(static_cast<float>(LocationDouble[1]), Location.Y) &&
+			FMath::IsNearlyEqual(static_cast<float>(LocationDouble[2]), Location.Z))
+		{
+			OutLocation.setX(LocationDouble[0]);
+			OutLocation.setY(LocationDouble[1]);
+			OutLocation.setZ(LocationDouble[2]);
+		}
+		else
+		{
+			OutLocation.setX(Location.X);
+			OutLocation.setY(Location.Y);
+			OutLocation.setZ(Location.Z);
+		}
+		OutPdu.setLocationInWorldCoordinates(OutLocation);
+		DIS::Vector3Float OutLocationInEntityCoords;
+		OutLocationInEntityCoords.setX(LocationInEntityCoords.X);
+		OutLocationInEntityCoords.setY(LocationInEntityCoords.Y);
+		OutLocationInEntityCoords.setZ(LocationInEntityCoords.Z);
+		OutPdu.setLocationInEntityCoordinates(OutLocationInEntityCoords);
+		OutPdu.setDetonationResult(DetonationResult);
+		OutPdu.setPad(Pad);
+		OutPdu.setFiringEntityID(FiringEntityID.ToDIS());
+		OutPdu.setTargetEntityID(TargetEntityID.ToDIS());
+		std::vector<DIS::ArticulationParameter> OutArtParams;
+		for (FArticulationParameters ArticulationParameter : ArticulationParameters)
+		{
+			OutArtParams.push_back(ArticulationParameter.ToDIS());
+		}
+		OutPdu.setArticulationParameters(OutArtParams);
+
+		return OutPdu;
+	}
 };
 
 USTRUCT(BlueprintType)
-struct FStartResumePDU : public FPdu
+struct FStartResumePDU : public FSimulationManagementFamilyPdu
 {
 	GENERATED_BODY()
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		EPDUType PduType;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		FClockTime RealWorldTime;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
@@ -1033,15 +1197,36 @@ struct FStartResumePDU : public FPdu
 		PduType = EPDUType::Start_Resume;
 		RequestID = 0;
 	}
+
+	DIS::StartResumePdu ToDIS() const
+	{
+		DIS::StartResumePdu OutPdu;
+
+		// Common PDU setup
+		OutPdu.setProtocolVersion(ProtocolVersion);
+		OutPdu.setExerciseID(ExerciseID);
+		OutPdu.setPduType(static_cast<unsigned char>(PduType));
+		OutPdu.setProtocolFamily(ProtocolFamily);
+		OutPdu.setTimestamp(Timestamp);
+		OutPdu.setLength(Length);
+		OutPdu.setPadding(Padding);
+
+		// Specific PDU setup
+		OutPdu.setReceivingEntityID(ReceivingEntityID.ToDIS());
+		OutPdu.setOriginatingEntityID(OriginatingEntityID.ToDIS());
+		OutPdu.setRealWorldTime(RealWorldTime.ToDIS());
+		OutPdu.setSimulationTime(SimulationTime.ToDIS());
+		OutPdu.setRequestID(RequestID);
+
+		return OutPdu;
+	}
 };
 
 USTRUCT(BlueprintType)
-struct FStopFreezePDU : public FPdu
+struct FStopFreezePDU : public FSimulationManagementFamilyPdu
 {
 	GENERATED_BODY()
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		EPDUType PduType;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		FClockTime RealWorldTime;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
@@ -1049,7 +1234,7 @@ struct FStopFreezePDU : public FPdu
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		int32 FrozenBehavior;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		int32 Padding;
+		int32 PaddingOne;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		int64 RequestID;
 
@@ -1058,7 +1243,32 @@ struct FStopFreezePDU : public FPdu
 		PduType = EPDUType::Stop_Freeze;
 		Reason = EReason::Other;
 		FrozenBehavior = 0;
-		Padding = 0;
+		PaddingOne = 0;
 		RequestID = 0;
+	}
+
+	DIS::StopFreezePdu ToDIS() const
+	{
+		DIS::StopFreezePdu OutPdu;
+
+		// Common PDU setup
+		OutPdu.setProtocolVersion(ProtocolVersion);
+		OutPdu.setExerciseID(ExerciseID);
+		OutPdu.setPduType(static_cast<unsigned char>(PduType));
+		OutPdu.setProtocolFamily(ProtocolFamily);
+		OutPdu.setTimestamp(Timestamp);
+		OutPdu.setLength(Length);
+		OutPdu.setPadding(Padding);
+
+		// Specific PDU setup
+		OutPdu.setReceivingEntityID(ReceivingEntityID.ToDIS());
+		OutPdu.setOriginatingEntityID(OriginatingEntityID.ToDIS());
+		OutPdu.setRealWorldTime(RealWorldTime.ToDIS());
+		OutPdu.setReason(static_cast<unsigned char>(Reason));
+		OutPdu.setFrozenBehavior(FrozenBehavior);
+		OutPdu.setPadding1(PaddingOne);
+		OutPdu.setRequestID(RequestID);
+
+		return OutPdu;
 	}
 };
