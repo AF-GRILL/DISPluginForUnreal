@@ -419,6 +419,13 @@ struct FEntityID
 		Entity = 0;
 	}
 
+	FEntityID(DIS::EntityID EntityID)
+	{
+		this->Site = EntityID.getSite();
+		this->Application = EntityID.getApplication();
+		this->Entity = EntityID.getEntity();
+	}
+
 	bool operator== (const FEntityID other) const
 	{
 		return Site == other.Site
@@ -461,13 +468,20 @@ struct FEventID
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		int32 Application;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		int32 EventID;
+		int32 EventNumber;
 
 	FEventID()
 	{
 		Site = 0;
 		Application = 0;
-		EventID = 0;
+		EventNumber = 0;
+	}
+
+	FEventID(DIS::EventID EventID)
+	{
+		this->Site = EventID.getSite();
+		this->Application = EventID.getApplication();
+		this->EventNumber = EventID.getEventNumber();
 	}
 
 	DIS::EventID ToDIS() const
@@ -475,7 +489,7 @@ struct FEventID
 		DIS::EventID OutID;
 		OutID.setSite(Site);
 		OutID.setApplication(Application);
-		OutID.setEventNumber(EventID);
+		OutID.setEventNumber(EventNumber);
 		return OutID;
 	}
 };
@@ -515,6 +529,17 @@ struct FEntityType
 		Subcategory = -1;
 		Specific = -1;
 		Extra = -1;
+	}
+
+	FEntityType(DIS::EntityType EntityType)
+	{
+		this->EntityKind = EntityType.getEntityKind();
+		this->Domain = EntityType.getDomain();
+		this->Country = EntityType.getCountry();
+		this->Category = EntityType.getCategory();
+		this->Subcategory = EntityType.getSubcategory();
+		this->Specific = EntityType.getSpecific();
+		this->Extra = EntityType.getExtra();
 	}
 
 	bool operator== (const FEntityType& Other) const
@@ -886,8 +911,6 @@ struct FEntityStateUpdatePDU : public FEntityInformationFamilyPdu
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		int32 EntityAppearance;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		int32 Padding;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		int32 Padding1;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		TArray<FArticulationParameters> ArticulationParameters;
@@ -1018,6 +1041,10 @@ struct FFirePDU : public FWarfareFamilyPdu
 		OutPdu.setLength(Length);
 		OutPdu.setPadding(Padding);
 
+		// Warfare Family PDU setup
+		OutPdu.setFiringEntityID(FiringEntityID.ToDIS());
+		OutPdu.setTargetEntityID(TargetEntityID.ToDIS());
+
 		// Specific PDU setup
 		OutPdu.setMunitionID(MunitionEntityID.ToDIS());
 		OutPdu.setFireMissionIndex(FireMissionIndex);
@@ -1077,7 +1104,11 @@ struct FRemoveEntityPDU : public FSimulationManagementFamilyPdu
 		OutPdu.setLength(Length);
 		OutPdu.setPadding(Padding);
 
-		// Specific PDU setup
+		// Simulation Management Family PDU setup
+		OutPdu.setOriginatingEntityID(OriginatingEntityID.ToDIS());
+		OutPdu.setReceivingEntityID(ReceivingEntityID.ToDIS());
+
+		// Remove entity specific PDU setup
 		OutPdu.setOriginatingEntityID(OriginatingEntityID.ToDIS());
 		OutPdu.setReceivingEntityID(ReceivingEntityID.ToDIS());
 		OutPdu.setRequestID(RequestID);
@@ -1135,6 +1166,10 @@ struct FDetonationPDU : public FWarfareFamilyPdu
 		OutPdu.setTimestamp(Timestamp);
 		OutPdu.setLength(Length);
 		OutPdu.setPadding(Padding);
+
+		// Warfare Family PDU setup
+		OutPdu.setFiringEntityID(FiringEntityID.ToDIS());
+		OutPdu.setTargetEntityID(TargetEntityID.ToDIS());
 
 		// Specific PDU setup
 		OutPdu.setEventID(EventID.ToDIS());
@@ -1211,6 +1246,10 @@ struct FStartResumePDU : public FSimulationManagementFamilyPdu
 		OutPdu.setLength(Length);
 		OutPdu.setPadding(Padding);
 
+		// Simulation Management Family PDU setup
+		OutPdu.setOriginatingEntityID(OriginatingEntityID.ToDIS());
+		OutPdu.setReceivingEntityID(ReceivingEntityID.ToDIS());
+
 		// Specific PDU setup
 		OutPdu.setReceivingEntityID(ReceivingEntityID.ToDIS());
 		OutPdu.setOriginatingEntityID(OriginatingEntityID.ToDIS());
@@ -1259,6 +1298,10 @@ struct FStopFreezePDU : public FSimulationManagementFamilyPdu
 		OutPdu.setTimestamp(Timestamp);
 		OutPdu.setLength(Length);
 		OutPdu.setPadding(Padding);
+
+		// Simulation Management Family PDU setup
+		OutPdu.setOriginatingEntityID(OriginatingEntityID.ToDIS());
+		OutPdu.setReceivingEntityID(ReceivingEntityID.ToDIS());
 
 		// Specific PDU setup
 		OutPdu.setReceivingEntityID(ReceivingEntityID.ToDIS());

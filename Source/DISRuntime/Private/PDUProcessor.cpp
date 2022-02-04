@@ -263,21 +263,24 @@ FEntityStatePDU UPDUProcessor::ConvertEntityStatePDUtoBPStruct(DIS::EntityStateP
 {
 	FEntityStatePDU entityStatePDU;
 
-	DIS::Vector3Double& position = EntityStatePDUIn->getEntityLocation();
-	DIS::Orientation& rotation = EntityStatePDUIn->getEntityOrientation();
-	const DIS::EntityID entityID = EntityStatePDUIn->getEntityID();
-	const DIS::EntityType entityType = EntityStatePDUIn->getEntityType();
-	const DIS::EntityType altEntityType = EntityStatePDUIn->getAlternativeEntityType();
+	//pdu common parameters
+	entityStatePDU.ProtocolVersion = EntityStatePDUIn->getProtocolVersion();
+	entityStatePDU.ExerciseID = EntityStatePDUIn->getExerciseID();
+	entityStatePDU.PduType = static_cast<EPDUType>(EntityStatePDUIn->getPduType());
+	entityStatePDU.ProtocolFamily = EntityStatePDUIn->getProtocolFamily();
+	entityStatePDU.Timestamp = EntityStatePDUIn->getTimestamp();
+	entityStatePDU.Length = EntityStatePDUIn->getLength();
+	entityStatePDU.Padding = EntityStatePDUIn->getPadding();
+
+	// Entity State PDU specifics
+	//entity id
+	entityStatePDU.EntityID = EntityStatePDUIn->getEntityID();
 
 	//pure since unsupported in BP
+	DIS::Vector3Double& position = EntityStatePDUIn->getEntityLocation();
 	entityStatePDU.EntityLocationDouble[0] = position.getX();
 	entityStatePDU.EntityLocationDouble[1] = position.getY();
 	entityStatePDU.EntityLocationDouble[2] = position.getZ();
-
-	//entity id
-	entityStatePDU.EntityID.Site = entityID.getSite();
-	entityStatePDU.EntityID.Application = entityID.getApplication();
-	entityStatePDU.EntityID.Entity = entityID.getEntity();
 
 	//location
 	entityStatePDU.EntityLocation[0] = position.getX();
@@ -285,6 +288,7 @@ FEntityStatePDU UPDUProcessor::ConvertEntityStatePDUtoBPStruct(DIS::EntityStateP
 	entityStatePDU.EntityLocation[2] = position.getZ();
 
 	//rotation
+	DIS::Orientation& rotation = EntityStatePDUIn->getEntityOrientation();
 	entityStatePDU.EntityOrientation.Yaw = rotation.getPsi();
 	entityStatePDU.EntityOrientation.Roll = rotation.getPhi();
 	entityStatePDU.EntityOrientation.Pitch = rotation.getTheta();
@@ -307,27 +311,14 @@ FEntityStatePDU UPDUProcessor::ConvertEntityStatePDUtoBPStruct(DIS::EntityStateP
 	//single vars
 	entityStatePDU.ForceID = static_cast<EForceID>(EntityStatePDUIn->getForceId());
 	entityStatePDU.Marking = FString(EntityStatePDUIn->getMarking().getCharacters());
-	entityStatePDU.PduType = static_cast<EPDUType>(EntityStatePDUIn->getPduType());
 	entityStatePDU.EntityAppearance = EntityStatePDUIn->getEntityAppearance();
 	entityStatePDU.Capabilities = EntityStatePDUIn->getCapabilities();
 
 	//Entity type
-	entityStatePDU.EntityType.EntityKind = entityType.getEntityKind();
-	entityStatePDU.EntityType.Domain = entityType.getDomain();
-	entityStatePDU.EntityType.Country = entityType.getCountry();
-	entityStatePDU.EntityType.Category = entityType.getCategory();
-	entityStatePDU.EntityType.Subcategory = entityType.getSubcategory();
-	entityStatePDU.EntityType.Specific = entityType.getSpecific();
-	entityStatePDU.EntityType.Extra = entityType.getExtra();
+	entityStatePDU.EntityType = EntityStatePDUIn->getEntityType();
 
 	//Alternative Entity type
-	entityStatePDU.AlternativeEntityType.EntityKind = altEntityType.getEntityKind();
-	entityStatePDU.AlternativeEntityType.Domain = altEntityType.getDomain();
-	entityStatePDU.AlternativeEntityType.Country = altEntityType.getCountry();
-	entityStatePDU.AlternativeEntityType.Category = altEntityType.getCategory();
-	entityStatePDU.AlternativeEntityType.Subcategory = altEntityType.getSubcategory();
-	entityStatePDU.AlternativeEntityType.Specific = altEntityType.getSpecific();
-	entityStatePDU.AlternativeEntityType.Extra = altEntityType.getExtra();
+	entityStatePDU.AlternativeEntityType = EntityStatePDUIn->getAlternativeEntityType();
 
 	//Articulation Parameters
 	for (int i = 0; i < EntityStatePDUIn->getNumberOfArticulationParameters(); i++) 
@@ -350,20 +341,24 @@ FEntityStateUpdatePDU UPDUProcessor::ConvertEntityStateUpdatePDUtoBPStruct(DIS::
 {
 	FEntityStateUpdatePDU entityStateUpdatePDU;
 
-	DIS::Vector3Double& position = EntityStateUpdatePDUIn->getEntityLocation();
-	DIS::Orientation& rotation = EntityStateUpdatePDUIn->getEntityOrientation();
-	const DIS::EntityID EntityID = EntityStateUpdatePDUIn->getEntityID();
+	//pdu common parameters
+	entityStateUpdatePDU.ProtocolVersion = EntityStateUpdatePDUIn->getProtocolVersion();
+	entityStateUpdatePDU.ExerciseID = EntityStateUpdatePDUIn->getExerciseID();
+	entityStateUpdatePDU.PduType = static_cast<EPDUType>(EntityStateUpdatePDUIn->getPduType());
+	entityStateUpdatePDU.ProtocolFamily = EntityStateUpdatePDUIn->getProtocolFamily();
+	entityStateUpdatePDU.Timestamp = EntityStateUpdatePDUIn->getTimestamp();
+	entityStateUpdatePDU.Length = EntityStateUpdatePDUIn->getLength();
+	entityStateUpdatePDU.Padding = EntityStateUpdatePDUIn->getPadding();
 
+	//Entity State Update specifics
+	//entity id
+	entityStateUpdatePDU.EntityID = EntityStateUpdatePDUIn->getEntityID();
 
 	//pure since unsupported in BP
+	DIS::Vector3Double& position = EntityStateUpdatePDUIn->getEntityLocation();
 	entityStateUpdatePDU.EntityLocationDouble[0] = position.getX();
 	entityStateUpdatePDU.EntityLocationDouble[1] = position.getY();
 	entityStateUpdatePDU.EntityLocationDouble[2] = position.getZ();
-
-	//entity id
-	entityStateUpdatePDU.EntityID.Site = EntityID.getSite();
-	entityStateUpdatePDU.EntityID.Application = EntityID.getApplication();
-	entityStateUpdatePDU.EntityID.Entity = EntityID.getEntity();
 
 	//location
 	entityStateUpdatePDU.EntityLocation[0] = position.getX();
@@ -371,6 +366,7 @@ FEntityStateUpdatePDU UPDUProcessor::ConvertEntityStateUpdatePDUtoBPStruct(DIS::
 	entityStateUpdatePDU.EntityLocation[2] = position.getZ();
 
 	//rotation
+	DIS::Orientation& rotation = EntityStateUpdatePDUIn->getEntityOrientation();
 	entityStateUpdatePDU.EntityOrientation.Yaw = rotation.getPsi();
 	entityStateUpdatePDU.EntityOrientation.Roll = rotation.getPhi();
 	entityStateUpdatePDU.EntityOrientation.Pitch = rotation.getTheta();
@@ -381,8 +377,6 @@ FEntityStateUpdatePDU UPDUProcessor::ConvertEntityStateUpdatePDUtoBPStruct(DIS::
 	entityStateUpdatePDU.EntityLinearVelocity[2] = EntityStateUpdatePDUIn->getEntityLinearVelocity().getZ();
 
 	//Single Vars
-	entityStateUpdatePDU.PduType = static_cast<EPDUType>(EntityStateUpdatePDUIn->getPduType());
-	entityStateUpdatePDU.Padding = EntityStateUpdatePDUIn->getPadding();
 	entityStateUpdatePDU.Padding1 = EntityStateUpdatePDUIn->getPadding1();
 	entityStateUpdatePDU.EntityAppearance = EntityStateUpdatePDUIn->getEntityAppearance();
 
@@ -407,8 +401,21 @@ FFirePDU UPDUProcessor::ConvertFirePDUtoBPStruct(DIS::FirePdu* FirePDUIn)
 {
 	FFirePDU firePDU;
 
-	//single vars
+	//pdu common parameters
+	firePDU.ProtocolVersion = FirePDUIn->getProtocolVersion();
+	firePDU.ExerciseID = FirePDUIn->getExerciseID();
 	firePDU.PduType = static_cast<EPDUType>(FirePDUIn->getPduType());
+	firePDU.ProtocolFamily = FirePDUIn->getProtocolFamily();
+	firePDU.Timestamp = FirePDUIn->getTimestamp();
+	firePDU.Length = FirePDUIn->getLength();
+	firePDU.Padding = FirePDUIn->getPadding();
+
+	// WarfareFamilyPdu specific parameters
+	firePDU.FiringEntityID = FirePDUIn->getFiringEntityID();
+	firePDU.TargetEntityID = FirePDUIn->getTargetEntityID();
+
+	// Fire PDU specifics
+	//single vars
 	firePDU.FireMissionIndex = FirePDUIn->getFireMissionIndex();
 	firePDU.Range = FirePDUIn->getRange();
 
@@ -433,22 +440,14 @@ FFirePDU UPDUProcessor::ConvertFirePDUtoBPStruct(DIS::FirePdu* FirePDUIn)
 	firePDU.LocationDouble[2] = FirePDUIn->getLocationInWorldCoordinates().getZ();
 
 	//event id
-	firePDU.EventID.Site = FirePDUIn->getEventID().getSite();
-	firePDU.EventID.Application = FirePDUIn->getEventID().getApplication();
-	firePDU.EventID.EventID = FirePDUIn->getEventID().getEventNumber();
+	firePDU.EventID = FirePDUIn->getEventID();
 
 	//burst descriptor
 	firePDU.BurstDescriptor.Warhead = FirePDUIn->getBurstDescriptor().getWarhead();
 	firePDU.BurstDescriptor.Fuse = FirePDUIn->getBurstDescriptor().getFuse();
 	firePDU.BurstDescriptor.Rate = FirePDUIn->getBurstDescriptor().getRate();
 	firePDU.BurstDescriptor.Quantity = FirePDUIn->getBurstDescriptor().getQuantity();
-	firePDU.BurstDescriptor.EntityType.EntityKind = FirePDUIn->getBurstDescriptor().getMunition().getEntityKind();
-	firePDU.BurstDescriptor.EntityType.Domain = FirePDUIn->getBurstDescriptor().getMunition().getDomain();
-	firePDU.BurstDescriptor.EntityType.Country = FirePDUIn->getBurstDescriptor().getMunition().getCountry();
-	firePDU.BurstDescriptor.EntityType.Category = FirePDUIn->getBurstDescriptor().getMunition().getCategory();
-	firePDU.BurstDescriptor.EntityType.Subcategory = FirePDUIn->getBurstDescriptor().getMunition().getSubcategory();
-	firePDU.BurstDescriptor.EntityType.Specific = FirePDUIn->getBurstDescriptor().getMunition().getSpecific();
-	firePDU.BurstDescriptor.EntityType.Extra = FirePDUIn->getBurstDescriptor().getMunition().getExtra();
+	firePDU.BurstDescriptor.EntityType = FirePDUIn->getBurstDescriptor().getMunition();
 
 	return firePDU;
 }
@@ -457,15 +456,25 @@ FDetonationPDU UPDUProcessor::ConvertDetonationPDUtoBPStruct(DIS::DetonationPdu*
 {
 	FDetonationPDU detonationPDU;
 
+	//pdu common parameters
+	detonationPDU.ProtocolVersion = DetPDUIn->getProtocolVersion();
+	detonationPDU.ExerciseID = DetPDUIn->getExerciseID();
+	detonationPDU.PduType = static_cast<EPDUType>(DetPDUIn->getPduType());
+	detonationPDU.ProtocolFamily = DetPDUIn->getProtocolFamily();
+	detonationPDU.Timestamp = DetPDUIn->getTimestamp();
+	detonationPDU.Length = DetPDUIn->getLength();
+	detonationPDU.Padding = DetPDUIn->getPadding();
+
+	// WarfareFamilyPdu specific parameters
+	detonationPDU.FiringEntityID = DetPDUIn->getFiringEntityID();
+	detonationPDU.TargetEntityID = DetPDUIn->getTargetEntityID();
+
+	//Detonation PDU specifics
 	//MunitionEntityID
-	detonationPDU.MunitionEntityID.Site = DetPDUIn->getMunitionID().getSite();
-	detonationPDU.MunitionEntityID.Application = DetPDUIn->getMunitionID().getApplication();
-	detonationPDU.MunitionEntityID.Entity = DetPDUIn->getMunitionID().getEntity();
+	detonationPDU.MunitionEntityID = DetPDUIn->getMunitionID();
 
 	//event id
-	detonationPDU.EventID.Site = DetPDUIn->getEventID().getSite();
-	detonationPDU.EventID.Application = DetPDUIn->getEventID().getApplication();
-	detonationPDU.EventID.EventID = DetPDUIn->getEventID().getEventNumber();
+	detonationPDU.EventID = DetPDUIn->getEventID();
 
 	//velocity
 	detonationPDU.Velocity[0] = DetPDUIn->getVelocity().getX();
@@ -492,17 +501,9 @@ FDetonationPDU UPDUProcessor::ConvertDetonationPDUtoBPStruct(DIS::DetonationPdu*
 	detonationPDU.BurstDescriptor.Fuse = DetPDUIn->getBurstDescriptor().getFuse();
 	detonationPDU.BurstDescriptor.Rate = DetPDUIn->getBurstDescriptor().getRate();
 	detonationPDU.BurstDescriptor.Quantity = DetPDUIn->getBurstDescriptor().getQuantity();
-	detonationPDU.BurstDescriptor.EntityType.EntityKind = DetPDUIn->getBurstDescriptor().getMunition().getEntityKind();
-	detonationPDU.BurstDescriptor.EntityType.Domain = DetPDUIn->getBurstDescriptor().getMunition().getDomain();
-	detonationPDU.BurstDescriptor.EntityType.Country = DetPDUIn->getBurstDescriptor().getMunition().getCountry();
-	detonationPDU.BurstDescriptor.EntityType.Category = DetPDUIn->getBurstDescriptor().getMunition().getCategory();
-	detonationPDU.BurstDescriptor.EntityType.Subcategory = DetPDUIn->getBurstDescriptor().getMunition().getSubcategory();
-	detonationPDU.BurstDescriptor.EntityType.Specific = DetPDUIn->getBurstDescriptor().getMunition().getSpecific();
-	detonationPDU.BurstDescriptor.EntityType.Extra = DetPDUIn->getBurstDescriptor().getMunition().getExtra();
+	detonationPDU.BurstDescriptor.EntityType = DetPDUIn->getBurstDescriptor().getMunition();
 
-	detonationPDU.TargetEntityID.Site = DetPDUIn->getTargetEntityID().getSite();
-	detonationPDU.TargetEntityID.Application = DetPDUIn->getTargetEntityID().getApplication();
-	detonationPDU.TargetEntityID.Entity = DetPDUIn->getTargetEntityID().getEntity();
+	detonationPDU.TargetEntityID = DetPDUIn->getTargetEntityID();
 
 	detonationPDU.FiringEntityID.Site = DetPDUIn->getFiringEntityID().getSite();
 	detonationPDU.FiringEntityID.Application = DetPDUIn->getFiringEntityID().getApplication();
@@ -534,13 +535,19 @@ FRemoveEntityPDU UPDUProcessor::ConvertRemoveEntityPDUtoBPStruct(DIS::RemoveEnti
 {
 	FRemoveEntityPDU removeEntityPDU;
 
+	//pdu common parameters
+	removeEntityPDU.ProtocolVersion = RemovePDUIn->getProtocolVersion();
+	removeEntityPDU.ExerciseID = RemovePDUIn->getExerciseID();
 	removeEntityPDU.PduType = static_cast<EPDUType>(RemovePDUIn->getPduType());
-	removeEntityPDU.OriginatingEntityID.Site = RemovePDUIn->getOriginatingEntityID().getSite();
-	removeEntityPDU.OriginatingEntityID.Application = RemovePDUIn->getOriginatingEntityID().getApplication();
-	removeEntityPDU.OriginatingEntityID.Entity = RemovePDUIn->getOriginatingEntityID().getEntity();
-	removeEntityPDU.ReceivingEntityID.Site = RemovePDUIn->getReceivingEntityID().getSite();
-	removeEntityPDU.ReceivingEntityID.Application = RemovePDUIn->getReceivingEntityID().getApplication();
-	removeEntityPDU.ReceivingEntityID.Entity = RemovePDUIn->getReceivingEntityID().getEntity();
+	removeEntityPDU.ProtocolFamily = RemovePDUIn->getProtocolFamily();
+	removeEntityPDU.Timestamp = RemovePDUIn->getTimestamp();
+	removeEntityPDU.Length = RemovePDUIn->getLength();
+	removeEntityPDU.Padding = RemovePDUIn->getPadding();
+
+	//Simulation Management Family Pdu specific
+	removeEntityPDU.OriginatingEntityID = RemovePDUIn->getOriginatingEntityID();
+	removeEntityPDU.ReceivingEntityID = RemovePDUIn->getReceivingEntityID();
+
 	removeEntityPDU.RequestID = RemovePDUIn->getRequestID();
 
 	return removeEntityPDU;
@@ -550,18 +557,22 @@ FStartResumePDU UPDUProcessor::ConvertStartResumePDUtoBPStruct(DIS::StartResumeP
 {
 	FStartResumePDU startResumePDU;
 
+	//pdu common parameters
+	startResumePDU.ProtocolVersion = StartResumePDUIn->getProtocolVersion();
+	startResumePDU.ExerciseID = StartResumePDUIn->getExerciseID();
 	startResumePDU.PduType = static_cast<EPDUType>(StartResumePDUIn->getPduType());
+	startResumePDU.ProtocolFamily = StartResumePDUIn->getProtocolFamily();
+	startResumePDU.Timestamp = StartResumePDUIn->getTimestamp();
+	startResumePDU.Length = StartResumePDUIn->getLength();
+	startResumePDU.Padding = StartResumePDUIn->getPadding();
 
+	//Simulation Management Family Pdu specific
+	startResumePDU.OriginatingEntityID = StartResumePDUIn->getOriginatingEntityID();
+	startResumePDU.ReceivingEntityID = StartResumePDUIn->getReceivingEntityID();
+
+	// Start/Resume PDU specific
 	DIS::ClockTime RealWorldTime = StartResumePDUIn->getRealWorldTime();
 	DIS::ClockTime SimulationTime = StartResumePDUIn->getRealWorldTime();
-
-	startResumePDU.ReceivingEntityID.Site = StartResumePDUIn->getReceivingEntityID().getSite();
-	startResumePDU.ReceivingEntityID.Application = StartResumePDUIn->getReceivingEntityID().getApplication();
-	startResumePDU.ReceivingEntityID.Entity = StartResumePDUIn->getReceivingEntityID().getEntity();
-
-	startResumePDU.OriginatingEntityID.Site = StartResumePDUIn->getOriginatingEntityID().getSite();
-	startResumePDU.OriginatingEntityID.Application = StartResumePDUIn->getOriginatingEntityID().getApplication();
-	startResumePDU.OriginatingEntityID.Entity = StartResumePDUIn->getOriginatingEntityID().getEntity();
 
 	startResumePDU.RealWorldTime.Hour = RealWorldTime.getHour();
 	startResumePDU.RealWorldTime.TimePastHour = RealWorldTime.getTimePastHour();
@@ -578,9 +589,21 @@ FStopFreezePDU UPDUProcessor::ConvertStopFreezePDUtoBPStruct(DIS::StopFreezePdu*
 {
 	FStopFreezePDU stopFreezePDU;
 
-	DIS::ClockTime RealWorldTime = StopFreezePDUIn->getRealWorldTime();
-
+	//pdu common parameters
+	stopFreezePDU.ProtocolVersion = StopFreezePDUIn->getProtocolVersion();
+	stopFreezePDU.ExerciseID = StopFreezePDUIn->getExerciseID();
 	stopFreezePDU.PduType = static_cast<EPDUType>(StopFreezePDUIn->getPduType());
+	stopFreezePDU.ProtocolFamily = StopFreezePDUIn->getProtocolFamily();
+	stopFreezePDU.Timestamp = StopFreezePDUIn->getTimestamp();
+	stopFreezePDU.Length = StopFreezePDUIn->getLength();
+	stopFreezePDU.Padding = StopFreezePDUIn->getPadding();
+
+	//Simulation Management Family Pdu specific
+	stopFreezePDU.OriginatingEntityID = StopFreezePDUIn->getOriginatingEntityID();
+	stopFreezePDU.ReceivingEntityID = StopFreezePDUIn->getReceivingEntityID();
+
+	// Stop/Freeze PDU specifics
+	DIS::ClockTime RealWorldTime = StopFreezePDUIn->getRealWorldTime();
 
 	stopFreezePDU.RealWorldTime.Hour = RealWorldTime.getHour();
 	stopFreezePDU.RealWorldTime.TimePastHour = RealWorldTime.getTimePastHour();
