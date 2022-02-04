@@ -47,7 +47,8 @@ Contains event bindings for:
 - It can be accessed via blueprints through getting the 'PDUProcessor'
 - Notable functions:
     - Process DIS Packet
-    - Convert DIS Packet to Bytes
+    - Convert Entity State PDU to Bytes
+    - Convert Entity State Update PDU to Bytes
 - Contains event bindings for notifying when a specific PDU type has been processed for all different PDU types currently implemented.
 
 # DIS Game State
