@@ -540,15 +540,30 @@ struct FEntityType
 
 	DIS::EntityType ToDIS() const
 	{
-		DIS::EntityType OutType;
-		OutType.setEntityKind(EntityKind);
-		OutType.setDomain(Domain);
-		OutType.setCountry(Country);
-		OutType.setCategory(Category);
-		OutType.setSubcategory(Subcategory);
-		OutType.setSpecific(Specific);
-		OutType.setExtra(Extra);
-		return OutType;
+		if (*this == FEntityType())
+		{
+			DIS::EntityType OutType;
+			OutType.setEntityKind(0);
+			OutType.setDomain(0);
+			OutType.setCountry(0);
+			OutType.setCategory(0);
+			OutType.setSubcategory(0);
+			OutType.setSpecific(0);
+			OutType.setExtra(0);
+			return OutType;
+		}
+		else
+		{
+			DIS::EntityType OutType;
+			OutType.setEntityKind(EntityKind);
+			OutType.setDomain(Domain);
+			OutType.setCountry(Country);
+			OutType.setCategory(Category);
+			OutType.setSubcategory(Subcategory);
+			OutType.setSpecific(Specific);
+			OutType.setExtra(Extra);
+			return OutType;
+		}
 	}
 };
 
@@ -775,9 +790,20 @@ struct FEntityStatePDU : public FPdu
 		OutLinearVelocity.setZ(EntityLinearVelocity.Z);
 		OutPdu.setEntityLinearVelocity(OutLinearVelocity);
 		DIS::Vector3Double OutLocation;
-		OutLocation.setX(EntityLocationDouble[0]);
-		OutLocation.setY(EntityLocationDouble[1]);
-		OutLocation.setZ(EntityLocationDouble[2]);
+		if (FMath::IsNearlyEqual(static_cast<float>(EntityLocationDouble[0]), EntityLocation.X) &&
+			FMath::IsNearlyEqual(static_cast<float>(EntityLocationDouble[1]), EntityLocation.Y) &&
+			FMath::IsNearlyEqual(static_cast<float>(EntityLocationDouble[2]), EntityLocation.Z))
+		{
+			OutLocation.setX(EntityLocationDouble[0]);
+			OutLocation.setY(EntityLocationDouble[1]);
+			OutLocation.setZ(EntityLocationDouble[2]);
+		}
+		else
+		{
+			OutLocation.setX(EntityLocation.X);
+			OutLocation.setY(EntityLocation.Y);
+			OutLocation.setZ(EntityLocation.Z);
+		}
 		OutPdu.setEntityLocation(OutLocation);
 		DIS::Orientation OutOrientation;
 		OutOrientation.setPsi(EntityOrientation.Yaw);
