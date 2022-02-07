@@ -5,6 +5,9 @@
     - The plugins folder should be located in the root directory of the project. If not, create one.
 - Launch the project and allow Unreal to rebuild needed modules.
 - The GRILL DIS for Unreal plugin should be enabled upon the project opening.
+- The only required actor in a level is the GeoReferencingSystem actor from the GeoReference Plugin by Epic Games.
+    - This actor stores the Origin Location in real world coordinates in either LLA or in Projected CRS. This is used for conversions between real world coordinated and Unreal Engine coordinates.
+        - The website http://epsg.io/ can be used for getting Projected CRS locations.
 
 # Project Settings
 
