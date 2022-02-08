@@ -18,6 +18,14 @@ ADISGameState::ADISGameState()
 	{
 		for (FEntityType EntityType : DISMapping.AssociatedDISEnumerations)
 		{
+			//If an actor was not found -- check to see if there is an associated actor for the entity type
+			TAssetSubclassOf<ADISEntity_Base>* associatedSoftClassReference = DISClassMappings.Find(EntityType);
+
+			if (associatedSoftClassReference != nullptr)
+			{
+				UE_LOG(LogDISGameState, Warning, TEXT("A DIS Enumeration mapping already exists for %s and is linked to %s. This enumeration will now point to: %s"), *EntityType.ToString(), *associatedSoftClassReference->GetAssetName(), *DISMapping.DISEntity.GetAssetName());
+			}
+
 			DISClassMappings.Add(EntityType, DISMapping.DISEntity);
 		}
 	}
