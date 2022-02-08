@@ -14,7 +14,7 @@
 - Access the GRILL DIS for Unreal project settings by clicking on the 'GRILL DIS' button in the Level Editor toolbar or go to Project Settings > GRILL DIS.
 - Inside of these project settings the below can be set:
     - **DIS Enumeration Mappings**: Contains desired actor to DIS Enumeration mappings.
-        - NOTE: Currently the actors tied to DIS Enumerations have to inherit from the DISEntity_Base actor supplied by the GRILL DIS for Unreal plugin.
+        - _**NOTE:**_ Currently the actors tied to DIS Enumerations have to inherit from the DISEntity_Base actor supplied by the GRILL DIS for Unreal plugin.
     - **Exercise ID**: The exercise ID of the DIS sim this project will be associated with.
     - **Site ID**: The site ID of this DIS sim.
     - **Application ID**: The application ID of this DIS sim.
@@ -23,7 +23,7 @@
     - **Auto Send Port**: The port for sending UDP packets on.
     - **Auto Connect Receive**: Whether or not the UDP socket for receiving DIS packets should be auto connected.
     - **Auto Receive IP Address**: The IP address to receive UDP packets from if Auto Connect Receive is enabled.
-        - NOTE: An IP address of 0.0.0.0 will listen to all incoming DIS packets.
+        - _**NOTE:**_ An IP address of 0.0.0.0 will listen to all incoming DIS packets.
     - **Auto Receive Port**: The port for receiving UDP packets on.
 
 # UDP Subsystem
