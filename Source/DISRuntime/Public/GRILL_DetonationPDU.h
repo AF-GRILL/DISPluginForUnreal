@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "UObject/NoExportTypes.h"
 #include <dis6/DetonationPdu.h>
 #include "GRILL_WarfareFamilyPDU.h"
 #include "GRILL_DetonationPDU.generated.h"

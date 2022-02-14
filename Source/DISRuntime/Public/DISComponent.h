@@ -104,18 +104,33 @@ public:
 	 */	
 	UFUNCTION(BlueprintNativeEvent, Category = "GRILL DIS|DIS Component")
 		void GroundClamping();
-	
-	/**
-	 * The most recent Entity State PDU that has been received by the DISComponent.
-	 */
-	UPROPERTY(BlueprintReadWrite, Category = "GRILL DIS|DIS Component|DIS Info")
-		UGRILL_EntityStatePDU* MostRecentEntityStatePDU;
 
 	/**
-	 * The most recent Entity State PDU that has been dead reckoned if activated by the DISComponent.
+	 * Gets the most recent Entity State PDU.
+	 * Returns the most recent Entity State PDU.
 	 */
-	UPROPERTY(BlueprintReadWrite, Category = "GRILL DIS|DIS Component|DIS Info")
-		UGRILL_EntityStatePDU* DeadReckoningEntityStatePDU;
+	UFUNCTION(BlueprintCallable, Category = "GRILL DIS|DIS Component")
+		FEntityStatePDU GetMostRecentEntityStatePDU();
+
+	/**
+	 * Gets the most recent Dead Reckoned Entity State PDU.
+	 * Returns the most recent Dead Reckoning Entity State PDU.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "GRILL DIS|DIS Component")
+		FEntityStatePDU GetMostRecentDeadReckoningPDU();
+
+	/**
+	 * Sets the most recent Entity State PDU.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "GRILL DIS|DIS Component")
+		void SetMostRecentEntityStatePDU(FEntityStatePDU EntityStatePDUIn);
+
+	/**
+	 * Sets the most recent Dead Reckoning Entity State PDU.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "GRILL DIS|DIS Component")
+		void SetMostRecentDeadReckoningPDU(FEntityStatePDU DeadReckonedPDUIn);
+
 	/**
 	 * The timestamp that the most recent Entity State PDU was received at by the DISComponent.
 	 */
@@ -164,7 +179,10 @@ protected:
 	virtual void BeginPlay() override;
 
 private:
-	UGRILL_EntityStatePDU* DeadReckonedPDU;
+	UGRILL_EntityStatePDU* MostRecentEntityStatePDU = NewObject<UGRILL_EntityStatePDU>();
+	UGRILL_EntityStatePDU* DeadReckoningEntityStatePDU = NewObject<UGRILL_EntityStatePDU>();
+
+	UGRILL_EntityStatePDU* TempDeadReckonedPDU;
 	float DeltaTimeSinceLastEntityStatePDU = 0.0f;
 
 	/**

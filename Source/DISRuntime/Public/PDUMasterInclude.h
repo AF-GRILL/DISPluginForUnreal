@@ -12,3 +12,13 @@
 #include "GRILL_StartResumePDU.h"
 #include "GRILL_StopFreezePDU.h"
 #include "GRILL_WarfareFamilyPDU.h"
+#include "PDUMasterInclude.generated.h"
+
+/**
+ *
+ */
+UCLASS()
+class DISRUNTIME_API UPDUMasterInclude : public UObject
+{
+	GENERATED_BODY()
+};

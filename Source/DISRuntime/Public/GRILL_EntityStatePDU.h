@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "UObject/NoExportTypes.h"
 #include <dis6/EntityStatePdu.h> 
 #include "GRILL_EntityStateUpdatePDU.h"
 #include "GRILL_EntityStatePDU.generated.h"

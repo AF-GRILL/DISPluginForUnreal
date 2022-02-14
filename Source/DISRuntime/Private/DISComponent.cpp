@@ -169,9 +169,9 @@ void UDISComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorCo
 	DeltaTimeSinceLastEntityStatePDU += DeltaTime;
 
 	//Check if dead reckoning is supported/enabled. Broadcast dead reckoning update if it is
-	if (DeadReckoning(DeadReckoningEntityStatePDU, DeltaTime, DeadReckonedPDU))
+	if (DeadReckoning(DeadReckoningEntityStatePDU, DeltaTime, TempDeadReckonedPDU))
 	{
-		DeadReckoningEntityStatePDU = DeadReckonedPDU;
+		DeadReckoningEntityStatePDU = TempDeadReckonedPDU;
 		OnDeadReckoningUpdate.Broadcast(DeadReckoningEntityStatePDU, DeltaTimeSinceLastEntityStatePDU);
 
 		GroundClamping_Implementation();
@@ -238,6 +238,50 @@ void UDISComponent::HandleDetonationPDU(UGRILL_DetonationPDU* DetonationPDUIn)
 void UDISComponent::HandleRemoveEntityPDU(UGRILL_RemoveEntityPDU* RemoveEntityPDUIn)
 {
 	OnReceivedRemoveEntityPDU.Broadcast(RemoveEntityPDUIn);
+}
+
+FEntityStatePDU UDISComponent::GetMostRecentEntityStatePDU()
+{
+	FEntityStatePDU mostRecentEntityStatePdu;
+
+	if (MostRecentEntityStatePDU) 
+	{
+		mostRecentEntityStatePdu = MostRecentEntityStatePDU->EntityStatePduStruct;
+	}
+
+	return mostRecentEntityStatePdu;
+}
+
+FEntityStatePDU UDISComponent::GetMostRecentDeadReckoningPDU()
+{
+	FEntityStatePDU mostRecentDeadReckonedPdu;
+
+	if (DeadReckoningEntityStatePDU)
+	{
+		mostRecentDeadReckonedPdu = DeadReckoningEntityStatePDU->EntityStatePduStruct;
+	}
+
+	return mostRecentDeadReckonedPdu;
+}
+
+void UDISComponent::SetMostRecentEntityStatePDU(FEntityStatePDU EntityStatePDUIn)
+{
+	if (!MostRecentEntityStatePDU)
+	{
+		MostRecentEntityStatePDU = NewObject<UGRILL_EntityStatePDU>();
+	}
+
+	MostRecentEntityStatePDU->EntityStatePduStruct = EntityStatePDUIn;
+}
+
+void UDISComponent::SetMostRecentDeadReckoningPDU(FEntityStatePDU DeadReckonedPDUIn)
+{
+	if (!DeadReckoningEntityStatePDU)
+	{
+		DeadReckoningEntityStatePDU = NewObject<UGRILL_EntityStatePDU>();
+	}
+
+	MostRecentEntityStatePDU->EntityStatePduStruct = DeadReckonedPDUIn;
 }
 
 // TODO: Cleanup copy pasted code in switch

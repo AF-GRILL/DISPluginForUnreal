@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "UObject/NoExportTypes.h"
 #include <dis6/SimulationManagementFamilyPdu.h>
 #include "GRILL_PDU.h"
 #include "GRILL_SimulationManagementFamilyPDU.generated.h"
