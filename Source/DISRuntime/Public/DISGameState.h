@@ -2,6 +2,8 @@
 
 #pragma once
 
+#include <map>
+
 #include "CoreMinimal.h"
 #include "DISEnumsAndStructs.h"
 #include "PDUMasterInclude.h"
@@ -79,11 +81,13 @@ protected:
 	 */
 	UPROPERTY(BlueprintReadOnly)
 		TMap<FEntityType, TAssetSubclassOf<ADISEntity_Base>> DISClassMappings;
+	std::map<FEntityType, TAssetSubclassOf<ADISEntity_Base>> RawDISClassMappings;
 	/**
 	 * The mapping between DIS Entity IDs and corresponding entity actors.
 	 */
 	UPROPERTY(BlueprintReadOnly)
 		TMap<FEntityID, ADISEntity_Base*> DISActorMappings;
+	std::map<FEntityID, ADISEntity_Base*> RawDISActorMappings;
 	/**
 	 * The exercise ID of the DIS sim.
 	 */

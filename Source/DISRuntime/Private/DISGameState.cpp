@@ -27,6 +27,7 @@ ADISGameState::ADISGameState()
 			}
 
 			DISClassMappings.Add(EntityType, DISMapping.DISEntity);
+			RawDISClassMappings.insert({EntityType, DISMapping.DISEntity});
 		}
 	}
 
@@ -68,12 +69,12 @@ void ADISGameState::HandleOnDISEntityDestroyed(AActor* DestroyedActor)
 void ADISGameState::HandleEntityStatePDU(UGRILL_EntityStatePDU* EntityStatePDUIn)
 {
 	//Find associated actor in the DISActorMappings map -- If actor does not exist spawn one
-	ADISEntity_Base** associatedActor = DISActorMappings.Find(EntityStatePDUIn->EntityStatePduStruct.EntityID);
-	if (associatedActor != nullptr && *associatedActor != nullptr)
+	ADISEntity_Base* associatedActor = RawDISActorMappings[EntityStatePDUIn->EntityStatePduStruct.EntityID];
+	if (associatedActor != nullptr)
 	{
 		//If an actor was found, relay information to the associated component
 		//Leaving this way rather than getting component of ADISEntity_Base in case we go to a more agnostic approach for classes able to be used
-		UDISComponent* DISComponent = (*associatedActor)->FindComponentByClass<UDISComponent>();
+		UDISComponent* DISComponent = associatedActor->FindComponentByClass<UDISComponent>();
 
 		if (DISComponent != nullptr)
 		{
@@ -96,12 +97,12 @@ void ADISGameState::HandleEntityStatePDU(UGRILL_EntityStatePDU* EntityStatePDUIn
 void ADISGameState::HandleEntityStateUpdatePDU(UGRILL_EntityStateUpdatePDU* EntityStateUpdatePDUIn)
 {
 	//Find associated actor in the DISActorMappings map -- If actor does not exist spawn one
-	ADISEntity_Base** associatedActor = DISActorMappings.Find(EntityStateUpdatePDUIn->EntityStateUpdatePduStruct.EntityID);
-	if (associatedActor != nullptr && *associatedActor != nullptr)
+	ADISEntity_Base* associatedActor = RawDISActorMappings[EntityStateUpdatePDUIn->EntityStateUpdatePduStruct.EntityID];
+	if (associatedActor != nullptr)
 	{
 		//If an actor was found, relay information to the associated component
 		//Leaving this way rather than getting component of ADISEntity_Base in case we go to a more agnostic approach for classes able to be used
-		UDISComponent* DISComponent = (*associatedActor)->FindComponentByClass<UDISComponent>();
+		UDISComponent* DISComponent = associatedActor->FindComponentByClass<UDISComponent>();
 
 		if (DISComponent != nullptr)
 		{
@@ -117,11 +118,10 @@ void ADISGameState::HandleEntityStateUpdatePDU(UGRILL_EntityStateUpdatePDU* Enti
 			return;
 		}
 
-		//Form an Entity State from the Entity State Update PDU
-		UGRILL_EntityStatePDU* entityState = NewObject<UGRILL_EntityStatePDU>();
-		entityState->SetupFromEntityStateUpdatePDU(EntityStateUpdatePDUIn);
+		UGRILL_EntityStatePDU* espdu = NewObject<UGRILL_EntityStatePDU>();
+		espdu->SetupFromEntityStateUpdatePDU(EntityStateUpdatePDUIn);
 
-		SpawnNewEntityFromEntityState(entityState);
+		SpawnNewEntityFromEntityState(espdu);
 	}
 }
 
@@ -165,30 +165,46 @@ void ADISGameState::HandleRemoveEntityPDU(UGRILL_RemoveEntityPDU* RemoveEntityPD
 void ADISGameState::SpawnNewEntityFromEntityState(UGRILL_EntityStatePDU* EntityStatePDUIn)
 {
 	//If an actor was not found -- check to see if there is an associated actor for the entity type
-	TAssetSubclassOf<ADISEntity_Base>* associatedSoftClassReference = DISClassMappings.Find(EntityStatePDUIn->EntityStatePduStruct.EntityType);
-	if (associatedSoftClassReference != nullptr)
+	TAssetSubclassOf<ADISEntity_Base>* associatedSoftClassReference = &RawDISClassMappings[EntityStatePDUIn->EntityStatePduStruct.EntityType];
+	UClass* associatedClass = associatedSoftClassReference->LoadSynchronous();
+	if (!associatedClass)
 	{
-		//If so, spawn one and relay information to the associated component
-		UClass* associatedClass = associatedSoftClassReference->LoadSynchronous();
-		if (associatedClass != nullptr)
-		{ 
-			ADISEntity_Base* spawnedActor = GetWorld()->SpawnActor<ADISEntity_Base>(associatedClass);
-
-			if (spawnedActor != nullptr)
+		std::map<FEntityType, TAssetSubclassOf<ADISEntity_Base>> WildcardMappings;
+		for (auto Pair : RawDISClassMappings)
+		{
+			FEntityType Key = Pair.first;
+			FEntityType FilledKey = FEntityType(Pair.first).FillWildcards(EntityStatePDUIn->EntityStatePduStruct.EntityType);
+			if (!(Key == FilledKey))
 			{
-				spawnedActor->OnDestroyed.AddDynamic(this, &ADISGameState::HandleOnDISEntityDestroyed);
+				Key = FilledKey;
+				//WildcardMappings.Add(Key, Pair.Value);
+				WildcardMappings.insert({ Key, Pair.second });
+			}
+		}
+		TAssetSubclassOf<ADISEntity_Base>* NewSoftClassRef = &WildcardMappings[EntityStatePDUIn->EntityStatePduStruct.EntityType];
+		if (NewSoftClassRef != nullptr) {
+			associatedClass = NewSoftClassRef->LoadSynchronous();
+		}
+	}
+	//If so, spawn one and relay information to the associated component
+	if (associatedClass != nullptr)
+	{ 
+		ADISEntity_Base* spawnedActor = GetWorld()->SpawnActor<ADISEntity_Base>(associatedClass);
 
-				//Get DIS Component of the newly spawned actor
-				//Leaving this way rather than getting component of ADISEntity_Base in case we go to a more agnostic approach for classes able to be used
-				UDISComponent* DISComponent = spawnedActor->FindComponentByClass<UDISComponent>();
-				//Add actor to the map
-				AddDISEntityToMap(EntityStatePDUIn->EntityStatePduStruct.EntityID, spawnedActor);
+		if (spawnedActor != nullptr)
+		{
+			spawnedActor->OnDestroyed.AddDynamic(this, &ADISGameState::HandleOnDISEntityDestroyed);
 
-				if (DISComponent != nullptr)
-				{
-					DISComponent->SpawnedFromNetwork = true;
-					DISComponent->HandleEntityStatePDU(EntityStatePDUIn);
-				}
+			//Get DIS Component of the newly spawned actor
+			//Leaving this way rather than getting component of ADISEntity_Base in case we go to a more agnostic approach for classes able to be used
+			UDISComponent* DISComponent = spawnedActor->FindComponentByClass<UDISComponent>();
+			//Add actor to the map
+			AddDISEntityToMap(EntityStatePDUIn->EntityStatePduStruct.EntityID, spawnedActor);
+
+			if (DISComponent != nullptr)
+			{
+				DISComponent->SpawnedFromNetwork = true;
+				DISComponent->HandleEntityStatePDU(EntityStatePDUIn);
 			}
 		}
 	}
@@ -204,12 +220,12 @@ UDISComponent* ADISGameState::GetAssociatedDISComponent(FEntityID EntityIDIn)
 	UDISComponent* DISComponent = nullptr;
 
 	//Find associated actor in the DISActorMappings map
-	ADISEntity_Base** associatedActor = DISActorMappings.Find(EntityIDIn);
-	if (associatedActor != nullptr && *associatedActor != nullptr)
+	ADISEntity_Base* associatedActor = RawDISActorMappings[EntityIDIn];
+	if (associatedActor != nullptr)
 	{
 		//If an actor was found, relay information to the associated component
 		//Leaving this way rather than getting component of ADISEntity_Base in case we go to a more agnostic approach for classes able to be used
-		DISComponent = (*associatedActor)->FindComponentByClass<UDISComponent>();
+		DISComponent = associatedActor->FindComponentByClass<UDISComponent>();
 	}
 
 	return DISComponent;
@@ -218,11 +234,12 @@ UDISComponent* ADISGameState::GetAssociatedDISComponent(FEntityID EntityIDIn)
 void ADISGameState::AddDISEntityToMap(FEntityID EntityIDToAdd, ADISEntity_Base* EntityToAdd)
 {
 	DISActorMappings.Add(EntityIDToAdd, EntityToAdd);
+	RawDISActorMappings[EntityIDToAdd] = EntityToAdd;
 }
 
 bool ADISGameState::RemoveDISEntityFromMap(FEntityID EntityIDToRemove)
 {
-	int amountRemoved = DISActorMappings.Remove(EntityIDToRemove);
-
-	return (amountRemoved > 0);
+	DISActorMappings.Remove(EntityIDToRemove);
+	const int AmountRemoved = RawDISActorMappings.erase(EntityIDToRemove);
+	return (AmountRemoved > 0);
 }

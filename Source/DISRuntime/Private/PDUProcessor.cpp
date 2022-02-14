@@ -3,6 +3,8 @@
 #include "PDUProcessor.h"
 #include "UDPSubsystem.h"
 
+#include "DISEntity_Base.h"
+
 void UPDUProcessor::Initialize(FSubsystemCollectionBase& Collection)
 {
 	Collection.InitializeDependency(UUDPSubsystem::StaticClass());

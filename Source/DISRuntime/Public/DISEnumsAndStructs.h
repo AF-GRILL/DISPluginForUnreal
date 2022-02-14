@@ -1,19 +1,19 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
-
-//OpenDIS headers
+//dis headers
+#include <dis6/Pdu.h>
 #include <utils/PDUBank.h>
 #include <utils/DataStream.h>
-#include <dis6/ArticulationParameter.h>
-#include <dis6/BurstDescriptor.h>
-#include <dis6/ClockTime.h>
-#include <dis6/DeadReckoningParameter.h>
-#include <dis6/EntityID.h>
-#include <dis6/EntityType.h>
-#include <dis6/EventID.h>
-#include <dis6/Vector3Double.h>
-#include <dis6/Vector3Float.h>
+
+//PDU type headers, add as more pdu types are support!
+#include <dis6/EntityStatePdu.h>   
+#include <dis6/FirePdu.h>
+#include <dis6/DetonationPdu.h>
+#include <dis6/RemoveEntityPdu.h>
+#include <dis6/EntityStateUpdatePdu.h>
+#include <dis6/StartResumePdu.h>
+#include <dis6/StopFreezePdu.h>
 
 #include "CoreMinimal.h"
 #include "DISEnumsAndStructs.generated.h"
@@ -433,6 +433,31 @@ struct FEntityID
 			&& Entity == other.Entity;
 	}
 
+	bool operator!= (const FEntityID Other) const
+	{
+		return !(operator==(Other));
+	}
+
+	bool operator< (const FEntityID Other) const
+	{
+		return ToUInt64() < Other.ToUInt64();
+	}
+
+	bool operator> (const FEntityID Other) const
+	{
+		return Other.operator<(*this);
+	}
+
+	bool operator<= (const FEntityID Other) const
+	{
+		return !(operator>(Other));
+	}
+
+	bool operator>= (const FEntityID Other) const
+	{
+		return !(operator<(Other));
+	}
+
 	friend uint32 GetTypeHash(const FEntityID& other)
 	{
 		const FString EntityID = FString::Printf(TEXT("%d:%d:%d"),
@@ -455,6 +480,11 @@ struct FEntityID
 		OutID.setApplication(Application);
 		OutID.setEntity(Entity);
 		return OutID;
+	}
+
+	uint64 ToUInt64() const
+	{
+		return (static_cast<uint64>(Site)<< 32) | (static_cast<uint64>(Application)<< 16) | (static_cast<uint64>(Entity));
 	}
 };
 
@@ -542,6 +572,40 @@ struct FEntityType
 		this->Extra = EntityType.getExtra();
 	}
 
+	FEntityType FillWildcards(const FEntityType Other)
+	{
+		if (EntityKind == -1)
+		{
+			EntityKind = Other.EntityKind;
+		}
+		if (Domain == -1)
+		{
+			Domain = Other.Domain;
+		}
+		if (Country == -1)
+		{
+			Country = Other.Country;
+		}
+		if (Category == -1)
+		{
+			Category = Other.Category;
+		}
+		if (Subcategory == -1)
+		{
+			Subcategory = Other.Subcategory;
+		}
+		if (Specific == -1)
+		{
+			Specific = Other.Specific;
+		}
+		if (Extra == -1)
+		{
+			Extra = Other.Extra;
+		}
+
+		return FEntityType(*this);
+	}
+
 	bool operator== (const FEntityType& Other) const
 	{
 		return EntityKind == Other.EntityKind
@@ -553,24 +617,64 @@ struct FEntityType
 			&& Extra == Other.Extra;
 	}
 
-	friend uint32 GetTypeHash(const FEntityType& other)
+	bool operator!= (const FEntityType& Other) const
+	{
+		return !(operator==(Other));
+	}
+
+	bool operator< (const FEntityType& Other) const
+	{
+		return ToUInt64() < Other.ToUInt64();
+	}
+
+	bool operator> (const FEntityType& Other) const
+	{
+		return Other.operator<(*this);
+	}
+
+	bool operator<= (const FEntityType& Other) const
+	{
+		return !(operator>(Other));
+	}
+
+	bool operator>= (const FEntityType& Other) const
+	{
+		return !(operator<(Other));
+	}
+
+	friend uint32 GetTypeHash(const FEntityType& Other)
 	{
 		const FString EntityTypeString = FString::Printf(TEXT("%d.%d.%d.%d.%d.%d.%d"),
-			other.EntityKind,
-			other.Domain,
-			other.Country,
-			other.Category,
-			other.Subcategory,
-			other.Specific,
-			other.Extra
+			Other.EntityKind,
+			Other.Domain,
+			Other.Country,
+			Other.Category,
+			Other.Subcategory,
+			Other.Specific,
+			Other.Extra
 		);
 		return GetTypeHash(EntityTypeString);
 	}
 
-	FString ToString()
+	FString ToString() const
 	{
 		return FString::FromInt(EntityKind) + ":" + FString::FromInt(Domain) + ':' + FString::FromInt(Country) + ":" +
 			FString::FromInt(Category) + ":" + FString::FromInt(Subcategory) + ':' + FString::FromInt(Specific) + ":" + FString::FromInt(Extra);
+	}
+
+	uint64 ToUInt64() const
+	{
+		const uint64 BitString = (static_cast<uint64>(Extra) << 56) | (static_cast<uint64>(Specific) << 48) | (static_cast<uint64>(Subcategory) << 40) | 
+			(static_cast<uint64>(Category) << 32) | (static_cast<uint64>(Country) << 16) | (static_cast<uint64>(Domain) << 8) | static_cast<uint64>(EntityKind);
+		return BitString;
+	}
+
+	FString ToBitString() const
+	{
+		const uint64 BitString = ToUInt64();
+		const uint32 UpperBitString = static_cast<uint32>(BitString >> 32);
+		const uint32 LowerBitString = static_cast<uint32>(BitString & 0xFFFF);
+		return FString::FromInt(UpperBitString) + FString::FromInt(LowerBitString);
 	}
 
 	DIS::EntityType ToOpenDIS() const
