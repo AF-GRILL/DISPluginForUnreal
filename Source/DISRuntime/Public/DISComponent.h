@@ -5,17 +5,18 @@
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
 #include "DISEnumsAndStructs.h"
+#include "PDUMasterInclude.h"
 #include "glm/gtx/quaternion.hpp"
 #include "DISComponent.generated.h"
 
 DECLARE_LOG_CATEGORY_EXTERN(LogDISComponent, Log, All);
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FReceivedEntityStatePDU, FEntityStatePDU, EntityStatePDU);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FDeadReckoningUpdate, FEntityStatePDU, DeadReckonedEntityStatePDU, float, DeltaTimeSinceLastEntityStatePDU);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FReceivedEntityStateUpdatePDU, FEntityStateUpdatePDU, EntityStateUpdatePDU);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FReceivedDetonationPDU, FDetonationPDU, DetonationPDU);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FReceivedFirePDU, FFirePDU, FirePDU);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FReceivedRemoveEntityPDU, FRemoveEntityPDU, RemoveEntityPDU);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FReceivedEntityStatePDU, UGRILL_EntityStatePDU*, EntityStatePDU);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FDeadReckoningUpdate, UGRILL_EntityStatePDU*, DeadReckonedEntityStatePDU, float, DeltaTimeSinceLastEntityStatePDU);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FReceivedEntityStateUpdatePDU, UGRILL_EntityStateUpdatePDU*, EntityStateUpdatePDU);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FReceivedDetonationPDU, UGRILL_DetonationPDU*, DetonationPDU);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FReceivedFirePDU, UGRILL_FirePDU*, FirePDU);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FReceivedRemoveEntityPDU, UGRILL_RemoveEntityPDU*, RemoveEntityPDU);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FGroundClampingUpdate, TArray<FTransform>, ClampTransforms);
 
 /**
@@ -33,7 +34,7 @@ class DISRUNTIME_API UDISComponent : public UActorComponent
 {
 	GENERATED_BODY()
 
-	bool DeadReckoning(FEntityStatePDU EntityPDUToDeadReckon, float DeltaTime, FEntityStatePDU& DeadReckonedEntityPDU);
+	bool DeadReckoning(UGRILL_EntityStatePDU* EntityPDUToDeadReckon, float DeltaTime, UGRILL_EntityStatePDU*& DeadReckonedEntityPDU);
 
 	/**
 	 * Clamps an entity to the ground. Verifies that the entity is of ground domain, is not a munition, and is owned by a different sim prior to clamping.
@@ -48,11 +49,11 @@ public:
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
-	void HandleEntityStatePDU(FEntityStatePDU NewEntityStatePDU);
-	void HandleEntityStateUpdatePDU(FEntityStateUpdatePDU NewEntityStateUpdatePDU);
-	void HandleFirePDU(FFirePDU FirePDUIn);
-	void HandleDetonationPDU(FDetonationPDU DetonationPDUIn);
-	void HandleRemoveEntityPDU(FRemoveEntityPDU RemoveEntityPDUIn);
+	void HandleEntityStatePDU(UGRILL_EntityStatePDU* NewEntityStatePDU);
+	void HandleEntityStateUpdatePDU(UGRILL_EntityStateUpdatePDU* NewEntityStateUpdatePDU);
+	void HandleFirePDU(UGRILL_FirePDU* FirePDUIn);
+	void HandleDetonationPDU(UGRILL_DetonationPDU* DetonationPDUIn);
+	void HandleRemoveEntityPDU(UGRILL_RemoveEntityPDU* RemoveEntityPDUIn);
 
 	/**
 	 * Called after a dead reckoning update is performed by the component.
@@ -71,7 +72,7 @@ public:
 	 * Passes the Entity State Update PDU that was received as a parameter.
 	 */
 	UPROPERTY(BlueprintAssignable, Category = "GRILL DIS|DIS Component|Event")
-		FReceivedEntityStatePDU OnReceivedEntityStateUpdatePDU;
+		FReceivedEntityStateUpdatePDU OnReceivedEntityStateUpdatePDU;
 	/**
 	 * Called after a Detonation PDU is received by the component.
 	 * Passes the Detonation PDU that was received as a parameter.
@@ -108,13 +109,13 @@ public:
 	 * The most recent Entity State PDU that has been received by the DISComponent.
 	 */
 	UPROPERTY(BlueprintReadWrite, Category = "GRILL DIS|DIS Component|DIS Info")
-		FEntityStatePDU mostRecentEntityStatePDU;
+		UGRILL_EntityStatePDU* MostRecentEntityStatePDU;
 
 	/**
 	 * The most recent Entity State PDU that has been dead reckoned if activated by the DISComponent.
 	 */
 	UPROPERTY(BlueprintReadWrite, Category = "GRILL DIS|DIS Component|DIS Info")
-		FEntityStatePDU DeadReckoningEntityStatePDU;
+		UGRILL_EntityStatePDU* DeadReckoningEntityStatePDU;
 	/**
 	 * The timestamp that the most recent Entity State PDU was received at by the DISComponent.
 	 */
@@ -163,7 +164,7 @@ protected:
 	virtual void BeginPlay() override;
 
 private:
-	FEntityStatePDU deadReckonedPDU;
+	UGRILL_EntityStatePDU* DeadReckonedPDU;
 	float DeltaTimeSinceLastEntityStatePDU = 0.0f;
 
 	/**

@@ -169,32 +169,32 @@ void UDISComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorCo
 	DeltaTimeSinceLastEntityStatePDU += DeltaTime;
 
 	//Check if dead reckoning is supported/enabled. Broadcast dead reckoning update if it is
-	if (DeadReckoning(DeadReckoningEntityStatePDU, DeltaTime, deadReckonedPDU))
+	if (DeadReckoning(DeadReckoningEntityStatePDU, DeltaTime, DeadReckonedPDU))
 	{
-		DeadReckoningEntityStatePDU = deadReckonedPDU;
+		DeadReckoningEntityStatePDU = DeadReckonedPDU;
 		OnDeadReckoningUpdate.Broadcast(DeadReckoningEntityStatePDU, DeltaTimeSinceLastEntityStatePDU);
 
 		GroundClamping_Implementation();
 	}
 }
 
-void UDISComponent::HandleEntityStatePDU(FEntityStatePDU NewEntityStatePDU)
+void UDISComponent::HandleEntityStatePDU(UGRILL_EntityStatePDU* NewEntityStatePDU)
 {
 	//Check if the entity has been deactivated -- Entity is deactivated if the 23rd bit of the Entity Appearance value is set
-	if (NewEntityStatePDU.EntityAppearance & (1 << 23))
+	if (NewEntityStatePDU->EntityStatePduStruct.EntityAppearance & (1 << 23))
 	{
-		UE_LOG(LogDISComponent, Log, TEXT("%s Entity Appearance is set to deactivated, deleting entity..."), *NewEntityStatePDU.Marking);
+		UE_LOG(LogDISComponent, Log, TEXT("%s Entity Appearance is set to deactivated, deleting entity..."), *NewEntityStatePDU->EntityStatePduStruct.Marking);
 		GetOwner()->Destroy();
 	}
 
 	LatestEntityStatePDUTimestamp = FDateTime::Now();
-	mostRecentEntityStatePDU = NewEntityStatePDU;
-	DeadReckoningEntityStatePDU = mostRecentEntityStatePDU;
+	MostRecentEntityStatePDU = NewEntityStatePDU;
+	DeadReckoningEntityStatePDU = MostRecentEntityStatePDU;
 
 	DeltaTimeSinceLastEntityStatePDU = 0.0f;
 
-	EntityType = NewEntityStatePDU.EntityType;
-	EntityID = NewEntityStatePDU.EntityID;
+	EntityType = NewEntityStatePDU->EntityStatePduStruct.EntityType;
+	EntityID = NewEntityStatePDU->EntityStatePduStruct.EntityID;
 
 	GetOwner()->SetLifeSpan(DISHeartbeat);
 
@@ -203,29 +203,20 @@ void UDISComponent::HandleEntityStatePDU(FEntityStatePDU NewEntityStatePDU)
 	GroundClamping_Implementation();
 }
 
-void UDISComponent::HandleEntityStateUpdatePDU(FEntityStateUpdatePDU NewEntityStateUpdatePDU)
+void UDISComponent::HandleEntityStateUpdatePDU(UGRILL_EntityStateUpdatePDU* NewEntityStateUpdatePDU)
 {
 	//Check if the entity has been deactivated -- Entity is deactivated if the 23rd bit of the Entity Appearance value is set
-	if (NewEntityStateUpdatePDU.EntityAppearance & (1 << 23))
+	if (NewEntityStateUpdatePDU->EntityStateUpdatePduStruct.EntityAppearance & (1 << 23))
 	{
-		UE_LOG(LogDISComponent, Log, TEXT("%s Entity Appearance is set to deactivated, deleting entity..."), *NewEntityStateUpdatePDU.EntityID.ToString());
+		UE_LOG(LogDISComponent, Log, TEXT("%s Entity Appearance is set to deactivated, deleting entity..."), *NewEntityStateUpdatePDU->EntityStateUpdatePduStruct.EntityID.ToString());
 		GetOwner()->Destroy();
 	}
 
-	//Only modify the fields that are shared between the Entity State PDU and Entity State Update PDU. This will cover if the entity has received a full-up Entity State PDU already.
-	mostRecentEntityStatePDU.EntityID = NewEntityStateUpdatePDU.EntityID;
-	mostRecentEntityStatePDU.EntityLocationDouble = NewEntityStateUpdatePDU.EntityLocationDouble;
-	mostRecentEntityStatePDU.EntityLocation = NewEntityStateUpdatePDU.EntityLocation;
-	mostRecentEntityStatePDU.EntityOrientation = NewEntityStateUpdatePDU.EntityOrientation;
-	mostRecentEntityStatePDU.EntityLinearVelocity = NewEntityStateUpdatePDU.EntityLinearVelocity;
-	mostRecentEntityStatePDU.EntityAppearance = NewEntityStateUpdatePDU.EntityAppearance;
-	mostRecentEntityStatePDU.ArticulationParameters = NewEntityStateUpdatePDU.ArticulationParameters;
-
 	LatestEntityStatePDUTimestamp = FDateTime::Now();
-	mostRecentEntityStatePDU = NewEntityStateUpdatePDU;
-	DeadReckoningEntityStatePDU = mostRecentEntityStatePDU;
+	MostRecentEntityStatePDU->SetupFromEntityStateUpdatePDU(NewEntityStateUpdatePDU);
+	DeadReckoningEntityStatePDU = MostRecentEntityStatePDU;
 
-	EntityID = NewEntityStateUpdatePDU.EntityID;
+	EntityID = NewEntityStateUpdatePDU->EntityStateUpdatePduStruct.EntityID;
 
 	GetOwner()->SetLifeSpan(DISHeartbeat);
 
@@ -234,23 +225,23 @@ void UDISComponent::HandleEntityStateUpdatePDU(FEntityStateUpdatePDU NewEntitySt
 	GroundClamping_Implementation();
 }
 
-void UDISComponent::HandleFirePDU(FFirePDU FirePDUIn)
+void UDISComponent::HandleFirePDU(UGRILL_FirePDU* FirePDUIn)
 {
 	OnReceivedFirePDU.Broadcast(FirePDUIn);
 }
 
-void UDISComponent::HandleDetonationPDU(FDetonationPDU DetonationPDUIn)
+void UDISComponent::HandleDetonationPDU(UGRILL_DetonationPDU* DetonationPDUIn)
 {
 	OnReceivedDetonationPDU.Broadcast(DetonationPDUIn);
 }
 
-void UDISComponent::HandleRemoveEntityPDU(FRemoveEntityPDU RemoveEntityPDUIn)
+void UDISComponent::HandleRemoveEntityPDU(UGRILL_RemoveEntityPDU* RemoveEntityPDUIn)
 {
 	OnReceivedRemoveEntityPDU.Broadcast(RemoveEntityPDUIn);
 }
 
 // TODO: Cleanup copy pasted code in switch
-bool UDISComponent::DeadReckoning(FEntityStatePDU EntityPDUToDeadReckon, float DeltaTime, FEntityStatePDU& DeadReckonedEntityPDU)
+bool UDISComponent::DeadReckoning(UGRILL_EntityStatePDU* EntityPDUToDeadReckon, float DeltaTime, UGRILL_EntityStatePDU*& DeadReckonedEntityPDU)
 {
 	//Check if dead reckoning should be performed and if the entity is owned by another sim on the network
 	//If not, then don't do dead reckoning
@@ -259,19 +250,19 @@ bool UDISComponent::DeadReckoning(FEntityStatePDU EntityPDUToDeadReckon, float D
 		PerformDeadReckoning = false;
 		return false;
 	}
-
+	
 	DeadReckonedEntityPDU = EntityPDUToDeadReckon;
 	bool bSupported = true;
 
-	switch (EntityPDUToDeadReckon.DeadReckoningParameters.DeadReckoningAlgorithm) {
+	switch (EntityPDUToDeadReckon->EntityStatePduStruct.DeadReckoningParameters.DeadReckoningAlgorithm) {
 	case 1: // Static
 		{
 			FRotator LocalRotator;
-			bool bUseOtherParams = GetLocalEulerAngles(EntityPDUToDeadReckon.DeadReckoningParameters.OtherParameters, LocalRotator);
+			bool bUseOtherParams = GetLocalEulerAngles(EntityPDUToDeadReckon->EntityStatePduStruct.DeadReckoningParameters.OtherParameters, LocalRotator);
 
 			if (bUseOtherParams)
 			{
-				DeadReckonedEntityPDU.EntityOrientation = LocalRotator;
+				DeadReckonedEntityPDU->EntityStatePduStruct.EntityOrientation = LocalRotator;
 			}
 
 			break;
@@ -281,24 +272,24 @@ bool UDISComponent::DeadReckoning(FEntityStatePDU EntityPDUToDeadReckon, float D
 		{
 			// Set entity orientation
 			FRotator LocalRotator;
-			bool bUseOtherParams = GetLocalEulerAngles(EntityPDUToDeadReckon.DeadReckoningParameters.OtherParameters, LocalRotator);
+			bool bUseOtherParams = GetLocalEulerAngles(EntityPDUToDeadReckon->EntityStatePduStruct.DeadReckoningParameters.OtherParameters, LocalRotator);
 
 			// Calculate and set entity location
-			glm::dvec3 PositionVector = glm::dvec3(EntityPDUToDeadReckon.EntityLocationDouble[0], EntityPDUToDeadReckon.EntityLocationDouble[1], EntityPDUToDeadReckon.EntityLocationDouble[2]);
-			glm::dvec3 VelocityVector = glm::dvec3(EntityPDUToDeadReckon.EntityLinearVelocity.X, EntityPDUToDeadReckon.EntityLinearVelocity.Y, EntityPDUToDeadReckon.EntityLinearVelocity.Z);
+			glm::dvec3 PositionVector = glm::dvec3(EntityPDUToDeadReckon->EntityStatePduStruct.EntityLocationDouble[0], EntityPDUToDeadReckon->EntityStatePduStruct.EntityLocationDouble[1], EntityPDUToDeadReckon->EntityStatePduStruct.EntityLocationDouble[2]);
+			glm::dvec3 VelocityVector = glm::dvec3(EntityPDUToDeadReckon->EntityStatePduStruct.EntityLinearVelocity.X, EntityPDUToDeadReckon->EntityStatePduStruct.EntityLinearVelocity.Y, EntityPDUToDeadReckon->EntityStatePduStruct.EntityLinearVelocity.Z);
 
 			auto CalculatedPositionVector = CalculateDeadReckonedPosition(PositionVector, VelocityVector, glm::dvec3(0), DeltaTime);			
 
-			DeadReckonedEntityPDU.EntityLocationDouble[0] = CalculatedPositionVector[0];
-			DeadReckonedEntityPDU.EntityLocationDouble[1] = CalculatedPositionVector[1];
-			DeadReckonedEntityPDU.EntityLocationDouble[2] = CalculatedPositionVector[2];			
+			DeadReckonedEntityPDU->EntityStatePduStruct.EntityLocationDouble[0] = CalculatedPositionVector[0];
+			DeadReckonedEntityPDU->EntityStatePduStruct.EntityLocationDouble[1] = CalculatedPositionVector[1];
+			DeadReckonedEntityPDU->EntityStatePduStruct.EntityLocationDouble[2] = CalculatedPositionVector[2];
 
-			DeadReckonedEntityPDU.EntityLocation.X = CalculatedPositionVector[0];
-			DeadReckonedEntityPDU.EntityLocation.Y = CalculatedPositionVector[1];
+			DeadReckonedEntityPDU->EntityStatePduStruct.EntityLocation.X = CalculatedPositionVector[0];
+			DeadReckonedEntityPDU->EntityStatePduStruct.EntityLocation.Y = CalculatedPositionVector[1];
 
 			if (bUseOtherParams)
 			{
-				DeadReckonedEntityPDU.EntityOrientation = LocalRotator;
+				DeadReckonedEntityPDU->EntityStatePduStruct.EntityOrientation = LocalRotator;
 			}
 			break;
 		}
@@ -306,33 +297,35 @@ bool UDISComponent::DeadReckoning(FEntityStatePDU EntityPDUToDeadReckon, float D
 	case 3: // Rotation Position World (RPW)
 		{
 			FQuat EntityRotation;
-			bool bUseOtherParams = GetLocalQuaternionAngles(DeadReckonedEntityPDU.DeadReckoningParameters.OtherParameters, EntityRotation);
+			bool bUseOtherParams = GetLocalQuaternionAngles(DeadReckonedEntityPDU->EntityStatePduStruct.DeadReckoningParameters.OtherParameters, EntityRotation);
 
 			// Calculate and set entity location
-			glm::dvec3 PositionVector = glm::dvec3(EntityPDUToDeadReckon.EntityLocationDouble[0], EntityPDUToDeadReckon.EntityLocationDouble[1], EntityPDUToDeadReckon.EntityLocationDouble[2]);
-			glm::dvec3 VelocityVector = glm::dvec3(EntityPDUToDeadReckon.EntityLinearVelocity.X, EntityPDUToDeadReckon.EntityLinearVelocity.Y, EntityPDUToDeadReckon.EntityLinearVelocity.Z);
+			glm::dvec3 PositionVector = glm::dvec3(EntityPDUToDeadReckon->EntityStatePduStruct.EntityLocationDouble[0], EntityPDUToDeadReckon->EntityStatePduStruct.EntityLocationDouble[1], EntityPDUToDeadReckon->EntityStatePduStruct.EntityLocationDouble[2]);
+			glm::dvec3 VelocityVector = glm::dvec3(EntityPDUToDeadReckon->EntityStatePduStruct.EntityLinearVelocity.X, EntityPDUToDeadReckon->EntityStatePduStruct.EntityLinearVelocity.Y, EntityPDUToDeadReckon->EntityStatePduStruct.EntityLinearVelocity.Z);
 
 			auto CalculatedPositionVector = CalculateDeadReckonedPosition(PositionVector, VelocityVector, glm::dvec3(0), DeltaTime);
 
-			DeadReckonedEntityPDU.EntityLocationDouble[0] = CalculatedPositionVector[0];
-			DeadReckonedEntityPDU.EntityLocationDouble[1] = CalculatedPositionVector[1];
-			DeadReckonedEntityPDU.EntityLocationDouble[2] = CalculatedPositionVector[2];
+			DeadReckonedEntityPDU->EntityStatePduStruct.EntityLocationDouble[0] = CalculatedPositionVector[0];
+			DeadReckonedEntityPDU->EntityStatePduStruct.EntityLocationDouble[1] = CalculatedPositionVector[1];
+			DeadReckonedEntityPDU->EntityStatePduStruct.EntityLocationDouble[2] = CalculatedPositionVector[2];
 
-			DeadReckonedEntityPDU.EntityLocation.X = CalculatedPositionVector[0];
-			DeadReckonedEntityPDU.EntityLocation.Y = CalculatedPositionVector[1];
-			DeadReckonedEntityPDU.EntityLocation.Z = CalculatedPositionVector[2];
+			DeadReckonedEntityPDU->EntityStatePduStruct.EntityLocation.X = CalculatedPositionVector[0];
+			DeadReckonedEntityPDU->EntityStatePduStruct.EntityLocation.Y = CalculatedPositionVector[1];
+			DeadReckonedEntityPDU->EntityStatePduStruct.EntityLocation.Z = CalculatedPositionVector[2];
 
 			if (bUseOtherParams)
 			{
-				DeadReckonedEntityPDU.EntityOrientation = FRotator(EntityRotation);
+				DeadReckonedEntityPDU->EntityStatePduStruct.EntityOrientation = FRotator(EntityRotation);
 			} else
 			{
-				glm::dvec3 AngularVelocityVector = glm::dvec3(EntityPDUToDeadReckon.DeadReckoningParameters.EntityAngularVelocity.X, EntityPDUToDeadReckon.DeadReckoningParameters.EntityAngularVelocity.Y, EntityPDUToDeadReckon.DeadReckoningParameters.EntityAngularVelocity.Z);
+				glm::dvec3 AngularVelocityVector = glm::dvec3(EntityPDUToDeadReckon->EntityStatePduStruct.DeadReckoningParameters.EntityAngularVelocity.X, 
+					EntityPDUToDeadReckon->EntityStatePduStruct.DeadReckoningParameters.EntityAngularVelocity.Y, EntityPDUToDeadReckon->EntityStatePduStruct.DeadReckoningParameters.EntityAngularVelocity.Z);
 				//NOTE: Roll=Phi, Pitch=Theta, Yaw=Psi
 				double PsiRadians, ThetaRadians, PhiRadians;
-				CalculateDeadReckonedOrientation(EntityPDUToDeadReckon.EntityOrientation.Roll, EntityPDUToDeadReckon.EntityOrientation.Pitch, EntityPDUToDeadReckon.EntityOrientation.Yaw, AngularVelocityVector, DeltaTime, PsiRadians, ThetaRadians, PhiRadians);
+				CalculateDeadReckonedOrientation(EntityPDUToDeadReckon->EntityStatePduStruct.EntityOrientation.Roll, 
+					EntityPDUToDeadReckon->EntityStatePduStruct.EntityOrientation.Pitch, EntityPDUToDeadReckon->EntityStatePduStruct.EntityOrientation.Yaw, AngularVelocityVector, DeltaTime, PsiRadians, ThetaRadians, PhiRadians);
 
-				DeadReckonedEntityPDU.EntityOrientation = FRotator(ThetaRadians, PsiRadians, PhiRadians);
+				DeadReckonedEntityPDU->EntityStatePduStruct.EntityOrientation = FRotator(ThetaRadians, PsiRadians, PhiRadians);
 			}
 			break;
 		}
@@ -340,34 +333,37 @@ bool UDISComponent::DeadReckoning(FEntityStatePDU EntityPDUToDeadReckon, float D
 	case 4: // Rotation Velocity World (RVW)
 		{
 			FQuat EntityRotation;
-			bool bUseOtherParams = GetLocalQuaternionAngles(DeadReckonedEntityPDU.DeadReckoningParameters.OtherParameters, EntityRotation);
+			bool bUseOtherParams = GetLocalQuaternionAngles(DeadReckonedEntityPDU->EntityStatePduStruct.DeadReckoningParameters.OtherParameters, EntityRotation);
 
 			// Calculate and set entity location
-			glm::dvec3 PositionVector = glm::dvec3(EntityPDUToDeadReckon.EntityLocationDouble[0], EntityPDUToDeadReckon.EntityLocationDouble[1], EntityPDUToDeadReckon.EntityLocationDouble[2]);
-			glm::dvec3 VelocityVector = glm::dvec3(EntityPDUToDeadReckon.EntityLinearVelocity.X, EntityPDUToDeadReckon.EntityLinearVelocity.Y, EntityPDUToDeadReckon.EntityLinearVelocity.Z);
-			glm::dvec3 AccelerationVector = glm::dvec3(EntityPDUToDeadReckon.DeadReckoningParameters.EntityLinearAcceleration.X, EntityPDUToDeadReckon.DeadReckoningParameters.EntityLinearAcceleration.Y, EntityPDUToDeadReckon.DeadReckoningParameters.EntityLinearAcceleration.Z);
+			glm::dvec3 PositionVector = glm::dvec3(EntityPDUToDeadReckon->EntityStatePduStruct.EntityLocationDouble[0], EntityPDUToDeadReckon->EntityStatePduStruct.EntityLocationDouble[1], EntityPDUToDeadReckon->EntityStatePduStruct.EntityLocationDouble[2]);
+			glm::dvec3 VelocityVector = glm::dvec3(EntityPDUToDeadReckon->EntityStatePduStruct.EntityLinearVelocity.X, EntityPDUToDeadReckon->EntityStatePduStruct.EntityLinearVelocity.Y, EntityPDUToDeadReckon->EntityStatePduStruct.EntityLinearVelocity.Z);
+			glm::dvec3 AccelerationVector = glm::dvec3(EntityPDUToDeadReckon->EntityStatePduStruct.DeadReckoningParameters.EntityLinearAcceleration.X,
+				EntityPDUToDeadReckon->EntityStatePduStruct.DeadReckoningParameters.EntityLinearAcceleration.Y, EntityPDUToDeadReckon->EntityStatePduStruct.DeadReckoningParameters.EntityLinearAcceleration.Z);
 
 			auto CalculatedPositionVector = CalculateDeadReckonedPosition(PositionVector, VelocityVector, AccelerationVector, DeltaTime);
 
-			DeadReckonedEntityPDU.EntityLocationDouble[0] = CalculatedPositionVector[0];
-			DeadReckonedEntityPDU.EntityLocationDouble[1] = CalculatedPositionVector[1];
-			DeadReckonedEntityPDU.EntityLocationDouble[2] = CalculatedPositionVector[2];
+			DeadReckonedEntityPDU->EntityStatePduStruct.EntityLocationDouble[0] = CalculatedPositionVector[0];
+			DeadReckonedEntityPDU->EntityStatePduStruct.EntityLocationDouble[1] = CalculatedPositionVector[1];
+			DeadReckonedEntityPDU->EntityStatePduStruct.EntityLocationDouble[2] = CalculatedPositionVector[2];
 
-			DeadReckonedEntityPDU.EntityLocation.X = CalculatedPositionVector[0];
-			DeadReckonedEntityPDU.EntityLocation.Y = CalculatedPositionVector[1];
-			DeadReckonedEntityPDU.EntityLocation.Z = CalculatedPositionVector[2];
+			DeadReckonedEntityPDU->EntityStatePduStruct.EntityLocation.X = CalculatedPositionVector[0];
+			DeadReckonedEntityPDU->EntityStatePduStruct.EntityLocation.Y = CalculatedPositionVector[1];
+			DeadReckonedEntityPDU->EntityStatePduStruct.EntityLocation.Z = CalculatedPositionVector[2];
 
 			if (bUseOtherParams)
 			{
-				DeadReckonedEntityPDU.EntityOrientation = FRotator(EntityRotation);
+				DeadReckonedEntityPDU->EntityStatePduStruct.EntityOrientation = FRotator(EntityRotation);
 			} else
 			{
-				glm::dvec3 AngularVelocityVector = glm::dvec3(EntityPDUToDeadReckon.DeadReckoningParameters.EntityAngularVelocity.X, EntityPDUToDeadReckon.DeadReckoningParameters.EntityAngularVelocity.Y, EntityPDUToDeadReckon.DeadReckoningParameters.EntityAngularVelocity.Z);
+				glm::dvec3 AngularVelocityVector = glm::dvec3(EntityPDUToDeadReckon->EntityStatePduStruct.DeadReckoningParameters.EntityAngularVelocity.X, 
+					EntityPDUToDeadReckon->EntityStatePduStruct.DeadReckoningParameters.EntityAngularVelocity.Y, EntityPDUToDeadReckon->EntityStatePduStruct.DeadReckoningParameters.EntityAngularVelocity.Z);
 				//NOTE: Roll=Phi, Pitch=Theta, Yaw=Psi
 				double PsiRadians, ThetaRadians, PhiRadians;
-				CalculateDeadReckonedOrientation(EntityPDUToDeadReckon.EntityOrientation.Yaw, EntityPDUToDeadReckon.EntityOrientation.Pitch, EntityPDUToDeadReckon.EntityOrientation.Roll, AngularVelocityVector, DeltaTime, PsiRadians, ThetaRadians, PhiRadians);
+				CalculateDeadReckonedOrientation(EntityPDUToDeadReckon->EntityStatePduStruct.EntityOrientation.Yaw, EntityPDUToDeadReckon->EntityStatePduStruct.EntityOrientation.Pitch, 
+					EntityPDUToDeadReckon->EntityStatePduStruct.EntityOrientation.Roll, AngularVelocityVector, DeltaTime, PsiRadians, ThetaRadians, PhiRadians);
 
-				DeadReckonedEntityPDU.EntityOrientation = FRotator(ThetaRadians, PsiRadians, PhiRadians);
+				DeadReckonedEntityPDU->EntityStatePduStruct.EntityOrientation = FRotator(ThetaRadians, PsiRadians, PhiRadians);
 			}
 			break;
 		}
@@ -375,26 +371,27 @@ bool UDISComponent::DeadReckoning(FEntityStatePDU EntityPDUToDeadReckon, float D
 	case 5: // Fixed Velocity World (FVW)
 		{
 			FRotator LocalRotator;
-			bool bUseOtherParams = GetLocalEulerAngles(EntityPDUToDeadReckon.DeadReckoningParameters.OtherParameters, LocalRotator);
+			bool bUseOtherParams = GetLocalEulerAngles(EntityPDUToDeadReckon->EntityStatePduStruct.DeadReckoningParameters.OtherParameters, LocalRotator);
 
 			// Calculate and set entity location
-			glm::dvec3 PositionVector = glm::dvec3(EntityPDUToDeadReckon.EntityLocationDouble[0], EntityPDUToDeadReckon.EntityLocationDouble[1], EntityPDUToDeadReckon.EntityLocationDouble[2]);
-			glm::dvec3 VelocityVector = glm::dvec3(EntityPDUToDeadReckon.EntityLinearVelocity.X, EntityPDUToDeadReckon.EntityLinearVelocity.Y, EntityPDUToDeadReckon.EntityLinearVelocity.Z);
-			glm::dvec3 AccelerationVector = glm::dvec3(EntityPDUToDeadReckon.DeadReckoningParameters.EntityLinearAcceleration.X, EntityPDUToDeadReckon.DeadReckoningParameters.EntityLinearAcceleration.Y, EntityPDUToDeadReckon.DeadReckoningParameters.EntityLinearAcceleration.Z);
+			glm::dvec3 PositionVector = glm::dvec3(EntityPDUToDeadReckon->EntityStatePduStruct.EntityLocationDouble[0], EntityPDUToDeadReckon->EntityStatePduStruct.EntityLocationDouble[1], EntityPDUToDeadReckon->EntityStatePduStruct.EntityLocationDouble[2]);
+			glm::dvec3 VelocityVector = glm::dvec3(EntityPDUToDeadReckon->EntityStatePduStruct.EntityLinearVelocity.X, EntityPDUToDeadReckon->EntityStatePduStruct.EntityLinearVelocity.Y, EntityPDUToDeadReckon->EntityStatePduStruct.EntityLinearVelocity.Z);
+			glm::dvec3 AccelerationVector = glm::dvec3(EntityPDUToDeadReckon->EntityStatePduStruct.DeadReckoningParameters.EntityLinearAcceleration.X, 
+				EntityPDUToDeadReckon->EntityStatePduStruct.DeadReckoningParameters.EntityLinearAcceleration.Y, EntityPDUToDeadReckon->EntityStatePduStruct.DeadReckoningParameters.EntityLinearAcceleration.Z);
 
 			auto CalculatedPositionVector = CalculateDeadReckonedPosition(PositionVector, VelocityVector, AccelerationVector, DeltaTime);
 
-			DeadReckonedEntityPDU.EntityLocationDouble[0] = CalculatedPositionVector[0];
-			DeadReckonedEntityPDU.EntityLocationDouble[1] = CalculatedPositionVector[1];
-			DeadReckonedEntityPDU.EntityLocationDouble[2] = CalculatedPositionVector[2];
+			DeadReckonedEntityPDU->EntityStatePduStruct.EntityLocationDouble[0] = CalculatedPositionVector[0];
+			DeadReckonedEntityPDU->EntityStatePduStruct.EntityLocationDouble[1] = CalculatedPositionVector[1];
+			DeadReckonedEntityPDU->EntityStatePduStruct.EntityLocationDouble[2] = CalculatedPositionVector[2];
 
-			DeadReckonedEntityPDU.EntityLocation.X = CalculatedPositionVector[0];
-			DeadReckonedEntityPDU.EntityLocation.Y = CalculatedPositionVector[1];
-			DeadReckonedEntityPDU.EntityLocation.Z = CalculatedPositionVector[2];
+			DeadReckonedEntityPDU->EntityStatePduStruct.EntityLocation.X = CalculatedPositionVector[0];
+			DeadReckonedEntityPDU->EntityStatePduStruct.EntityLocation.Y = CalculatedPositionVector[1];
+			DeadReckonedEntityPDU->EntityStatePduStruct.EntityLocation.Z = CalculatedPositionVector[2];
 
 			if (bUseOtherParams)
 			{
-				DeadReckonedEntityPDU.EntityOrientation = LocalRotator;
+				DeadReckonedEntityPDU->EntityStatePduStruct.EntityOrientation = LocalRotator;
 			}
 			break;
 		}
@@ -402,28 +399,29 @@ bool UDISComponent::DeadReckoning(FEntityStatePDU EntityPDUToDeadReckon, float D
 	case 6: // Fixed Position Body (FPB)
 		{
 			FRotator LocalRotator;
-			bool bUseOtherParams = GetLocalEulerAngles(EntityPDUToDeadReckon.DeadReckoningParameters.OtherParameters, LocalRotator);
+			bool bUseOtherParams = GetLocalEulerAngles(EntityPDUToDeadReckon->EntityStatePduStruct.DeadReckoningParameters.OtherParameters, LocalRotator);
 
-			auto InitialPosition = glm::dvec3(EntityPDUToDeadReckon.EntityLocationDouble[0], EntityPDUToDeadReckon.EntityLocationDouble[1], EntityPDUToDeadReckon.EntityLocationDouble[2]);
-			auto BodyVelocityVector = glm::dvec3(EntityPDUToDeadReckon.EntityLinearVelocity.X, EntityPDUToDeadReckon.EntityLinearVelocity.Y, EntityPDUToDeadReckon.EntityLinearVelocity.Z);
-			auto BodyLinearAccelerationVector = glm::dvec3(EntityPDUToDeadReckon.DeadReckoningParameters.EntityLinearAcceleration.X, EntityPDUToDeadReckon.DeadReckoningParameters.EntityLinearAcceleration.Y, EntityPDUToDeadReckon.DeadReckoningParameters.EntityLinearAcceleration.Z);
+			auto InitialPosition = glm::dvec3(EntityPDUToDeadReckon->EntityStatePduStruct.EntityLocationDouble[0], EntityPDUToDeadReckon->EntityStatePduStruct.EntityLocationDouble[1], EntityPDUToDeadReckon->EntityStatePduStruct.EntityLocationDouble[2]);
+			auto BodyVelocityVector = glm::dvec3(EntityPDUToDeadReckon->EntityStatePduStruct.EntityLinearVelocity.X, EntityPDUToDeadReckon->EntityStatePduStruct.EntityLinearVelocity.Y, EntityPDUToDeadReckon->EntityStatePduStruct.EntityLinearVelocity.Z);
+			auto BodyLinearAccelerationVector = glm::dvec3(EntityPDUToDeadReckon->EntityStatePduStruct.DeadReckoningParameters.EntityLinearAcceleration.X,
+				EntityPDUToDeadReckon->EntityStatePduStruct.DeadReckoningParameters.EntityLinearAcceleration.Y, EntityPDUToDeadReckon->EntityStatePduStruct.DeadReckoningParameters.EntityLinearAcceleration.Z);
 			auto BodyAngularAccelerationVector = glm::dvec3(0);
-			auto EntityOrientation = glm::dvec3(EntityPDUToDeadReckon.EntityOrientation.Yaw, EntityPDUToDeadReckon.EntityOrientation.Pitch, EntityPDUToDeadReckon.EntityOrientation.Roll);
+			auto EntityOrientation = glm::dvec3(EntityPDUToDeadReckon->EntityStatePduStruct.EntityOrientation.Yaw, EntityPDUToDeadReckon->EntityStatePduStruct.EntityOrientation.Pitch, EntityPDUToDeadReckon->EntityStatePduStruct.EntityOrientation.Roll);
 
 			glm::dvec3 CalculatedPositionVector = GetEntityBodyDeadReckonedPosition(InitialPosition, BodyVelocityVector, BodyLinearAccelerationVector,
 				BodyAngularAccelerationVector, EntityOrientation, DeltaTime);
 
-			DeadReckonedEntityPDU.EntityLocationDouble[0] = CalculatedPositionVector[0];
-			DeadReckonedEntityPDU.EntityLocationDouble[1] = CalculatedPositionVector[1];
-			DeadReckonedEntityPDU.EntityLocationDouble[2] = CalculatedPositionVector[2];
+			DeadReckonedEntityPDU->EntityStatePduStruct.EntityLocationDouble[0] = CalculatedPositionVector[0];
+			DeadReckonedEntityPDU->EntityStatePduStruct.EntityLocationDouble[1] = CalculatedPositionVector[1];
+			DeadReckonedEntityPDU->EntityStatePduStruct.EntityLocationDouble[2] = CalculatedPositionVector[2];
 
-			DeadReckonedEntityPDU.EntityLocation.X = CalculatedPositionVector[0];
-			DeadReckonedEntityPDU.EntityLocation.Y = CalculatedPositionVector[1];
-			DeadReckonedEntityPDU.EntityLocation.Z = CalculatedPositionVector[2];
+			DeadReckonedEntityPDU->EntityStatePduStruct.EntityLocation.X = CalculatedPositionVector[0];
+			DeadReckonedEntityPDU->EntityStatePduStruct.EntityLocation.Y = CalculatedPositionVector[1];
+			DeadReckonedEntityPDU->EntityStatePduStruct.EntityLocation.Z = CalculatedPositionVector[2];
 
 			if (bUseOtherParams)
 			{
-				DeadReckonedEntityPDU.EntityOrientation = LocalRotator;
+				DeadReckonedEntityPDU->EntityStatePduStruct.EntityOrientation = LocalRotator;
 			}
 			
 			break;
@@ -432,35 +430,37 @@ bool UDISComponent::DeadReckoning(FEntityStatePDU EntityPDUToDeadReckon, float D
 	case 7: // Rotation Position Body (RPB)
 		{
 			FQuat EntityRotation;
-			bool bUseOtherParams = GetLocalQuaternionAngles(DeadReckonedEntityPDU.DeadReckoningParameters.OtherParameters, EntityRotation);
+			bool bUseOtherParams = GetLocalQuaternionAngles(DeadReckonedEntityPDU->EntityStatePduStruct.DeadReckoningParameters.OtherParameters, EntityRotation);
 
-			auto InitialPosition = glm::dvec3(EntityPDUToDeadReckon.EntityLocationDouble[0], EntityPDUToDeadReckon.EntityLocationDouble[1], EntityPDUToDeadReckon.EntityLocationDouble[2]);
-			auto BodyVelocityVector = glm::dvec3(EntityPDUToDeadReckon.EntityLinearVelocity.X, EntityPDUToDeadReckon.EntityLinearVelocity.Y, EntityPDUToDeadReckon.EntityLinearVelocity.Z);
-			auto BodyLinearAccelerationVector = glm::dvec3(EntityPDUToDeadReckon.DeadReckoningParameters.EntityLinearAcceleration.X, EntityPDUToDeadReckon.DeadReckoningParameters.EntityLinearAcceleration.Y, EntityPDUToDeadReckon.DeadReckoningParameters.EntityLinearAcceleration.Z);
+			auto InitialPosition = glm::dvec3(EntityPDUToDeadReckon->EntityStatePduStruct.EntityLocationDouble[0], EntityPDUToDeadReckon->EntityStatePduStruct.EntityLocationDouble[1], EntityPDUToDeadReckon->EntityStatePduStruct.EntityLocationDouble[2]);
+			auto BodyVelocityVector = glm::dvec3(EntityPDUToDeadReckon->EntityStatePduStruct.EntityLinearVelocity.X, EntityPDUToDeadReckon->EntityStatePduStruct.EntityLinearVelocity.Y, EntityPDUToDeadReckon->EntityStatePduStruct.EntityLinearVelocity.Z);
+			auto BodyLinearAccelerationVector = glm::dvec3(EntityPDUToDeadReckon->EntityStatePduStruct.DeadReckoningParameters.EntityLinearAcceleration.X,
+				EntityPDUToDeadReckon->EntityStatePduStruct.DeadReckoningParameters.EntityLinearAcceleration.Y, EntityPDUToDeadReckon->EntityStatePduStruct.DeadReckoningParameters.EntityLinearAcceleration.Z);
 			auto BodyAngularAccelerationVector = glm::dvec3(0);
-			auto EntityOrientation = glm::dvec3(EntityPDUToDeadReckon.EntityOrientation.Yaw, EntityPDUToDeadReckon.EntityOrientation.Pitch, EntityPDUToDeadReckon.EntityOrientation.Roll);
+			auto EntityOrientation = glm::dvec3(EntityPDUToDeadReckon->EntityStatePduStruct.EntityOrientation.Yaw, EntityPDUToDeadReckon->EntityStatePduStruct.EntityOrientation.Pitch, EntityPDUToDeadReckon->EntityStatePduStruct.EntityOrientation.Roll);
 
 			glm::dvec3 CalculatedPositionVector = GetEntityBodyDeadReckonedPosition(InitialPosition, BodyVelocityVector, BodyLinearAccelerationVector,
 				BodyAngularAccelerationVector, EntityOrientation, DeltaTime);
 
-			DeadReckonedEntityPDU.EntityLocationDouble[0] = CalculatedPositionVector[0];
-			DeadReckonedEntityPDU.EntityLocationDouble[1] = CalculatedPositionVector[1];
-			DeadReckonedEntityPDU.EntityLocationDouble[2] = CalculatedPositionVector[2];
+			DeadReckonedEntityPDU->EntityStatePduStruct.EntityLocationDouble[0] = CalculatedPositionVector[0];
+			DeadReckonedEntityPDU->EntityStatePduStruct.EntityLocationDouble[1] = CalculatedPositionVector[1];
+			DeadReckonedEntityPDU->EntityStatePduStruct.EntityLocationDouble[2] = CalculatedPositionVector[2];
 
-			DeadReckonedEntityPDU.EntityLocation.X = CalculatedPositionVector[0];
-			DeadReckonedEntityPDU.EntityLocation.Y = CalculatedPositionVector[1];
-			DeadReckonedEntityPDU.EntityLocation.Z = CalculatedPositionVector[2];
+			DeadReckonedEntityPDU->EntityStatePduStruct.EntityLocation.X = CalculatedPositionVector[0];
+			DeadReckonedEntityPDU->EntityStatePduStruct.EntityLocation.Y = CalculatedPositionVector[1];
+			DeadReckonedEntityPDU->EntityStatePduStruct.EntityLocation.Z = CalculatedPositionVector[2];
 
 			if (bUseOtherParams)
 			{
-				DeadReckonedEntityPDU.EntityOrientation = FRotator(EntityRotation);
+				DeadReckonedEntityPDU->EntityStatePduStruct.EntityOrientation = FRotator(EntityRotation);
 			} else
 			{
 				//NOTE: Roll=Phi, Pitch=Theta, Yaw=Psi
 				double PsiRadians, ThetaRadians, PhiRadians;
-				CalculateDeadReckonedOrientation(EntityPDUToDeadReckon.EntityOrientation.Yaw, EntityPDUToDeadReckon.EntityOrientation.Pitch, EntityPDUToDeadReckon.EntityOrientation.Roll, BodyAngularAccelerationVector, DeltaTime, PsiRadians, ThetaRadians, PhiRadians);
+				CalculateDeadReckonedOrientation(EntityPDUToDeadReckon->EntityStatePduStruct.EntityOrientation.Yaw, EntityPDUToDeadReckon->EntityStatePduStruct.EntityOrientation.Pitch,
+					EntityPDUToDeadReckon->EntityStatePduStruct.EntityOrientation.Roll, BodyAngularAccelerationVector, DeltaTime, PsiRadians, ThetaRadians, PhiRadians);
 
-				DeadReckonedEntityPDU.EntityOrientation = FRotator(ThetaRadians, PsiRadians, PhiRadians);
+				DeadReckonedEntityPDU->EntityStatePduStruct.EntityOrientation = FRotator(ThetaRadians, PsiRadians, PhiRadians);
 			}
 			
 			break;
@@ -469,35 +469,38 @@ bool UDISComponent::DeadReckoning(FEntityStatePDU EntityPDUToDeadReckon, float D
 	case 8: // Rotation Velocity Body (RVB)
 		{
 			FQuat EntityRotation;
-			bool bUseOtherParams = GetLocalQuaternionAngles(DeadReckonedEntityPDU.DeadReckoningParameters.OtherParameters, EntityRotation);
+			bool bUseOtherParams = GetLocalQuaternionAngles(DeadReckonedEntityPDU->EntityStatePduStruct.DeadReckoningParameters.OtherParameters, EntityRotation);
 
-			auto InitialPosition = glm::dvec3(EntityPDUToDeadReckon.EntityLocationDouble[0], EntityPDUToDeadReckon.EntityLocationDouble[1], EntityPDUToDeadReckon.EntityLocationDouble[2]);
-			auto BodyVelocityVector = glm::dvec3(EntityPDUToDeadReckon.EntityLinearVelocity.X, EntityPDUToDeadReckon.EntityLinearVelocity.Y, EntityPDUToDeadReckon.EntityLinearVelocity.Z);
-			auto BodyLinearAccelerationVector = glm::dvec3(EntityPDUToDeadReckon.DeadReckoningParameters.EntityLinearAcceleration.X, EntityPDUToDeadReckon.DeadReckoningParameters.EntityLinearAcceleration.Y, EntityPDUToDeadReckon.DeadReckoningParameters.EntityLinearAcceleration.Z);
-			auto BodyAngularAccelerationVector = glm::dvec3(EntityPDUToDeadReckon.DeadReckoningParameters.EntityAngularVelocity.X, EntityPDUToDeadReckon.DeadReckoningParameters.EntityAngularVelocity.Y, EntityPDUToDeadReckon.DeadReckoningParameters.EntityAngularVelocity.Z);
-			auto EntityOrientation = glm::dvec3(EntityPDUToDeadReckon.EntityOrientation.Yaw, EntityPDUToDeadReckon.EntityOrientation.Pitch, EntityPDUToDeadReckon.EntityOrientation.Roll);
+			auto InitialPosition = glm::dvec3(EntityPDUToDeadReckon->EntityStatePduStruct.EntityLocationDouble[0], EntityPDUToDeadReckon->EntityStatePduStruct.EntityLocationDouble[1], EntityPDUToDeadReckon->EntityStatePduStruct.EntityLocationDouble[2]);
+			auto BodyVelocityVector = glm::dvec3(EntityPDUToDeadReckon->EntityStatePduStruct.EntityLinearVelocity.X, EntityPDUToDeadReckon->EntityStatePduStruct.EntityLinearVelocity.Y, EntityPDUToDeadReckon->EntityStatePduStruct.EntityLinearVelocity.Z);
+			auto BodyLinearAccelerationVector = glm::dvec3(EntityPDUToDeadReckon->EntityStatePduStruct.DeadReckoningParameters.EntityLinearAcceleration.X, 
+				EntityPDUToDeadReckon->EntityStatePduStruct.DeadReckoningParameters.EntityLinearAcceleration.Y, EntityPDUToDeadReckon->EntityStatePduStruct.DeadReckoningParameters.EntityLinearAcceleration.Z);
+			auto BodyAngularAccelerationVector = glm::dvec3(EntityPDUToDeadReckon->EntityStatePduStruct.DeadReckoningParameters.EntityAngularVelocity.X, 
+				EntityPDUToDeadReckon->EntityStatePduStruct.DeadReckoningParameters.EntityAngularVelocity.Y, EntityPDUToDeadReckon->EntityStatePduStruct.DeadReckoningParameters.EntityAngularVelocity.Z);
+			auto EntityOrientation = glm::dvec3(EntityPDUToDeadReckon->EntityStatePduStruct.EntityOrientation.Yaw, EntityPDUToDeadReckon->EntityStatePduStruct.EntityOrientation.Pitch, EntityPDUToDeadReckon->EntityStatePduStruct.EntityOrientation.Roll);
 
 			glm::dvec3 CalculatedPositionVector = GetEntityBodyDeadReckonedPosition(InitialPosition, BodyVelocityVector, BodyLinearAccelerationVector,
 			                                  BodyAngularAccelerationVector, EntityOrientation, DeltaTime);
 
-			DeadReckonedEntityPDU.EntityLocationDouble[0] = CalculatedPositionVector[0];
-			DeadReckonedEntityPDU.EntityLocationDouble[1] = CalculatedPositionVector[1];
-			DeadReckonedEntityPDU.EntityLocationDouble[2] = CalculatedPositionVector[2];
+			DeadReckonedEntityPDU->EntityStatePduStruct.EntityLocationDouble[0] = CalculatedPositionVector[0];
+			DeadReckonedEntityPDU->EntityStatePduStruct.EntityLocationDouble[1] = CalculatedPositionVector[1];
+			DeadReckonedEntityPDU->EntityStatePduStruct.EntityLocationDouble[2] = CalculatedPositionVector[2];
 
-			DeadReckonedEntityPDU.EntityLocation.X = CalculatedPositionVector[0];
-			DeadReckonedEntityPDU.EntityLocation.Y = CalculatedPositionVector[1];
-			DeadReckonedEntityPDU.EntityLocation.Z = CalculatedPositionVector[2];
+			DeadReckonedEntityPDU->EntityStatePduStruct.EntityLocation.X = CalculatedPositionVector[0];
+			DeadReckonedEntityPDU->EntityStatePduStruct.EntityLocation.Y = CalculatedPositionVector[1];
+			DeadReckonedEntityPDU->EntityStatePduStruct.EntityLocation.Z = CalculatedPositionVector[2];
 
 			if (bUseOtherParams)
 			{
-				DeadReckonedEntityPDU.EntityOrientation = FRotator(EntityRotation);
+				DeadReckonedEntityPDU->EntityStatePduStruct.EntityOrientation = FRotator(EntityRotation);
 			} else
 			{
 				//NOTE: Roll=Phi, Pitch=Theta, Yaw=Psi
 				double PsiRadians, ThetaRadians, PhiRadians;
-				CalculateDeadReckonedOrientation(EntityPDUToDeadReckon.EntityOrientation.Yaw, EntityPDUToDeadReckon.EntityOrientation.Pitch, EntityPDUToDeadReckon.EntityOrientation.Roll, BodyAngularAccelerationVector, DeltaTime, PsiRadians, ThetaRadians, PhiRadians);
+				CalculateDeadReckonedOrientation(EntityPDUToDeadReckon->EntityStatePduStruct.EntityOrientation.Yaw, EntityPDUToDeadReckon->EntityStatePduStruct.EntityOrientation.Pitch,
+					EntityPDUToDeadReckon->EntityStatePduStruct.EntityOrientation.Roll, BodyAngularAccelerationVector, DeltaTime, PsiRadians, ThetaRadians, PhiRadians);
 
-				DeadReckonedEntityPDU.EntityOrientation = FRotator(ThetaRadians, PsiRadians, PhiRadians);
+				DeadReckonedEntityPDU->EntityStatePduStruct.EntityOrientation = FRotator(ThetaRadians, PsiRadians, PhiRadians);
 			}
 			
 			break;
@@ -506,28 +509,30 @@ bool UDISComponent::DeadReckoning(FEntityStatePDU EntityPDUToDeadReckon, float D
 	case 9: // Fixed Velocity Body (FVB)
 		{
 			FRotator LocalRotator;
-			bool bUseOtherParams = GetLocalEulerAngles(EntityPDUToDeadReckon.DeadReckoningParameters.OtherParameters, LocalRotator);
+			bool bUseOtherParams = GetLocalEulerAngles(EntityPDUToDeadReckon->EntityStatePduStruct.DeadReckoningParameters.OtherParameters, LocalRotator);
 
-			auto InitialPosition = glm::dvec3(EntityPDUToDeadReckon.EntityLocationDouble[0], EntityPDUToDeadReckon.EntityLocationDouble[1], EntityPDUToDeadReckon.EntityLocationDouble[2]);
-			auto BodyVelocityVector = glm::dvec3(EntityPDUToDeadReckon.EntityLinearVelocity.X, EntityPDUToDeadReckon.EntityLinearVelocity.Y, EntityPDUToDeadReckon.EntityLinearVelocity.Z);
-			auto BodyLinearAccelerationVector = glm::dvec3(EntityPDUToDeadReckon.DeadReckoningParameters.EntityLinearAcceleration.X, EntityPDUToDeadReckon.DeadReckoningParameters.EntityLinearAcceleration.Y, EntityPDUToDeadReckon.DeadReckoningParameters.EntityLinearAcceleration.Z);
-			auto BodyAngularAccelerationVector = glm::dvec3(EntityPDUToDeadReckon.DeadReckoningParameters.EntityAngularVelocity.X, EntityPDUToDeadReckon.DeadReckoningParameters.EntityAngularVelocity.Y, EntityPDUToDeadReckon.DeadReckoningParameters.EntityAngularVelocity.Z);
-			auto EntityOrientation = glm::dvec3(EntityPDUToDeadReckon.EntityOrientation.Yaw, EntityPDUToDeadReckon.EntityOrientation.Pitch, EntityPDUToDeadReckon.EntityOrientation.Roll);
+			auto InitialPosition = glm::dvec3(EntityPDUToDeadReckon->EntityStatePduStruct.EntityLocationDouble[0], EntityPDUToDeadReckon->EntityStatePduStruct.EntityLocationDouble[1], EntityPDUToDeadReckon->EntityStatePduStruct.EntityLocationDouble[2]);
+			auto BodyVelocityVector = glm::dvec3(EntityPDUToDeadReckon->EntityStatePduStruct.EntityLinearVelocity.X, EntityPDUToDeadReckon->EntityStatePduStruct.EntityLinearVelocity.Y, EntityPDUToDeadReckon->EntityStatePduStruct.EntityLinearVelocity.Z);
+			auto BodyLinearAccelerationVector = glm::dvec3(EntityPDUToDeadReckon->EntityStatePduStruct.DeadReckoningParameters.EntityLinearAcceleration.X,
+				EntityPDUToDeadReckon->EntityStatePduStruct.DeadReckoningParameters.EntityLinearAcceleration.Y, EntityPDUToDeadReckon->EntityStatePduStruct.DeadReckoningParameters.EntityLinearAcceleration.Z);
+			auto BodyAngularAccelerationVector = glm::dvec3(EntityPDUToDeadReckon->EntityStatePduStruct.DeadReckoningParameters.EntityAngularVelocity.X,
+				EntityPDUToDeadReckon->EntityStatePduStruct.DeadReckoningParameters.EntityAngularVelocity.Y, EntityPDUToDeadReckon->EntityStatePduStruct.DeadReckoningParameters.EntityAngularVelocity.Z);
+			auto EntityOrientation = glm::dvec3(EntityPDUToDeadReckon->EntityStatePduStruct.EntityOrientation.Yaw, EntityPDUToDeadReckon->EntityStatePduStruct.EntityOrientation.Pitch, EntityPDUToDeadReckon->EntityStatePduStruct.EntityOrientation.Roll);
 
 			glm::dvec3 CalculatedPositionVector = GetEntityBodyDeadReckonedPosition(InitialPosition, BodyVelocityVector, BodyLinearAccelerationVector,
 				BodyAngularAccelerationVector, EntityOrientation, DeltaTime);
 
-			DeadReckonedEntityPDU.EntityLocationDouble[0] = CalculatedPositionVector[0];
-			DeadReckonedEntityPDU.EntityLocationDouble[1] = CalculatedPositionVector[1];
-			DeadReckonedEntityPDU.EntityLocationDouble[2] = CalculatedPositionVector[2];
+			DeadReckonedEntityPDU->EntityStatePduStruct.EntityLocationDouble[0] = CalculatedPositionVector[0];
+			DeadReckonedEntityPDU->EntityStatePduStruct.EntityLocationDouble[1] = CalculatedPositionVector[1];
+			DeadReckonedEntityPDU->EntityStatePduStruct.EntityLocationDouble[2] = CalculatedPositionVector[2];
 
-			DeadReckonedEntityPDU.EntityLocation.X = CalculatedPositionVector[0];
-			DeadReckonedEntityPDU.EntityLocation.Y = CalculatedPositionVector[1];
-			DeadReckonedEntityPDU.EntityLocation.Z = CalculatedPositionVector[2];
+			DeadReckonedEntityPDU->EntityStatePduStruct.EntityLocation.X = CalculatedPositionVector[0];
+			DeadReckonedEntityPDU->EntityStatePduStruct.EntityLocation.Y = CalculatedPositionVector[1];
+			DeadReckonedEntityPDU->EntityStatePduStruct.EntityLocation.Z = CalculatedPositionVector[2];
 
 			if (bUseOtherParams)
 			{
-				DeadReckonedEntityPDU.EntityOrientation = LocalRotator;
+				DeadReckonedEntityPDU->EntityStatePduStruct.EntityOrientation = LocalRotator;
 			}
 			
 			break;
@@ -549,7 +554,8 @@ void UDISComponent::GroundClamping_Implementation()
 	if (PerformGroundClamping && SpawnedFromNetwork && EntityType.Domain == 1 && EntityType.EntityKind != 2)
 	{
 		//Get the most recent calculated ECEF location of the entity from the dead reckoned ESPDU
-		FEarthCenteredEarthFixedDouble ecefDouble = FEarthCenteredEarthFixedDouble(DeadReckoningEntityStatePDU.EntityLocationDouble[0], DeadReckoningEntityStatePDU.EntityLocationDouble[1], DeadReckoningEntityStatePDU.EntityLocationDouble[2]);
+		FEarthCenteredEarthFixedDouble ecefDouble = FEarthCenteredEarthFixedDouble(DeadReckoningEntityStatePDU->EntityStatePduStruct.EntityLocationDouble[0],
+			DeadReckoningEntityStatePDU->EntityStatePduStruct.EntityLocationDouble[1], DeadReckoningEntityStatePDU->EntityStatePduStruct.EntityLocationDouble[2]);
 
 		//Get the LLH location of the entity from the ECEF location
 		FLatLonHeightDouble llhDouble;

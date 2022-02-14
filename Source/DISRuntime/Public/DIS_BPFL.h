@@ -6,6 +6,7 @@
 #include <glm/gtx/quaternion.hpp>
 #include "CoreMinimal.h"
 #include "DISEnumsAndStructs.h"
+#include "PDUMasterInclude.h"
 #include "Kismet/BlueprintFunctionLibrary.h"
 #include "GeoReferencingSystem.h"
 #include "DIS_BPFL.generated.h"
@@ -271,7 +272,7 @@ public:
 	 * @param EntityRotation The Heading (yaw), Pitch, and Roll calculated from the given entity state
 	 */
 	UFUNCTION(BlueprintPure, Category = "GRILL DIS|Unit Conversions")
-		static void GetUnrealRotationFromEntityStatePdu(const FEntityStatePDU EntityStatePdu, AGeoReferencingSystem* GeoReferencingSystem, FRotator& EntityRotation);
+		static void GetUnrealRotationFromEntityStatePdu(const UGRILL_EntityStatePDU* EntityStatePdu, AGeoReferencingSystem* GeoReferencingSystem, FRotator& EntityRotation);
 
 	/**
 	 * Gets the unreal X, Y, Z coordinates of the entity from the given ECEF values in the DIS entity state pdu. Values returned change depending on if GeoReferencing Subsystem is set to Flat Earth or Round Earth.
@@ -280,7 +281,7 @@ public:
 	 * @param EntityLocation The resulting Unreal XYZ location of the entity in Unreal units
 	 */
 	UFUNCTION(BlueprintPure, Category = "GRILL DIS|Unit Conversions")
-		static void GetEntityUnrealLocationFromEntityStatePdu(const FEntityStatePDU EntityStatePdu, AGeoReferencingSystem* GeoReferencingSystem, FVector& EntityLocation);
+		static void GetEntityUnrealLocationFromEntityStatePdu(const UGRILL_EntityStatePDU* EntityStatePdu, AGeoReferencingSystem* GeoReferencingSystem, FVector& EntityLocation);
 
 	/**
 	 * Gets the unreal X, Y, Z coordinates and rotation from a DIS entity state PDU. Location values returned change depending on if GeoReferencing Subsystem is set to Flat Earth or Round Earth.
@@ -290,7 +291,7 @@ public:
 	 * @param EntityRotation The desired Yaw, Pitch, and Roll calculated from the given entity state
 	 */
 	UFUNCTION(BlueprintPure, Category = "GRILL DIS|Unit Conversions")
-		static void GetEntityUnrealLocationAndOrientation(const FEntityStatePDU EntityStatePdu, AGeoReferencingSystem* GeoReferencingSystem, FVector& EntityLocation, FRotator& EntityRotation);
+		static void GetEntityUnrealLocationAndOrientation(const UGRILL_EntityStatePDU* EntityStatePdu, AGeoReferencingSystem* GeoReferencingSystem, FVector& EntityLocation, FRotator& EntityRotation);
 
 	/**
 	 * Gets the North, East, and Down vector representation of the given Unreal location

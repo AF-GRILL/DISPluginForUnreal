@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "DISEnumsAndStructs.h"
+#include "PDUMasterInclude.h"
 #include "GameFramework/GameStateBase.h"
 #include "DISGameState.generated.h"
 
@@ -26,31 +27,31 @@ public:
 	 * @param EntityStatePDUIn - The Entity State PDU to pass to the appropriate entity.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "GRILL DIS|Game State")
-		void HandleEntityStatePDU(FEntityStatePDU EntityStatePDUIn);
+		void HandleEntityStatePDU(UGRILL_EntityStatePDU* EntityStatePDUIn);
 	/**
 	 * Delegates the given Entity State Update PDU to the appropriate DIS Entity actor.
 	 * @param EntityStateUpdatePDUIn - The Entity State Update PDU to pass to the appropriate entity.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "GRILL DIS|Game State")
-		void HandleEntityStateUpdatePDU(FEntityStateUpdatePDU EntityStateUpdatePDUIn);
+		void HandleEntityStateUpdatePDU(UGRILL_EntityStateUpdatePDU* EntityStateUpdatePDUIn);
 	/**
 	 * Delegates the given Fire PDU to the appropriate DIS Entity actor.
 	 * @param FirePDUIn - The Fire PDU to pass to the appropriate entity.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "GRILL DIS|Game State")
-		void HandleFirePDU(FFirePDU FirePDUIn);
+		void HandleFirePDU(UGRILL_FirePDU* FirePDUIn);
 	/**
 	 * Delegates the given Detonation PDU to the appropriate DIS Entity actor.
 	 * @param DetonationPDUIn - The Detonation PDU to pass to the appropriate entity.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "GRILL DIS|Game State")
-		void HandleDetonationPDU(FDetonationPDU DetonationPDUIn);
+		void HandleDetonationPDU(UGRILL_DetonationPDU* DetonationPDUIn);
 	/**
 	 * Delegates the given Remove Entity PDU to the appropriate DIS Entity actor.
 	 * @param RemoveEntityPDUIn - The Remove Entity PDU to pass to the appropriate entity.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "GRILL DIS|Game State")
-		void HandleRemoveEntityPDU(FRemoveEntityPDU RemoveEntityPDUIn);
+		void HandleRemoveEntityPDU(UGRILL_RemoveEntityPDU* RemoveEntityPDUIn);
 
 	/**
 	 * Adds a new entry to the DIS Entity map.
@@ -100,6 +101,6 @@ protected:
 		int32 ApplicationID;
 
 private:
-	void SpawnNewEntityFromEntityState(FEntityStatePDU EntityStatePDUIn);
+	void SpawnNewEntityFromEntityState(UGRILL_EntityStatePDU* EntityStatePDUIn);
 	UDISComponent* GetAssociatedDISComponent(FEntityID EntityIDIn);
 };
