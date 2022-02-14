@@ -109,14 +109,14 @@ public:
 	 * Gets the most recent Entity State PDU.
 	 * Returns the most recent Entity State PDU.
 	 */
-	UFUNCTION(BlueprintCallable, Category = "GRILL DIS|DIS Component")
+	UFUNCTION(BlueprintPure, Category = "GRILL DIS|DIS Component")
 		FEntityStatePDU GetMostRecentEntityStatePDU();
 
 	/**
 	 * Gets the most recent Dead Reckoned Entity State PDU.
 	 * Returns the most recent Dead Reckoning Entity State PDU.
 	 */
-	UFUNCTION(BlueprintCallable, Category = "GRILL DIS|DIS Component")
+	UFUNCTION(BlueprintPure, Category = "GRILL DIS|DIS Component")
 		FEntityStatePDU GetMostRecentDeadReckoningPDU();
 
 	/**
