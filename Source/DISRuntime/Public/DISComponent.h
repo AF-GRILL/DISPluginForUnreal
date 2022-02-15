@@ -12,7 +12,7 @@
 DECLARE_LOG_CATEGORY_EXTERN(LogDISComponent, Log, All);
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FReceivedEntityStatePDU, UGRILL_EntityStatePDU*, EntityStatePDU);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FDeadReckoningUpdate, UGRILL_EntityStatePDU*, DeadReckonedEntityStatePDU, float, DeltaTimeSinceLastEntityStatePDU);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FDeadReckoningUpdate, UGRILL_EntityStatePDU*, DeadReckonedEntityStatePDU);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FReceivedEntityStateUpdatePDU, UGRILL_EntityStateUpdatePDU*, EntityStateUpdatePDU);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FReceivedDetonationPDU, UGRILL_DetonationPDU*, DetonationPDU);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FReceivedFirePDU, UGRILL_FirePDU*, FirePDU);
@@ -57,7 +57,7 @@ public:
 
 	/**
 	 * Called after a dead reckoning update is performed by the component.
-	 * Passes out an Entity State PDU with updated dead reckoning variables and a float containing the delta time since the last Entity State PDU was received in seconds as parameters.
+	 * Passes out an Entity State PDU with updated dead reckoning variables as a parameter.
 	 */
 	UPROPERTY(BlueprintAssignable, Category = "GRILL DIS|DIS Component|Event")
 		FDeadReckoningUpdate OnDeadReckoningUpdate;
@@ -146,7 +146,7 @@ public:
 	 * The time to live for the entity. Gets reset every time a new Entity State PDU is received by the sim.
 	 */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|DIS Component|DIS Info")
-		float DISHeartbeat = 30.0f;
+		float DISTimeoutSeconds = 30.0f;
 	/**
 	 * The Entity Type of the associated entity. Specifies the kind of entity, the country of design, 
 	 * the domain, the specific identification of the entity, and any extra information necessary for describing the entity.
@@ -183,7 +183,6 @@ private:
 	UGRILL_EntityStatePDU* DeadReckoningEntityStatePDU = NewObject<UGRILL_EntityStatePDU>();
 
 	UGRILL_EntityStatePDU* TempDeadReckonedPDU;
-	float DeltaTimeSinceLastEntityStatePDU = 0.0f;
 
 	/**
 	 * Gets the local yaw, pitch, and roll from the other parameters structure. The yaw, pitch, and roll act on the entity's local North, East, Down vectors.

@@ -166,13 +166,11 @@ void UDISComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorCo
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
-	DeltaTimeSinceLastEntityStatePDU += DeltaTime;
-
 	//Check if dead reckoning is supported/enabled. Broadcast dead reckoning update if it is
 	if (DeadReckoning(DeadReckoningEntityStatePDU, DeltaTime, TempDeadReckonedPDU))
 	{
 		DeadReckoningEntityStatePDU = TempDeadReckonedPDU;
-		OnDeadReckoningUpdate.Broadcast(DeadReckoningEntityStatePDU, DeltaTimeSinceLastEntityStatePDU);
+		OnDeadReckoningUpdate.Broadcast(DeadReckoningEntityStatePDU);
 
 		GroundClamping_Implementation();
 	}
@@ -191,12 +189,10 @@ void UDISComponent::HandleEntityStatePDU(UGRILL_EntityStatePDU* NewEntityStatePD
 	MostRecentEntityStatePDU = NewEntityStatePDU;
 	DeadReckoningEntityStatePDU = MostRecentEntityStatePDU;
 
-	DeltaTimeSinceLastEntityStatePDU = 0.0f;
-
 	EntityType = NewEntityStatePDU->EntityStatePduStruct.EntityType;
 	EntityID = NewEntityStatePDU->EntityStatePduStruct.EntityID;
 
-	GetOwner()->SetLifeSpan(DISHeartbeat);
+	GetOwner()->SetLifeSpan(DISTimeoutSeconds);
 
 	OnReceivedEntityStatePDU.Broadcast(NewEntityStatePDU);
 
@@ -218,7 +214,7 @@ void UDISComponent::HandleEntityStateUpdatePDU(UGRILL_EntityStateUpdatePDU* NewE
 
 	EntityID = NewEntityStateUpdatePDU->EntityStateUpdatePduStruct.EntityID;
 
-	GetOwner()->SetLifeSpan(DISHeartbeat);
+	GetOwner()->SetLifeSpan(DISTimeoutSeconds);
 
 	OnReceivedEntityStateUpdatePDU.Broadcast(NewEntityStateUpdatePDU);
 
@@ -611,8 +607,11 @@ void UDISComponent::GroundClamping_Implementation()
 		//Set clamp direction using the North East Down down vector
 		FVector clampDirection = northEastDownVectors.DownVector;
 
+		//Get the location the object is supposed to be at according to the most recent dead reckoning update.
+		FVector actorLocation;
+		UDIS_BPFL::GetEntityUnrealLocationFromEntityStatePdu(DeadReckoningEntityStatePDU, AGeoReferencingSystem::GetGeoReferencingSystem(GetWorld()), actorLocation);
+
 		FHitResult lineTraceHitResult;
-		FVector actorLocation = GetOwner()->GetActorLocation();
 		FVector endLocation = (clampDirection * 100000) + actorLocation;
 		FVector aboveActorStartLocation = (clampDirection * -100000) + actorLocation;
 

@@ -21,7 +21,6 @@ void UGRILL_EntityStatePDU::SetupFromEntityStateUpdatePDU(UGRILL_EntityStateUpda
 	//pdu common parameters
 	EntityStatePduStruct.ProtocolVersion = EntityStateUpdatePDUIn->EntityStateUpdatePduStruct.ProtocolVersion;
 	EntityStatePduStruct.ExerciseID = EntityStateUpdatePDUIn->EntityStateUpdatePduStruct.ExerciseID;
-	EntityStatePduStruct.PduType = EntityStateUpdatePDUIn->EntityStateUpdatePduStruct.PduType;
 	EntityStatePduStruct.ProtocolFamily = EntityStateUpdatePDUIn->EntityStateUpdatePduStruct.ProtocolFamily;
 	EntityStatePduStruct.Timestamp = EntityStateUpdatePDUIn->EntityStateUpdatePduStruct.Timestamp;
 	EntityStatePduStruct.Length = EntityStateUpdatePDUIn->EntityStateUpdatePduStruct.Length;
