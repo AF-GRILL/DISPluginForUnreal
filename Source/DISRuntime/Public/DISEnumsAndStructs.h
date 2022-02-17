@@ -15,6 +15,7 @@
 #include <dis6/StartResumePdu.h>
 #include <dis6/StopFreezePdu.h>
 
+#include "Kismet/KismetStringLibrary.h"
 #include "CoreMinimal.h"
 #include "DISEnumsAndStructs.generated.h"
 
@@ -624,7 +625,8 @@ struct FEntityType
 
 	bool operator< (const FEntityType& Other) const
 	{
-		return ToUInt64() < Other.ToUInt64();
+		const bool bIsLessThan = ToUInt64() < Other.ToUInt64();
+		return bIsLessThan;
 	}
 
 	bool operator> (const FEntityType& Other) const
@@ -664,17 +666,16 @@ struct FEntityType
 
 	uint64 ToUInt64() const
 	{
-		const uint64 BitString = (static_cast<uint64>(Extra) << 56) | (static_cast<uint64>(Specific) << 48) | (static_cast<uint64>(Subcategory) << 40) | 
-			(static_cast<uint64>(Category) << 32) | (static_cast<uint64>(Country) << 16) | (static_cast<uint64>(Domain) << 8) | static_cast<uint64>(EntityKind);
+		const uint64 BitString = ((static_cast<uint64>(Extra) & 0xFF) << 0) | ((static_cast<uint64>(Specific) & 0xFF) << 8) | ((static_cast<uint64>(Subcategory) & 0xFF) << 16) |
+			((static_cast<uint64>(Category) & 0xFF) << 24) | ((static_cast<uint64>(Country) & 0xFF) << 32) | ((static_cast<uint64>(Domain) & 0xFF) << 48) | ((static_cast<uint64>(EntityKind) & 0xFF) << 56);
+		
 		return BitString;
 	}
 
 	FString ToBitString() const
 	{
-		const uint64 BitString = ToUInt64();
-		const uint32 UpperBitString = static_cast<uint32>(BitString >> 32);
-		const uint32 LowerBitString = static_cast<uint32>(BitString & 0xFFFF);
-		return FString::FromInt(UpperBitString) + FString::FromInt(LowerBitString);
+		uint64 BitString = ToUInt64();
+		return BytesToHex(reinterpret_cast<uint8*>(&BitString), 8);
 	}
 
 	DIS::EntityType ToOpenDIS() const

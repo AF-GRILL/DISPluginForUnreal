@@ -172,22 +172,23 @@ void UDISComponent::CalculateDeadReckonedOrientation(const double PsiRadians, co
 
 glm::dvec3 UDISComponent::GetEntityBodyDeadReckonedPosition(const glm::dvec3 InitialPositionVector, const glm::dvec3 BodyVelocityVector, const glm::dvec3 BodyLinearAccelerationVector, const glm::dvec3 BodyAngularAccelerationVector, const glm::dvec3 EntityOrientation, const double DeltaTime)
 {
-	const auto OmegaMatrix = UDIS_BPFL::CreateNCrossXMatrix(BodyAngularAccelerationVector);
-	const auto BodyAccelerationVector = BodyLinearAccelerationVector - (OmegaMatrix * BodyVelocityVector);
+	const auto SkewMatrix = UDIS_BPFL::CreateNCrossXMatrix(BodyAngularAccelerationVector);
+	const auto BodyAccelerationVector = BodyLinearAccelerationVector - (SkewMatrix * BodyVelocityVector);
 
 	// Get the entity's current orientation matrix
 	const auto OrientationMatrix = GetEntityOrientationMatrix(EntityOrientation.x, EntityOrientation.y, EntityOrientation.z);
 	const auto InverseInitialOrientationMatrix = inverse(OrientationMatrix);
 
 	// Calculate R1
-	const auto AccelerationMagnitude = OmegaMatrix.length();
-	const auto R1 = (((AccelerationMagnitude * DeltaTime - glm::sin(AccelerationMagnitude * DeltaTime)) / glm::pow(AccelerationMagnitude, 3)) * OmegaMatrix * glm::transpose(OmegaMatrix)) +
+	const auto OmegaMatrix = glm::dmat3x3(BodyAngularAccelerationVector, glm::dvec3(0), glm::dvec3(0)) * glm::transpose(glm::dmat3x3(BodyAngularAccelerationVector, glm::dvec3(0), glm::dvec3(0)));
+	constexpr auto AccelerationMagnitude = BodyAngularAccelerationVector.length();
+	const auto R1 = (((AccelerationMagnitude * DeltaTime - glm::sin(AccelerationMagnitude * DeltaTime)) / glm::pow(AccelerationMagnitude, 3)) * OmegaMatrix) +
 		(static_cast<double>(glm::sin(AccelerationMagnitude * DeltaTime) / AccelerationMagnitude) * glm::dmat3(1)) +
-		(((1 - glm::cos(AccelerationMagnitude * DeltaTime)) / glm::pow(AccelerationMagnitude, 2)) * OmegaMatrix);
+		(((1 - glm::cos(AccelerationMagnitude * DeltaTime)) / glm::pow(AccelerationMagnitude, 2)) * SkewMatrix);
 
-	const auto R2 = ((((0.5 * glm::pow(AccelerationMagnitude, 2) * glm::pow(DeltaTime, 2)) - (glm::cos(AccelerationMagnitude * DeltaTime)) - (AccelerationMagnitude * DeltaTime * glm::sin(AccelerationMagnitude * DeltaTime)) + (1)) / glm::pow(AccelerationMagnitude, 4)) * OmegaMatrix * glm::transpose(OmegaMatrix)) +
+	const auto R2 = ((((0.5 * glm::pow(AccelerationMagnitude, 2) * glm::pow(DeltaTime, 2)) - (glm::cos(AccelerationMagnitude * DeltaTime)) - (AccelerationMagnitude * DeltaTime * glm::sin(AccelerationMagnitude * DeltaTime)) + (1)) / glm::pow(AccelerationMagnitude, 4)) * SkewMatrix * glm::transpose(SkewMatrix)) +
 		(static_cast<double>(((glm::cos(AccelerationMagnitude * DeltaTime)) + (AccelerationMagnitude * DeltaTime * glm::sin(AccelerationMagnitude * DeltaTime)) - (1)) / (glm::pow(AccelerationMagnitude, 2))) * glm::dmat3(1)) +
-		((((glm::sin(AccelerationMagnitude * DeltaTime)) - (AccelerationMagnitude * DeltaTime * glm::cos(AccelerationMagnitude * DeltaTime))) / (glm::pow(AccelerationMagnitude, 3))) * OmegaMatrix);
+		((((glm::sin(AccelerationMagnitude * DeltaTime)) - (AccelerationMagnitude * DeltaTime * glm::cos(AccelerationMagnitude * DeltaTime))) / (glm::pow(AccelerationMagnitude, 3))) * SkewMatrix);
 
 	return InitialPositionVector + (InverseInitialOrientationMatrix * ((R1 * BodyVelocityVector) + (R2 * BodyAccelerationVector)));
 }
