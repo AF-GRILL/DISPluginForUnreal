@@ -3,34 +3,19 @@
 
 #include "GRILL_EntityInformationFamilyPDU.h"
 
-UGRILL_EntityInformationFamilyPDU::UGRILL_EntityInformationFamilyPDU()
+UGRILL_EntityInformationFamilyPDU::UGRILL_EntityInformationFamilyPDU() : UGRILL_PDU()
 {
 
 }
 
 void UGRILL_EntityInformationFamilyPDU::SetupFromOpenDIS(DIS::EntityInformationFamilyPdu* EntityInfoFamilyPDUIn)
 {
-	EntityInfoFamilyPduStruct.ProtocolVersion = EntityInfoFamilyPDUIn->getProtocolVersion();
-	EntityInfoFamilyPduStruct.ExerciseID = EntityInfoFamilyPDUIn->getExerciseID();
-	EntityInfoFamilyPduStruct.PduType = static_cast<EPDUType>(EntityInfoFamilyPDUIn->getPduType());
-	EntityInfoFamilyPduStruct.ProtocolFamily = EntityInfoFamilyPDUIn->getProtocolFamily();
-	EntityInfoFamilyPduStruct.Timestamp = EntityInfoFamilyPDUIn->getTimestamp();
-	EntityInfoFamilyPduStruct.Length = EntityInfoFamilyPDUIn->getLength();
-	EntityInfoFamilyPduStruct.Padding = EntityInfoFamilyPDUIn->getPadding();
+	UGRILL_PDU::SetupFromOpenDIS(EntityInfoFamilyPDUIn);
 }
 
-DIS::EntityInformationFamilyPdu UGRILL_EntityInformationFamilyPDU::ToOpenDIS()
+void UGRILL_EntityInformationFamilyPDU::ToOpenDIS(DIS::EntityInformationFamilyPdu& EntityInfoFamilyPDUOut)
 {
-	DIS::EntityInformationFamilyPdu entityInfoFamilyPDUOut;
-
-	entityInfoFamilyPDUOut.setProtocolVersion(EntityInfoFamilyPduStruct.ProtocolVersion);
-	entityInfoFamilyPDUOut.setExerciseID(EntityInfoFamilyPduStruct.ExerciseID);
-	entityInfoFamilyPDUOut.setPduType(static_cast<unsigned char>(EntityInfoFamilyPduStruct.PduType));
-	entityInfoFamilyPDUOut.setTimestamp(EntityInfoFamilyPduStruct.Timestamp);
-	entityInfoFamilyPDUOut.setLength(EntityInfoFamilyPduStruct.Length);
-	entityInfoFamilyPDUOut.setPadding(EntityInfoFamilyPduStruct.Padding);
-
-	return entityInfoFamilyPDUOut;
+	UGRILL_PDU::ToOpenDIS(EntityInfoFamilyPDUOut);
 }
 
 TArray<uint8> UGRILL_EntityInformationFamilyPDU::ToBytes()
@@ -38,7 +23,10 @@ TArray<uint8> UGRILL_EntityInformationFamilyPDU::ToBytes()
 	DIS::DataStream buffer(DIS::BIG);
 
 	//marshal
-	ToOpenDIS().marshal(buffer);
+	DIS::EntityInformationFamilyPdu entityInfoFamilyPDU;
+
+	ToOpenDIS(entityInfoFamilyPDU);
+	entityInfoFamilyPDU.marshal(buffer);
 
 	TArray<uint8> byteArrayOut;
 	byteArrayOut.Init(0, buffer.size());

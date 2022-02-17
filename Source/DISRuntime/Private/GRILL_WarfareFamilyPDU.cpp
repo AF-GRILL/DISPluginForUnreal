@@ -3,40 +3,25 @@
 
 #include "GRILL_WarfareFamilyPDU.h"
 
-UGRILL_WarfareFamilyPDU::UGRILL_WarfareFamilyPDU()
+UGRILL_WarfareFamilyPDU::UGRILL_WarfareFamilyPDU() : UGRILL_PDU()
 {
 
 }
 
 void UGRILL_WarfareFamilyPDU::SetupFromOpenDIS(DIS::WarfareFamilyPdu* WarfareFamilyPDUIn)
 {
-	WarfareFamilyPduStruct.ProtocolVersion = WarfareFamilyPDUIn->getProtocolVersion();
-	WarfareFamilyPduStruct.ExerciseID = WarfareFamilyPDUIn->getExerciseID();
-	WarfareFamilyPduStruct.PduType = static_cast<EPDUType>(WarfareFamilyPDUIn->getPduType());
-	WarfareFamilyPduStruct.ProtocolFamily = WarfareFamilyPDUIn->getProtocolFamily();
-	WarfareFamilyPduStruct.Timestamp = WarfareFamilyPDUIn->getTimestamp();
-	WarfareFamilyPduStruct.Length = WarfareFamilyPDUIn->getLength();
-	WarfareFamilyPduStruct.Padding = WarfareFamilyPDUIn->getPadding();
+	UGRILL_PDU::SetupFromOpenDIS(WarfareFamilyPDUIn);
 
-	WarfareFamilyPduStruct.FiringEntityID = WarfareFamilyPDUIn->getFiringEntityID();
-	WarfareFamilyPduStruct.TargetEntityID = WarfareFamilyPDUIn->getTargetEntityID();
+	WarfareFamilyPDUStruct.FiringEntityID = WarfareFamilyPDUIn->getFiringEntityID();
+	WarfareFamilyPDUStruct.TargetEntityID = WarfareFamilyPDUIn->getTargetEntityID();
 }
 
-DIS::WarfareFamilyPdu UGRILL_WarfareFamilyPDU::ToOpenDIS()
+void UGRILL_WarfareFamilyPDU::ToOpenDIS(DIS::WarfareFamilyPdu& WarfareFamilyPDUOut)
 {
-	DIS::WarfareFamilyPdu warfareFamilyPDUOut;
+	UGRILL_PDU::ToOpenDIS(WarfareFamilyPDUOut);
 
-	warfareFamilyPDUOut.setProtocolVersion(WarfareFamilyPduStruct.ProtocolVersion);
-	warfareFamilyPDUOut.setExerciseID(WarfareFamilyPduStruct.ExerciseID);
-	warfareFamilyPDUOut.setPduType(static_cast<unsigned char>(WarfareFamilyPduStruct.PduType));
-	warfareFamilyPDUOut.setTimestamp(WarfareFamilyPduStruct.Timestamp);
-	warfareFamilyPDUOut.setLength(WarfareFamilyPduStruct.Length);
-	warfareFamilyPDUOut.setPadding(WarfareFamilyPduStruct.Padding);
-
-	warfareFamilyPDUOut.setFiringEntityID(WarfareFamilyPduStruct.FiringEntityID.ToOpenDIS());
-	warfareFamilyPDUOut.setTargetEntityID(WarfareFamilyPduStruct.TargetEntityID.ToOpenDIS());
-
-	return warfareFamilyPDUOut;
+	WarfareFamilyPDUOut.setFiringEntityID(WarfareFamilyPDUStruct.FiringEntityID.ToOpenDIS());
+	WarfareFamilyPDUOut.setTargetEntityID(WarfareFamilyPDUStruct.TargetEntityID.ToOpenDIS());
 }
 
 TArray<uint8> UGRILL_WarfareFamilyPDU::ToBytes()
@@ -44,7 +29,10 @@ TArray<uint8> UGRILL_WarfareFamilyPDU::ToBytes()
 	DIS::DataStream buffer(DIS::BIG);
 
 	//marshal
-	ToOpenDIS().marshal(buffer);
+	DIS::WarfareFamilyPdu warfareFamilyPDU;
+
+	ToOpenDIS(warfareFamilyPDU);
+	warfareFamilyPDU.marshal(buffer);
 
 	TArray<uint8> byteArrayOut;
 	byteArrayOut.Init(0, buffer.size());

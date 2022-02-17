@@ -3,40 +3,25 @@
 
 #include "GRILL_SimulationManagementFamilyPDU.h"
 
-UGRILL_SimulationManagementFamilyPDU::UGRILL_SimulationManagementFamilyPDU()
+UGRILL_SimulationManagementFamilyPDU::UGRILL_SimulationManagementFamilyPDU() : UGRILL_PDU()
 {
 
 }
 
 void UGRILL_SimulationManagementFamilyPDU::SetupFromOpenDIS(DIS::SimulationManagementFamilyPdu* SimFamilyPDUIn)
 {
-    SimManagementFamilyPduStruct.ProtocolVersion = SimFamilyPDUIn->getProtocolVersion();
-    SimManagementFamilyPduStruct.ExerciseID = SimFamilyPDUIn->getExerciseID();
-    SimManagementFamilyPduStruct.PduType = static_cast<EPDUType>(SimFamilyPDUIn->getPduType());
-    SimManagementFamilyPduStruct.ProtocolFamily = SimFamilyPDUIn->getProtocolFamily();
-    SimManagementFamilyPduStruct.Timestamp = SimFamilyPDUIn->getTimestamp();
-    SimManagementFamilyPduStruct.Length = SimFamilyPDUIn->getLength();
-    SimManagementFamilyPduStruct.Padding = SimFamilyPDUIn->getPadding();
+    UGRILL_PDU::SetupFromOpenDIS(SimFamilyPDUIn);
 
-    SimManagementFamilyPduStruct.OriginatingEntityID = SimFamilyPDUIn->getOriginatingEntityID();
-    SimManagementFamilyPduStruct.ReceivingEntityID = SimFamilyPDUIn->getReceivingEntityID();
+    SimManagementFamilyPDUStruct.OriginatingEntityID = SimFamilyPDUIn->getOriginatingEntityID();
+    SimManagementFamilyPDUStruct.ReceivingEntityID = SimFamilyPDUIn->getReceivingEntityID();
 }
 
-DIS::SimulationManagementFamilyPdu UGRILL_SimulationManagementFamilyPDU::ToOpenDIS()
+void UGRILL_SimulationManagementFamilyPDU::ToOpenDIS(DIS::SimulationManagementFamilyPdu& simFamilyPDUOut)
 {
-    DIS::SimulationManagementFamilyPdu simFamilyPDUOut;
+    UGRILL_PDU::ToOpenDIS(simFamilyPDUOut);
 
-    simFamilyPDUOut.setProtocolVersion(SimManagementFamilyPduStruct.ProtocolVersion);
-    simFamilyPDUOut.setExerciseID(SimManagementFamilyPduStruct.ExerciseID);
-    simFamilyPDUOut.setPduType(static_cast<unsigned char>(SimManagementFamilyPduStruct.PduType));
-    simFamilyPDUOut.setTimestamp(SimManagementFamilyPduStruct.Timestamp);
-    simFamilyPDUOut.setLength(SimManagementFamilyPduStruct.Length);
-    simFamilyPDUOut.setPadding(SimManagementFamilyPduStruct.Padding);
-
-    simFamilyPDUOut.setOriginatingEntityID(SimManagementFamilyPduStruct.OriginatingEntityID.ToOpenDIS());
-    simFamilyPDUOut.setOriginatingEntityID(SimManagementFamilyPduStruct.OriginatingEntityID.ToOpenDIS());
-
-    return simFamilyPDUOut;
+    simFamilyPDUOut.setOriginatingEntityID(SimManagementFamilyPDUStruct.OriginatingEntityID.ToOpenDIS());
+    simFamilyPDUOut.setReceivingEntityID(SimManagementFamilyPDUStruct.ReceivingEntityID.ToOpenDIS());
 }
 
 TArray<uint8> UGRILL_SimulationManagementFamilyPDU::ToBytes()
@@ -44,7 +29,10 @@ TArray<uint8> UGRILL_SimulationManagementFamilyPDU::ToBytes()
     DIS::DataStream buffer(DIS::BIG);
 
     //marshal
-    ToOpenDIS().marshal(buffer);
+    DIS::SimulationManagementFamilyPdu simFamilyPDU;
+
+    ToOpenDIS(simFamilyPDU);
+    simFamilyPDU.marshal(buffer);
 
     TArray<uint8> byteArrayOut;
     byteArrayOut.Init(0, buffer.size());

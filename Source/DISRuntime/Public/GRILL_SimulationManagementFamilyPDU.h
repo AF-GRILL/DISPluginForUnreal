@@ -9,7 +9,7 @@
 #include "GRILL_SimulationManagementFamilyPDU.generated.h"
 
 USTRUCT(BlueprintType)
-struct FSimulationManagementFamilyPdu : public FPDU
+struct FSimulationManagementFamilyPDU
 {
 	GENERATED_BODY()
 
@@ -33,9 +33,9 @@ public:
 	void SetupFromOpenDIS(DIS::SimulationManagementFamilyPdu* SimFamilyPDUIn);
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		FSimulationManagementFamilyPdu SimManagementFamilyPduStruct;
+		FSimulationManagementFamilyPDU SimManagementFamilyPDUStruct;
 
-	DIS::SimulationManagementFamilyPdu ToOpenDIS();
+	void ToOpenDIS(DIS::SimulationManagementFamilyPdu& SimFamilyPDUOut);
 
 	virtual TArray<uint8> ToBytes() override;		
 };

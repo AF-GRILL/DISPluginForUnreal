@@ -349,7 +349,7 @@ void UDIS_BPFL::CalculateLatLonHeightFromUnrealLocation(const FVector UELocation
 
 void UDIS_BPFL::GetUnrealRotationFromEntityStatePdu(const UGRILL_EntityStatePDU* EntityStatePdu, AGeoReferencingSystem* GeoReferencingSystem, FRotator& EntityRotation)
 {
-	FEarthCenteredEarthFixedDouble ecefDouble = FEarthCenteredEarthFixedDouble(EntityStatePdu->EntityStatePduStruct.EntityLocationDouble[0], EntityStatePdu->EntityStatePduStruct.EntityLocationDouble[1], EntityStatePdu->EntityStatePduStruct.EntityLocationDouble[2]);
+	FEarthCenteredEarthFixedDouble ecefDouble = FEarthCenteredEarthFixedDouble(EntityStatePdu->EntityStatePDUStruct.EntityLocationDouble[0], EntityStatePdu->EntityStatePDUStruct.EntityLocationDouble[1], EntityStatePdu->EntityStatePDUStruct.EntityLocationDouble[2]);
 
 	FLatLonHeightDouble LatLonHeightDouble;
 	CalculateLatLonHeightFromEcefXYZ(ecefDouble, LatLonHeightDouble);
@@ -368,7 +368,7 @@ void UDIS_BPFL::GetUnrealRotationFromEntityStatePdu(const UGRILL_EntityStatePDU*
 	const auto YAxisRotationAngle = FVector::DotProduct(NorthEastDownVectors.DownVector, originNorthEastDown.DownVector);
 	const auto ZAxisRotationAngle = FVector::DotProduct(NorthEastDownVectors.NorthVector, originNorthEastDown.NorthVector);
 
-	FPsiThetaPhi PsiThetaPhiRadians = FPsiThetaPhi(EntityStatePdu->EntityStatePduStruct.EntityOrientation.Yaw, EntityStatePdu->EntityStatePduStruct.EntityOrientation.Pitch, EntityStatePdu->EntityStatePduStruct.EntityOrientation.Roll);
+	FPsiThetaPhi PsiThetaPhiRadians = FPsiThetaPhi(EntityStatePdu->EntityStatePDUStruct.EntityOrientation.Yaw, EntityStatePdu->EntityStatePDUStruct.EntityOrientation.Pitch, EntityStatePdu->EntityStatePDUStruct.EntityOrientation.Roll);
 
 	FHeadingPitchRoll HeadingPitchRollDegrees;
 	CalculateHeadingPitchRollDegreesFromPsiThetaPhiRadiansAtLatLon(PsiThetaPhiRadians, LatLonHeightDouble.Latitude, LatLonHeightDouble.Longitude, HeadingPitchRollDegrees);
@@ -381,7 +381,7 @@ void UDIS_BPFL::GetUnrealRotationFromEntityStatePdu(const UGRILL_EntityStatePDU*
 
 void UDIS_BPFL::GetEntityUnrealLocationFromEntityStatePdu(const UGRILL_EntityStatePDU* EntityStatePdu, AGeoReferencingSystem* GeoReferencingSystem, FVector& EntityLocation)
 {
-	FEarthCenteredEarthFixedDouble ecefDouble = FEarthCenteredEarthFixedDouble(EntityStatePdu->EntityStatePduStruct.EntityLocationDouble[0], EntityStatePdu->EntityStatePduStruct.EntityLocationDouble[1], EntityStatePdu->EntityStatePduStruct.EntityLocationDouble[2]);
+	FEarthCenteredEarthFixedDouble ecefDouble = FEarthCenteredEarthFixedDouble(EntityStatePdu->EntityStatePDUStruct.EntityLocationDouble[0], EntityStatePdu->EntityStatePDUStruct.EntityLocationDouble[1], EntityStatePdu->EntityStatePDUStruct.EntityLocationDouble[2]);
 
 	FCartesianCoordinates cartCoords = FCartesianCoordinates(ecefDouble.X, ecefDouble.Y, ecefDouble.Z);
 

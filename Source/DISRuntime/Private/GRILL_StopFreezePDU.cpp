@@ -3,69 +3,41 @@
 
 #include "GRILL_StopFreezePDU.h"
 
-UGRILL_StopFreezePDU::UGRILL_StopFreezePDU()
+UGRILL_StopFreezePDU::UGRILL_StopFreezePDU() : UGRILL_SimulationManagementFamilyPDU()
 {
-	StopFreezePduStruct.PduType = EPDUType::Stop_Freeze;
-	StopFreezePduStruct.Reason = EReason::Other;
-	StopFreezePduStruct.FrozenBehavior = 0;
-	StopFreezePduStruct.PaddingOne = 0;
-	StopFreezePduStruct.RequestID = 0;
+	PDUStruct.PduType = EPDUType::Stop_Freeze;
 }
 
 void UGRILL_StopFreezePDU::SetupFromOpenDIS(DIS::StopFreezePdu* StopFreezePDUIn)
 {
-	//pdu common parameters
-	StopFreezePduStruct.ProtocolVersion = StopFreezePDUIn->getProtocolVersion();
-	StopFreezePduStruct.ExerciseID = StopFreezePDUIn->getExerciseID();
-	StopFreezePduStruct.PduType = static_cast<EPDUType>(StopFreezePDUIn->getPduType());
-	StopFreezePduStruct.ProtocolFamily = StopFreezePDUIn->getProtocolFamily();
-	StopFreezePduStruct.Timestamp = StopFreezePDUIn->getTimestamp();
-	StopFreezePduStruct.Length = StopFreezePDUIn->getLength();
-	StopFreezePduStruct.Padding = StopFreezePDUIn->getPadding();
-
-	//Simulation Management Family Pdu specific
-	StopFreezePduStruct.OriginatingEntityID = StopFreezePDUIn->getOriginatingEntityID();
-	StopFreezePduStruct.ReceivingEntityID = StopFreezePDUIn->getReceivingEntityID();
+	UGRILL_SimulationManagementFamilyPDU::SetupFromOpenDIS(StopFreezePDUIn);
 
 	// Stop/Freeze PDU specifics
 	DIS::ClockTime tempRealWorldTime = StopFreezePDUIn->getRealWorldTime();
 
-	StopFreezePduStruct.RealWorldTime.Hour = tempRealWorldTime.getHour();
-	StopFreezePduStruct.RealWorldTime.TimePastHour = tempRealWorldTime.getTimePastHour();
+	StopFreezePDUStruct.RealWorldTime.Hour = tempRealWorldTime.getHour();
+	StopFreezePDUStruct.RealWorldTime.TimePastHour = tempRealWorldTime.getTimePastHour();
 
-	StopFreezePduStruct.Reason = static_cast<EReason>(StopFreezePDUIn->getReason());
-	StopFreezePduStruct.FrozenBehavior = StopFreezePDUIn->getFrozenBehavior();
-	StopFreezePduStruct.PaddingOne = StopFreezePDUIn->getPadding1();
-	StopFreezePduStruct.RequestID = StopFreezePDUIn->getRequestID();
+	StopFreezePDUStruct.Reason = static_cast<EReason>(StopFreezePDUIn->getReason());
+	StopFreezePDUStruct.FrozenBehavior = StopFreezePDUIn->getFrozenBehavior();
+	StopFreezePDUStruct.PaddingOne = StopFreezePDUIn->getPadding1();
+	StopFreezePDUStruct.RequestID = StopFreezePDUIn->getRequestID();
 }
 
-DIS::StopFreezePdu UGRILL_StopFreezePDU::ToOpenDIS()
+void UGRILL_StopFreezePDU::ToOpenDIS(DIS::StopFreezePdu& StopFreezePDUOut)
 {
-	DIS::StopFreezePdu stopFreezePDUOut;
+	UGRILL_SimulationManagementFamilyPDU::ToOpenDIS(StopFreezePDUOut);
 
-	// Common PDU setup
-	stopFreezePDUOut.setProtocolVersion(StopFreezePduStruct.ProtocolVersion);
-	stopFreezePDUOut.setExerciseID(StopFreezePduStruct.ExerciseID);
-	stopFreezePDUOut.setPduType(static_cast<unsigned char>(StopFreezePduStruct.PduType));
-	stopFreezePDUOut.setProtocolFamily(StopFreezePduStruct.ProtocolFamily);
-	stopFreezePDUOut.setTimestamp(StopFreezePduStruct.Timestamp);
-	stopFreezePDUOut.setLength(StopFreezePduStruct.Length);
-	stopFreezePDUOut.setPadding(StopFreezePduStruct.Padding);
-
-	// Simulation Management Family PDU setup
-	stopFreezePDUOut.setOriginatingEntityID(StopFreezePduStruct.OriginatingEntityID.ToOpenDIS());
-	stopFreezePDUOut.setReceivingEntityID(StopFreezePduStruct.ReceivingEntityID.ToOpenDIS());
+	//Inherited PDU setup
+	StopFreezePDUOut.setReceivingEntityID(SimManagementFamilyPDUStruct.ReceivingEntityID.ToOpenDIS());
+	StopFreezePDUOut.setOriginatingEntityID(SimManagementFamilyPDUStruct.OriginatingEntityID.ToOpenDIS());
 
 	// Specific PDU setup
-	stopFreezePDUOut.setReceivingEntityID(StopFreezePduStruct.ReceivingEntityID.ToOpenDIS());
-	stopFreezePDUOut.setOriginatingEntityID(StopFreezePduStruct.OriginatingEntityID.ToOpenDIS());
-	stopFreezePDUOut.setRealWorldTime(StopFreezePduStruct.RealWorldTime.ToOpenDIS());
-	stopFreezePDUOut.setReason(static_cast<unsigned char>(StopFreezePduStruct.Reason));
-	stopFreezePDUOut.setFrozenBehavior(StopFreezePduStruct.FrozenBehavior);
-	stopFreezePDUOut.setPadding1(StopFreezePduStruct.PaddingOne);
-	stopFreezePDUOut.setRequestID(StopFreezePduStruct.RequestID);
-
-	return stopFreezePDUOut;
+	StopFreezePDUOut.setRealWorldTime(StopFreezePDUStruct.RealWorldTime.ToOpenDIS());
+	StopFreezePDUOut.setReason(static_cast<unsigned char>(StopFreezePDUStruct.Reason));
+	StopFreezePDUOut.setFrozenBehavior(StopFreezePDUStruct.FrozenBehavior);
+	StopFreezePDUOut.setPadding1(StopFreezePDUStruct.PaddingOne);
+	StopFreezePDUOut.setRequestID(StopFreezePDUStruct.RequestID);
 }
 
 TArray<uint8> UGRILL_StopFreezePDU::ToBytes()
@@ -73,7 +45,10 @@ TArray<uint8> UGRILL_StopFreezePDU::ToBytes()
 	DIS::DataStream buffer(DIS::BIG);
 
 	//marshal
-	ToOpenDIS().marshal(buffer);
+	DIS::StopFreezePdu stopFreezePDU;
+
+	ToOpenDIS(stopFreezePDU);
+	stopFreezePDU.marshal(buffer);
 
 	TArray<uint8> byteArrayOut;
 	byteArrayOut.Init(0, buffer.size());

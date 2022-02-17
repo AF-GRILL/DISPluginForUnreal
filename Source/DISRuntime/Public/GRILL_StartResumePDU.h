@@ -9,7 +9,7 @@
 #include "GRILL_StartResumePDU.generated.h"
 
 USTRUCT(BlueprintType)
-struct FStartResumePDU : public FSimulationManagementFamilyPdu
+struct FStartResumePDU
 {
 	GENERATED_BODY()
 
@@ -22,7 +22,6 @@ struct FStartResumePDU : public FSimulationManagementFamilyPdu
 
 	FStartResumePDU()
 	{
-		PduType = EPDUType::Start_Resume;
 		RequestID = 0;
 	}
 };
@@ -41,9 +40,9 @@ public:
 	void SetupFromOpenDIS(DIS::StartResumePdu* StartResumePDUIn);
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		FStartResumePDU StartResumePduStruct;
+		FStartResumePDU StartResumePDUStruct;
 
-	DIS::StartResumePdu ToOpenDIS();
+	void ToOpenDIS(DIS::StartResumePdu& StartResumeFamilyPDUOut);
 
 	virtual TArray<uint8> ToBytes() override;	
 };

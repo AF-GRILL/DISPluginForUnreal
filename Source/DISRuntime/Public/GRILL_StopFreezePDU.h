@@ -9,7 +9,7 @@
 #include "GRILL_StopFreezePDU.generated.h"
 
 USTRUCT(BlueprintType)
-struct FStopFreezePDU : public FSimulationManagementFamilyPdu
+struct FStopFreezePDU
 {
 	GENERATED_BODY()
 
@@ -26,7 +26,6 @@ struct FStopFreezePDU : public FSimulationManagementFamilyPdu
 
 	FStopFreezePDU()
 	{
-		PduType = EPDUType::Stop_Freeze;
 		Reason = EReason::Other;
 		FrozenBehavior = 0;
 		PaddingOne = 0;
@@ -48,9 +47,9 @@ public:
 	void SetupFromOpenDIS(DIS::StopFreezePdu* StopFreezePDUIn);
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		FStopFreezePDU StopFreezePduStruct;
+		FStopFreezePDU StopFreezePDUStruct;
 	
-	DIS::StopFreezePdu ToOpenDIS();
+	void ToOpenDIS(DIS::StopFreezePdu& StopFreezePDUOut);
 	
 	virtual TArray<uint8> ToBytes() override;
 };

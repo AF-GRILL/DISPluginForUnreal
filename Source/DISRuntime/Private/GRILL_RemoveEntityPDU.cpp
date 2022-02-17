@@ -3,53 +3,24 @@
 
 #include "GRILL_RemoveEntityPDU.h"
 
-UGRILL_RemoveEntityPDU::UGRILL_RemoveEntityPDU()
+UGRILL_RemoveEntityPDU::UGRILL_RemoveEntityPDU() : UGRILL_SimulationManagementFamilyPDU()
 {
-	RemoveEntityPduStruct.PduType = EPDUType::RemoveEntity;
-	RemoveEntityPduStruct.RequestID = 0;
+	PDUStruct.PduType = EPDUType::RemoveEntity;
 }
 
 void UGRILL_RemoveEntityPDU::SetupFromOpenDIS(DIS::RemoveEntityPdu* RemoveEntityPDUIn)
 {
-	//pdu common parameters
-	RemoveEntityPduStruct.ProtocolVersion = RemoveEntityPDUIn->getProtocolVersion();
-	RemoveEntityPduStruct.ExerciseID = RemoveEntityPDUIn->getExerciseID();
-	RemoveEntityPduStruct.PduType = static_cast<EPDUType>(RemoveEntityPDUIn->getPduType());
-	RemoveEntityPduStruct.ProtocolFamily = RemoveEntityPDUIn->getProtocolFamily();
-	RemoveEntityPduStruct.Timestamp = RemoveEntityPDUIn->getTimestamp();
-	RemoveEntityPduStruct.Length = RemoveEntityPDUIn->getLength();
-	RemoveEntityPduStruct.Padding = RemoveEntityPDUIn->getPadding();
+	UGRILL_SimulationManagementFamilyPDU::SetupFromOpenDIS(RemoveEntityPDUIn);
 
-	//Simulation Management Family Pdu specific
-	RemoveEntityPduStruct.OriginatingEntityID = RemoveEntityPDUIn->getOriginatingEntityID();
-	RemoveEntityPduStruct.ReceivingEntityID = RemoveEntityPDUIn->getReceivingEntityID();
-
-	RemoveEntityPduStruct.RequestID = RemoveEntityPDUIn->getRequestID();
+	RemoveEntityPDUStruct.RequestID = RemoveEntityPDUIn->getRequestID();
 }
 
-DIS::RemoveEntityPdu UGRILL_RemoveEntityPDU::ToOpenDIS()
+void UGRILL_RemoveEntityPDU::ToOpenDIS(DIS::RemoveEntityPdu& RemoveEntityPDUOut)
 {
-	DIS::RemoveEntityPdu removeEntityPDUOut;
-
-	// Common PDU setup
-	removeEntityPDUOut.setProtocolVersion(RemoveEntityPduStruct.ProtocolVersion);
-	removeEntityPDUOut.setExerciseID(RemoveEntityPduStruct.ExerciseID);
-	removeEntityPDUOut.setPduType(static_cast<unsigned char>(RemoveEntityPduStruct.PduType));
-	removeEntityPDUOut.setProtocolFamily(RemoveEntityPduStruct.ProtocolFamily);
-	removeEntityPDUOut.setTimestamp(RemoveEntityPduStruct.Timestamp);
-	removeEntityPDUOut.setLength(RemoveEntityPduStruct.Length);
-	removeEntityPDUOut.setPadding(RemoveEntityPduStruct.Padding);
-
-	// Simulation Management Family PDU setup
-	removeEntityPDUOut.setOriginatingEntityID(RemoveEntityPduStruct.OriginatingEntityID.ToOpenDIS());
-	removeEntityPDUOut.setReceivingEntityID(RemoveEntityPduStruct.ReceivingEntityID.ToOpenDIS());
+	UGRILL_SimulationManagementFamilyPDU::ToOpenDIS(RemoveEntityPDUOut);
 
 	// Remove entity specific PDU setup
-	removeEntityPDUOut.setOriginatingEntityID(RemoveEntityPduStruct.OriginatingEntityID.ToOpenDIS());
-	removeEntityPDUOut.setReceivingEntityID(RemoveEntityPduStruct.ReceivingEntityID.ToOpenDIS());
-	removeEntityPDUOut.setRequestID(RemoveEntityPduStruct.RequestID);
-
-	return removeEntityPDUOut;
+	RemoveEntityPDUOut.setRequestID(RemoveEntityPDUStruct.RequestID);
 }
 
 TArray<uint8> UGRILL_RemoveEntityPDU::ToBytes()
@@ -57,7 +28,10 @@ TArray<uint8> UGRILL_RemoveEntityPDU::ToBytes()
 	DIS::DataStream buffer(DIS::BIG);
 
 	//marshal
-	ToOpenDIS().marshal(buffer);
+	DIS::RemoveEntityPdu removeEntityPDU;
+
+	ToOpenDIS(removeEntityPDU);
+	removeEntityPDU.marshal(buffer);
 
 	TArray<uint8> byteArrayOut;
 	byteArrayOut.Init(0, buffer.size());

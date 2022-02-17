@@ -9,7 +9,7 @@
 #include "GRILL_FirePDU.generated.h"
 
 USTRUCT(BlueprintType)
-struct FFirePDU : public FWarfareFamilyPdu
+struct FFirePDU
 {
 	GENERATED_BODY()
 
@@ -32,7 +32,6 @@ struct FFirePDU : public FWarfareFamilyPdu
 
 	FFirePDU()
 	{
-		PduType = EPDUType::Fire;
 		FireMissionIndex = 0;
 		Range = 0.0;
 		LocationDouble.Init(0, 3);
@@ -55,9 +54,9 @@ public:
 	void SetupFromOpenDIS(DIS::FirePdu* FirePDUIn);
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		FFirePDU FirePduStruct;
+		FFirePDU FirePDUStruct;
 
-	DIS::FirePdu ToOpenDIS();
+	void ToOpenDIS(DIS::FirePdu& FirePDUOut);
 
 	virtual TArray<uint8> ToBytes() override;	
 };

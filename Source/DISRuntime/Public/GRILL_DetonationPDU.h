@@ -9,7 +9,7 @@
 #include "GRILL_DetonationPDU.generated.h"
 
 USTRUCT(BlueprintType)
-struct FDetonationPDU : public FWarfareFamilyPdu
+struct FDetonationPDU
 {
 	GENERATED_BODY()
 
@@ -36,7 +36,6 @@ struct FDetonationPDU : public FWarfareFamilyPdu
 
 	FDetonationPDU()
 	{
-		PduType = EPDUType::Detonation;
 		Velocity = FVector(0, 0, 0);
 		LocationDouble.Init(0, 3);
 		Location = FVector(0, 0, 0);
@@ -60,9 +59,9 @@ public:
 	void SetupFromOpenDIS(DIS::DetonationPdu* DetonationPDUIn);
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		FDetonationPDU DetonationPduStruct;
+		FDetonationPDU DetonationPDUStruct;
 
-	DIS::DetonationPdu ToOpenDIS();
+	void ToOpenDIS(DIS::DetonationPdu& detonationPDUOut);
 
 	virtual TArray<uint8> ToBytes() override;
 };

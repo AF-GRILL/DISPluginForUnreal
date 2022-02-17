@@ -9,7 +9,7 @@
 #include "GRILL_PDU.generated.h"
 
 USTRUCT(BlueprintType)
-struct FPDU
+struct FPDU 
 {
 	GENERATED_BODY()
 
@@ -64,9 +64,9 @@ public:
 	void SetupFromOpenDIS(DIS::Pdu* PDUIn);
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		FPDU PduStruct;
+		FPDU PDUStruct;
 	
-	DIS::Pdu ToOpenDIS();
+	void ToOpenDIS(DIS::Pdu& PDUOut);
 
 	UFUNCTION(BlueprintCallable, Category = "GRILL DIS|PDUs")
 		virtual TArray<uint8> ToBytes();

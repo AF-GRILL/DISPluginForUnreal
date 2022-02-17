@@ -9,7 +9,7 @@
 #include "GRILL_EntityInformationFamilyPDU.generated.h"
 
 USTRUCT(BlueprintType)
-struct FEntityInformationFamilyPdu : public FPDU
+struct FEntityInformationFamilyPDU
 {
 	GENERATED_BODY()
 };
@@ -28,9 +28,9 @@ public:
 	void SetupFromOpenDIS(DIS::EntityInformationFamilyPdu* EntityInfoFamilyPDUIn);
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		FEntityInformationFamilyPdu EntityInfoFamilyPduStruct;
+		FEntityInformationFamilyPDU EntityInfoFamilyPDUStruct;
 
-	DIS::EntityInformationFamilyPdu ToOpenDIS();
+	void ToOpenDIS(DIS::EntityInformationFamilyPdu& EntityInfoFamilyPDUOut);
 
 	virtual TArray<uint8> ToBytes() override;
 };

@@ -109,27 +109,27 @@ public:
 	 * Gets the most recent Entity State PDU.
 	 * Returns the most recent Entity State PDU.
 	 */
-	UFUNCTION(BlueprintPure, Category = "GRILL DIS|DIS Component")
-		FEntityStatePDU GetMostRecentEntityStatePDU();
+	UFUNCTION(BlueprintCallable, Category = "GRILL DIS|DIS Component")
+		UGRILL_EntityStatePDU* GetMostRecentEntityStatePDU();
 
 	/**
 	 * Gets the most recent Dead Reckoned Entity State PDU.
 	 * Returns the most recent Dead Reckoning Entity State PDU.
 	 */
-	UFUNCTION(BlueprintPure, Category = "GRILL DIS|DIS Component")
-		FEntityStatePDU GetMostRecentDeadReckoningPDU();
+	UFUNCTION(BlueprintCallable, Category = "GRILL DIS|DIS Component")
+		UGRILL_EntityStatePDU* GetMostRecentDeadReckoningPDU();
 
 	/**
 	 * Sets the most recent Entity State PDU.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "GRILL DIS|DIS Component")
-		void SetMostRecentEntityStatePDU(FEntityStatePDU EntityStatePDUIn);
+		void SetMostRecentEntityStatePDU(UPARAM(ref)UGRILL_EntityStatePDU*& EntityStatePDUIn);
 
 	/**
 	 * Sets the most recent Dead Reckoning Entity State PDU.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "GRILL DIS|DIS Component")
-		void SetMostRecentDeadReckoningPDU(FEntityStatePDU DeadReckonedPDUIn);
+		void SetMostRecentDeadReckoningPDU(UPARAM(ref)UGRILL_EntityStatePDU*& DeadReckonedPDUIn);
 
 	/**
 	 * The timestamp that the most recent Entity State PDU was received at by the DISComponent.
@@ -179,9 +179,8 @@ protected:
 	virtual void BeginPlay() override;
 
 private:
-	UGRILL_EntityStatePDU* MostRecentEntityStatePDU = NewObject<UGRILL_EntityStatePDU>();
-	UGRILL_EntityStatePDU* DeadReckoningEntityStatePDU = NewObject<UGRILL_EntityStatePDU>();
-
+	UGRILL_EntityStatePDU* MostRecentEntityStatePDU;
+	UGRILL_EntityStatePDU* DeadReckoningEntityStatePDU;
 	UGRILL_EntityStatePDU* TempDeadReckonedPDU;
 
 	/**

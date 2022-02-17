@@ -9,7 +9,7 @@
 #include "GRILL_RemoveEntityPDU.generated.h"
 
 USTRUCT(BlueprintType)
-struct FRemoveEntityPDU : public FSimulationManagementFamilyPdu
+struct FRemoveEntityPDU
 {
 	GENERATED_BODY()
 
@@ -18,7 +18,6 @@ struct FRemoveEntityPDU : public FSimulationManagementFamilyPdu
 
 	FRemoveEntityPDU()
 	{
-		PduType = EPDUType::RemoveEntity;
 		RequestID = 0;
 	}
 };
@@ -37,9 +36,9 @@ public:
 	void SetupFromOpenDIS(DIS::RemoveEntityPdu* RemoveEntityPDUIn);
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		FRemoveEntityPDU RemoveEntityPduStruct;
+		FRemoveEntityPDU RemoveEntityPDUStruct;
 
-	DIS::RemoveEntityPdu ToOpenDIS();
+	void ToOpenDIS(DIS::RemoveEntityPdu& RemoveEntityPDUOut);
 
 	virtual TArray<uint8> ToBytes() override;	
 };

@@ -3,118 +3,89 @@
 
 #include "GRILL_FirePDU.h"
 
-UGRILL_FirePDU::UGRILL_FirePDU()
+UGRILL_FirePDU::UGRILL_FirePDU() : UGRILL_WarfareFamilyPDU()
 {
-	FirePduStruct.PduType = EPDUType::Fire;
-	FirePduStruct.FireMissionIndex = 0;
-	FirePduStruct.Range = 0.0;
-	FirePduStruct.LocationDouble.Init(0, 3);
-	FirePduStruct.Location = FVector(0, 0, 0);
-	FirePduStruct.Velocity = FVector(0, 0, 0);
+	PDUStruct.PduType = EPDUType::Fire;
 }
 
 void UGRILL_FirePDU::SetupFromOpenDIS(DIS::FirePdu* FirePDUIn)
 {
-	//pdu common parameters
-	FirePduStruct.ProtocolVersion = FirePDUIn->getProtocolVersion();
-	FirePduStruct.ExerciseID = FirePDUIn->getExerciseID();
-	FirePduStruct.PduType = static_cast<EPDUType>(FirePDUIn->getPduType());
-	FirePduStruct.ProtocolFamily = FirePDUIn->getProtocolFamily();
-	FirePduStruct.Timestamp = FirePDUIn->getTimestamp();
-	FirePduStruct.Length = FirePDUIn->getLength();
-	FirePduStruct.Padding = FirePDUIn->getPadding();
-
-	// WarfareFamilyPdu specific parameters
-	FirePduStruct.FiringEntityID = FirePDUIn->getFiringEntityID();
-	FirePduStruct.TargetEntityID = FirePDUIn->getTargetEntityID();
+	UGRILL_WarfareFamilyPDU::SetupFromOpenDIS(FirePDUIn);
 
 	// Fire PDU specifics
 	//single vars
-	FirePduStruct.FireMissionIndex = FirePDUIn->getFireMissionIndex();
-	FirePduStruct.Range = FirePDUIn->getRange();
+	FirePDUStruct.FireMissionIndex = FirePDUIn->getFireMissionIndex();
+	FirePDUStruct.Range = FirePDUIn->getRange();
 
 	//MunitionEntityID
-	FirePduStruct.MunitionEntityID.Site = FirePDUIn->getMunitionID().getSite();
-	FirePduStruct.MunitionEntityID.Application = FirePDUIn->getMunitionID().getApplication();
-	FirePduStruct.MunitionEntityID.Entity = FirePDUIn->getMunitionID().getEntity();
+	FirePDUStruct.MunitionEntityID.Site = FirePDUIn->getMunitionID().getSite();
+	FirePDUStruct.MunitionEntityID.Application = FirePDUIn->getMunitionID().getApplication();
+	FirePDUStruct.MunitionEntityID.Entity = FirePDUIn->getMunitionID().getEntity();
 
 	//velocity
-	FirePduStruct.Velocity[0] = FirePDUIn->getVelocity().getX();
-	FirePduStruct.Velocity[1] = FirePDUIn->getVelocity().getY();
-	FirePduStruct.Velocity[2] = FirePDUIn->getVelocity().getZ();
+	FirePDUStruct.Velocity[0] = FirePDUIn->getVelocity().getX();
+	FirePDUStruct.Velocity[1] = FirePDUIn->getVelocity().getY();
+	FirePDUStruct.Velocity[2] = FirePDUIn->getVelocity().getZ();
 
 	//location
-	FirePduStruct.Location[0] = FirePDUIn->getLocationInWorldCoordinates().getX();
-	FirePduStruct.Location[1] = FirePDUIn->getLocationInWorldCoordinates().getY();
-	FirePduStruct.Location[2] = FirePDUIn->getLocationInWorldCoordinates().getZ();
+	FirePDUStruct.Location[0] = FirePDUIn->getLocationInWorldCoordinates().getX();
+	FirePDUStruct.Location[1] = FirePDUIn->getLocationInWorldCoordinates().getY();
+	FirePDUStruct.Location[2] = FirePDUIn->getLocationInWorldCoordinates().getZ();
 
 	//locationDouble
-	FirePduStruct.LocationDouble[0] = FirePDUIn->getLocationInWorldCoordinates().getX();
-	FirePduStruct.LocationDouble[1] = FirePDUIn->getLocationInWorldCoordinates().getY();
-	FirePduStruct.LocationDouble[2] = FirePDUIn->getLocationInWorldCoordinates().getZ();
+	FirePDUStruct.LocationDouble[0] = FirePDUIn->getLocationInWorldCoordinates().getX();
+	FirePDUStruct.LocationDouble[1] = FirePDUIn->getLocationInWorldCoordinates().getY();
+	FirePDUStruct.LocationDouble[2] = FirePDUIn->getLocationInWorldCoordinates().getZ();
 
 	//event id
-	FirePduStruct.EventID = FirePDUIn->getEventID();
+	FirePDUStruct.EventID = FirePDUIn->getEventID();
 
 	//burst descriptor
-	FirePduStruct.BurstDescriptor.Warhead = FirePDUIn->getBurstDescriptor().getWarhead();
-	FirePduStruct.BurstDescriptor.Fuse = FirePDUIn->getBurstDescriptor().getFuse();
-	FirePduStruct.BurstDescriptor.Rate = FirePDUIn->getBurstDescriptor().getRate();
-	FirePduStruct.BurstDescriptor.Quantity = FirePDUIn->getBurstDescriptor().getQuantity();
-	FirePduStruct.BurstDescriptor.EntityType = FirePDUIn->getBurstDescriptor().getMunition();
+	FirePDUStruct.BurstDescriptor.Warhead = FirePDUIn->getBurstDescriptor().getWarhead();
+	FirePDUStruct.BurstDescriptor.Fuse = FirePDUIn->getBurstDescriptor().getFuse();
+	FirePDUStruct.BurstDescriptor.Rate = FirePDUIn->getBurstDescriptor().getRate();
+	FirePDUStruct.BurstDescriptor.Quantity = FirePDUIn->getBurstDescriptor().getQuantity();
+	FirePDUStruct.BurstDescriptor.EntityType = FirePDUIn->getBurstDescriptor().getMunition();
 }
 
-DIS::FirePdu UGRILL_FirePDU::ToOpenDIS()
+void UGRILL_FirePDU::ToOpenDIS(DIS::FirePdu& FirePDUOut)
 {
-	DIS::FirePdu firePDUOut;
+	UGRILL_WarfareFamilyPDU::ToOpenDIS(FirePDUOut);
 
-	// Common PDU setup
-	firePDUOut.setProtocolVersion(FirePduStruct.ProtocolVersion);
-	firePDUOut.setExerciseID(FirePduStruct.ExerciseID);
-	firePDUOut.setPduType(static_cast<unsigned char>(FirePduStruct.PduType));
-	firePDUOut.setProtocolFamily(FirePduStruct.ProtocolFamily);
-	firePDUOut.setTimestamp(FirePduStruct.Timestamp);
-	firePDUOut.setLength(FirePduStruct.Length);
-	firePDUOut.setPadding(FirePduStruct.Padding);
-
-	// Warfare Family PDU setup
-	firePDUOut.setFiringEntityID(FirePduStruct.FiringEntityID.ToOpenDIS());
-	firePDUOut.setTargetEntityID(FirePduStruct.TargetEntityID.ToOpenDIS());
+	//Inherited PDU setup
+	FirePDUOut.setFiringEntityID(WarfareFamilyPDUStruct.FiringEntityID.ToOpenDIS());
+	FirePDUOut.setTargetEntityID(WarfareFamilyPDUStruct.TargetEntityID.ToOpenDIS());
 
 	// Specific PDU setup
-	firePDUOut.setMunitionID(FirePduStruct.MunitionEntityID.ToOpenDIS());
-	firePDUOut.setFireMissionIndex(FirePduStruct.FireMissionIndex);
-	firePDUOut.setRange(FirePduStruct.Range);
+	FirePDUOut.setMunitionID(FirePDUStruct.MunitionEntityID.ToOpenDIS());
+	FirePDUOut.setFireMissionIndex(FirePDUStruct.FireMissionIndex);
+	FirePDUOut.setRange(FirePDUStruct.Range);
 
 	DIS::Vector3Float OutVelocity;
-	OutVelocity.setX(FirePduStruct.Velocity.X);
-	OutVelocity.setY(FirePduStruct.Velocity.Y);
-	OutVelocity.setZ(FirePduStruct.Velocity.Z);
-	firePDUOut.setVelocity(OutVelocity);
+	OutVelocity.setX(FirePDUStruct.Velocity.X);
+	OutVelocity.setY(FirePDUStruct.Velocity.Y);
+	OutVelocity.setZ(FirePDUStruct.Velocity.Z);
+	FirePDUOut.setVelocity(OutVelocity);
 
 	DIS::Vector3Double OutLocation;
-	if (FMath::IsNearlyEqual(static_cast<float>(FirePduStruct.LocationDouble[0]), FirePduStruct.Location.X) &&
-		FMath::IsNearlyEqual(static_cast<float>(FirePduStruct.LocationDouble[1]), FirePduStruct.Location.Y) &&
-		FMath::IsNearlyEqual(static_cast<float>(FirePduStruct.LocationDouble[2]), FirePduStruct.Location.Z))
+	if (FMath::IsNearlyEqual(static_cast<float>(FirePDUStruct.LocationDouble[0]), FirePDUStruct.Location.X) &&
+		FMath::IsNearlyEqual(static_cast<float>(FirePDUStruct.LocationDouble[1]), FirePDUStruct.Location.Y) &&
+		FMath::IsNearlyEqual(static_cast<float>(FirePDUStruct.LocationDouble[2]), FirePDUStruct.Location.Z))
 	{
-		OutLocation.setX(FirePduStruct.LocationDouble[0]);
-		OutLocation.setY(FirePduStruct.LocationDouble[1]);
-		OutLocation.setZ(FirePduStruct.LocationDouble[2]);
+		OutLocation.setX(FirePDUStruct.LocationDouble[0]);
+		OutLocation.setY(FirePDUStruct.LocationDouble[1]);
+		OutLocation.setZ(FirePDUStruct.LocationDouble[2]);
 	}
 	else
 	{
-		OutLocation.setX(FirePduStruct.Location.X);
-		OutLocation.setY(FirePduStruct.Location.Y);
-		OutLocation.setZ(FirePduStruct.Location.Z);
+		OutLocation.setX(FirePDUStruct.Location.X);
+		OutLocation.setY(FirePDUStruct.Location.Y);
+		OutLocation.setZ(FirePDUStruct.Location.Z);
 	}
-	firePDUOut.setLocationInWorldCoordinates(OutLocation);
+	FirePDUOut.setLocationInWorldCoordinates(OutLocation);
 
-	firePDUOut.setEventID(FirePduStruct.EventID.ToOpenDIS());
-	firePDUOut.setBurstDescriptor(FirePduStruct.BurstDescriptor.ToOpenDIS());
-	firePDUOut.setFiringEntityID(FirePduStruct.FiringEntityID.ToOpenDIS());
-	firePDUOut.setTargetEntityID(FirePduStruct.TargetEntityID.ToOpenDIS());
-
-	return firePDUOut;
+	FirePDUOut.setEventID(FirePDUStruct.EventID.ToOpenDIS());
+	FirePDUOut.setBurstDescriptor(FirePDUStruct.BurstDescriptor.ToOpenDIS());
 }
 
 TArray<uint8> UGRILL_FirePDU::ToBytes()
@@ -122,7 +93,10 @@ TArray<uint8> UGRILL_FirePDU::ToBytes()
 	DIS::DataStream buffer(DIS::BIG);
 
 	//marshal
-	ToOpenDIS().marshal(buffer);
+	DIS::FirePdu firePDU;
+
+	ToOpenDIS(firePDU);
+	firePDU.marshal(buffer);
 
 	TArray<uint8> byteArrayOut;
 	byteArrayOut.Init(0, buffer.size());

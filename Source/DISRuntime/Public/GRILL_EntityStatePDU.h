@@ -9,7 +9,7 @@
 #include "GRILL_EntityStatePDU.generated.h"
 
 USTRUCT(BlueprintType)
-struct FEntityStatePDU : public FEntityInformationFamilyPdu
+struct FEntityStatePDU
 {
 	GENERATED_BODY()
 
@@ -43,10 +43,8 @@ struct FEntityStatePDU : public FEntityInformationFamilyPdu
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		TArray<FArticulationParameters> ArticulationParameters;
 
-	FEntityStatePDU()
+	FEntityStatePDU() 
 	{
-		//checked
-		PduType = EPDUType::EntityState;
 		ForceID = EForceID::Other;
 		Marking = FString("");
 		EntityLocation = FVector(0, 0, 0);
@@ -69,14 +67,13 @@ class DISRUNTIME_API UGRILL_EntityStatePDU : public UGRILL_EntityInformationFami
 public:
 	UGRILL_EntityStatePDU();
 
+	void SetupFromOpenDIS(DIS::EntityStatePdu* EntityStatePDUIn);
 	void SetupFromEntityStateUpdatePDU(UGRILL_EntityStateUpdatePDU* esuPDUIn);
 
-	void SetupFromOpenDIS(DIS::EntityStatePdu* EntityStatePDUIn);
-
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		FEntityStatePDU EntityStatePduStruct;
+		FEntityStatePDU EntityStatePDUStruct;
 
-	DIS::EntityStatePdu ToOpenDIS();
+	void ToOpenDIS(DIS::EntityStatePdu& EntityStatePDUOut);
 
 	virtual TArray<uint8> ToBytes() override;
 };

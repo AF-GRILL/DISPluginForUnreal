@@ -3,58 +3,44 @@
 
 #include "GRILL_EntityStateUpdatePDU.h"
 
-UGRILL_EntityStateUpdatePDU::UGRILL_EntityStateUpdatePDU()
+UGRILL_EntityStateUpdatePDU::UGRILL_EntityStateUpdatePDU() : UGRILL_EntityInformationFamilyPDU()
 {
-	EntityStateUpdatePduStruct.PduType = EPDUType::EntityStateUpdate;
-	EntityStateUpdatePduStruct.EntityLocation = FVector(0, 0, 0);
-	EntityStateUpdatePduStruct.EntityOrientation = FRotator(0, 0, 0);
-	EntityStateUpdatePduStruct.EntityLocationDouble.Init(0, 3);
-	EntityStateUpdatePduStruct.EntityLinearVelocity = FVector(0, 0, 0);
-	EntityStateUpdatePduStruct.EntityAppearance = 0;
-	EntityStateUpdatePduStruct.Padding = 0;
-	EntityStateUpdatePduStruct.Padding1 = 0;
+	PDUStruct.PduType = EPDUType::EntityStateUpdate;
 }
 
 void UGRILL_EntityStateUpdatePDU::SetupFromOpenDIS(DIS::EntityStateUpdatePdu* EntityStateUpdatePDUIn)
 {
-	//pdu common parameters
-	EntityStateUpdatePduStruct.ProtocolVersion = EntityStateUpdatePDUIn->getProtocolVersion();
-	EntityStateUpdatePduStruct.ExerciseID = EntityStateUpdatePDUIn->getExerciseID();
-	EntityStateUpdatePduStruct.PduType = static_cast<EPDUType>(EntityStateUpdatePDUIn->getPduType());
-	EntityStateUpdatePduStruct.ProtocolFamily = EntityStateUpdatePDUIn->getProtocolFamily();
-	EntityStateUpdatePduStruct.Timestamp = EntityStateUpdatePDUIn->getTimestamp();
-	EntityStateUpdatePduStruct.Length = EntityStateUpdatePDUIn->getLength();
-	EntityStateUpdatePduStruct.Padding = EntityStateUpdatePDUIn->getPadding();
+	UGRILL_EntityInformationFamilyPDU::SetupFromOpenDIS(EntityStateUpdatePDUIn);
 
 	//Entity State Update specifics
 	//entity id
-	EntityStateUpdatePduStruct.EntityID = EntityStateUpdatePDUIn->getEntityID();
+	EntityStateUpdatePDUStruct.EntityID = EntityStateUpdatePDUIn->getEntityID();
 
 	//pure since unsupported in BP
 	DIS::Vector3Double& position = EntityStateUpdatePDUIn->getEntityLocation();
-	EntityStateUpdatePduStruct.EntityLocationDouble[0] = position.getX();
-	EntityStateUpdatePduStruct.EntityLocationDouble[1] = position.getY();
-	EntityStateUpdatePduStruct.EntityLocationDouble[2] = position.getZ();
+	EntityStateUpdatePDUStruct.EntityLocationDouble[0] = position.getX();
+	EntityStateUpdatePDUStruct.EntityLocationDouble[1] = position.getY();
+	EntityStateUpdatePDUStruct.EntityLocationDouble[2] = position.getZ();
 
 	//location
-	EntityStateUpdatePduStruct.EntityLocation[0] = position.getX();
-	EntityStateUpdatePduStruct.EntityLocation[1] = position.getY();
-	EntityStateUpdatePduStruct.EntityLocation[2] = position.getZ();
+	EntityStateUpdatePDUStruct.EntityLocation[0] = position.getX();
+	EntityStateUpdatePDUStruct.EntityLocation[1] = position.getY();
+	EntityStateUpdatePDUStruct.EntityLocation[2] = position.getZ();
 
 	//rotation
 	DIS::Orientation& rotation = EntityStateUpdatePDUIn->getEntityOrientation();
-	EntityStateUpdatePduStruct.EntityOrientation.Yaw = rotation.getPsi();
-	EntityStateUpdatePduStruct.EntityOrientation.Roll = rotation.getPhi();
-	EntityStateUpdatePduStruct.EntityOrientation.Pitch = rotation.getTheta();
+	EntityStateUpdatePDUStruct.EntityOrientation.Yaw = rotation.getPsi();
+	EntityStateUpdatePDUStruct.EntityOrientation.Roll = rotation.getPhi();
+	EntityStateUpdatePDUStruct.EntityOrientation.Pitch = rotation.getTheta();
 
 	//velocity (originally in float so this is fine)
-	EntityStateUpdatePduStruct.EntityLinearVelocity[0] = EntityStateUpdatePDUIn->getEntityLinearVelocity().getX();
-	EntityStateUpdatePduStruct.EntityLinearVelocity[1] = EntityStateUpdatePDUIn->getEntityLinearVelocity().getY();
-	EntityStateUpdatePduStruct.EntityLinearVelocity[2] = EntityStateUpdatePDUIn->getEntityLinearVelocity().getZ();
+	EntityStateUpdatePDUStruct.EntityLinearVelocity[0] = EntityStateUpdatePDUIn->getEntityLinearVelocity().getX();
+	EntityStateUpdatePDUStruct.EntityLinearVelocity[1] = EntityStateUpdatePDUIn->getEntityLinearVelocity().getY();
+	EntityStateUpdatePDUStruct.EntityLinearVelocity[2] = EntityStateUpdatePDUIn->getEntityLinearVelocity().getZ();
 
 	//Single Vars
-	EntityStateUpdatePduStruct.Padding1 = EntityStateUpdatePDUIn->getPadding1();
-	EntityStateUpdatePduStruct.EntityAppearance = EntityStateUpdatePDUIn->getEntityAppearance();
+	EntityStateUpdatePDUStruct.Padding1 = EntityStateUpdatePDUIn->getPadding1();
+	EntityStateUpdatePDUStruct.EntityAppearance = EntityStateUpdatePDUIn->getEntityAppearance();
 
 	//Articulation Parameters
 	for (int i = 0; i < EntityStateUpdatePDUIn->getNumberOfArticulationParameters(); i++)
@@ -67,66 +53,55 @@ void UGRILL_EntityStateUpdatePDU::SetupFromOpenDIS(DIS::EntityStateUpdatePdu* En
 		newArtParam.ParameterValue = tempArtParam.getParameterValue();
 		newArtParam.PartAttachedTo = tempArtParam.getPartAttachedTo();
 
-		EntityStateUpdatePduStruct.ArticulationParameters.Add(newArtParam);
+		EntityStateUpdatePDUStruct.ArticulationParameters.Add(newArtParam);
 	}
 }
 
-DIS::EntityStateUpdatePdu UGRILL_EntityStateUpdatePDU::ToOpenDIS()
+void UGRILL_EntityStateUpdatePDU::ToOpenDIS(DIS::EntityStateUpdatePdu& EntityStateUpdatePDUOut)
 {
-	DIS::EntityStateUpdatePdu entityStateUpdatePDUOut;
-
-	// Common PDU setup
-	entityStateUpdatePDUOut.setProtocolVersion(EntityStateUpdatePduStruct.ProtocolVersion);
-	entityStateUpdatePDUOut.setExerciseID(EntityStateUpdatePduStruct.ExerciseID);
-	entityStateUpdatePDUOut.setPduType(static_cast<unsigned char>(EntityStateUpdatePduStruct.PduType));
-	entityStateUpdatePDUOut.setProtocolFamily(EntityStateUpdatePduStruct.ProtocolFamily);
-	entityStateUpdatePDUOut.setTimestamp(EntityStateUpdatePduStruct.Timestamp);
-	entityStateUpdatePDUOut.setLength(EntityStateUpdatePduStruct.Length);
-	entityStateUpdatePDUOut.setPadding(EntityStateUpdatePduStruct.Padding);
+	UGRILL_EntityInformationFamilyPDU::ToOpenDIS(EntityStateUpdatePDUOut);
 
 	// Specific PDU setup
-	entityStateUpdatePDUOut.setEntityID(EntityStateUpdatePduStruct.EntityID.ToOpenDIS());
-	entityStateUpdatePDUOut.setPadding1(EntityStateUpdatePduStruct.Padding1);
+	EntityStateUpdatePDUOut.setEntityID(EntityStateUpdatePDUStruct.EntityID.ToOpenDIS());
+	EntityStateUpdatePDUOut.setPadding1(EntityStateUpdatePDUStruct.Padding1);
 
 	DIS::Vector3Float OutLinearVelocity;
-	OutLinearVelocity.setX(EntityStateUpdatePduStruct.EntityLinearVelocity.X);
-	OutLinearVelocity.setY(EntityStateUpdatePduStruct.EntityLinearVelocity.Y);
-	OutLinearVelocity.setZ(EntityStateUpdatePduStruct.EntityLinearVelocity.Z);
-	entityStateUpdatePDUOut.setEntityLinearVelocity(OutLinearVelocity);
+	OutLinearVelocity.setX(EntityStateUpdatePDUStruct.EntityLinearVelocity.X);
+	OutLinearVelocity.setY(EntityStateUpdatePDUStruct.EntityLinearVelocity.Y);
+	OutLinearVelocity.setZ(EntityStateUpdatePDUStruct.EntityLinearVelocity.Z);
+	EntityStateUpdatePDUOut.setEntityLinearVelocity(OutLinearVelocity);
 
 	DIS::Vector3Double OutLocation;
-	if (FMath::IsNearlyEqual(static_cast<float>(EntityStateUpdatePduStruct.EntityLocationDouble[0]), EntityStateUpdatePduStruct.EntityLocation.X) &&
-		FMath::IsNearlyEqual(static_cast<float>(EntityStateUpdatePduStruct.EntityLocationDouble[1]), EntityStateUpdatePduStruct.EntityLocation.Y) &&
-		FMath::IsNearlyEqual(static_cast<float>(EntityStateUpdatePduStruct.EntityLocationDouble[2]), EntityStateUpdatePduStruct.EntityLocation.Z))
+	if (FMath::IsNearlyEqual(static_cast<float>(EntityStateUpdatePDUStruct.EntityLocationDouble[0]), EntityStateUpdatePDUStruct.EntityLocation.X) &&
+		FMath::IsNearlyEqual(static_cast<float>(EntityStateUpdatePDUStruct.EntityLocationDouble[1]), EntityStateUpdatePDUStruct.EntityLocation.Y) &&
+		FMath::IsNearlyEqual(static_cast<float>(EntityStateUpdatePDUStruct.EntityLocationDouble[2]), EntityStateUpdatePDUStruct.EntityLocation.Z))
 	{
-		OutLocation.setX(EntityStateUpdatePduStruct.EntityLocationDouble[0]);
-		OutLocation.setY(EntityStateUpdatePduStruct.EntityLocationDouble[1]);
-		OutLocation.setZ(EntityStateUpdatePduStruct.EntityLocationDouble[2]);
+		OutLocation.setX(EntityStateUpdatePDUStruct.EntityLocationDouble[0]);
+		OutLocation.setY(EntityStateUpdatePDUStruct.EntityLocationDouble[1]);
+		OutLocation.setZ(EntityStateUpdatePDUStruct.EntityLocationDouble[2]);
 	}
 	else
 	{
-		OutLocation.setX(EntityStateUpdatePduStruct.EntityLocation.X);
-		OutLocation.setY(EntityStateUpdatePduStruct.EntityLocation.Y);
-		OutLocation.setZ(EntityStateUpdatePduStruct.EntityLocation.Z);
+		OutLocation.setX(EntityStateUpdatePDUStruct.EntityLocation.X);
+		OutLocation.setY(EntityStateUpdatePDUStruct.EntityLocation.Y);
+		OutLocation.setZ(EntityStateUpdatePDUStruct.EntityLocation.Z);
 	}
-	entityStateUpdatePDUOut.setEntityLocation(OutLocation);
+	EntityStateUpdatePDUOut.setEntityLocation(OutLocation);
 
 	DIS::Orientation OutOrientation;
-	OutOrientation.setPsi(EntityStateUpdatePduStruct.EntityOrientation.Yaw);
-	OutOrientation.setTheta(EntityStateUpdatePduStruct.EntityOrientation.Pitch);
-	OutOrientation.setPhi(EntityStateUpdatePduStruct.EntityOrientation.Roll);
-	entityStateUpdatePDUOut.setEntityOrientation(OutOrientation);
+	OutOrientation.setPsi(EntityStateUpdatePDUStruct.EntityOrientation.Yaw);
+	OutOrientation.setTheta(EntityStateUpdatePDUStruct.EntityOrientation.Pitch);
+	OutOrientation.setPhi(EntityStateUpdatePDUStruct.EntityOrientation.Roll);
+	EntityStateUpdatePDUOut.setEntityOrientation(OutOrientation);
 
-	entityStateUpdatePDUOut.setEntityAppearance(EntityStateUpdatePduStruct.EntityAppearance);
+	EntityStateUpdatePDUOut.setEntityAppearance(EntityStateUpdatePDUStruct.EntityAppearance);
 
 	std::vector<DIS::ArticulationParameter> OutArtParams;
-	for (FArticulationParameters ArticulationParameter : EntityStateUpdatePduStruct.ArticulationParameters)
+	for (FArticulationParameters ArticulationParameter : EntityStateUpdatePDUStruct.ArticulationParameters)
 	{
 		OutArtParams.push_back(ArticulationParameter.ToOpenDIS());
 	}
-	entityStateUpdatePDUOut.setArticulationParameters(OutArtParams);
-
-	return entityStateUpdatePDUOut;
+	EntityStateUpdatePDUOut.setArticulationParameters(OutArtParams);
 }
 
 TArray<uint8> UGRILL_EntityStateUpdatePDU::ToBytes()
@@ -134,7 +109,10 @@ TArray<uint8> UGRILL_EntityStateUpdatePDU::ToBytes()
 	DIS::DataStream buffer(DIS::BIG);
 
 	//marshal
-	ToOpenDIS().marshal(buffer);
+	DIS::EntityStateUpdatePdu esupdu;
+
+	ToOpenDIS(esupdu);
+	esupdu.marshal(buffer);
 
 	TArray<uint8> byteArrayOut;
 	byteArrayOut.Init(0, buffer.size());

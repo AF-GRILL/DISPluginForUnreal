@@ -9,7 +9,7 @@
 #include "GRILL_WarfareFamilyPDU.generated.h"
 
 USTRUCT(BlueprintType)
-struct FWarfareFamilyPdu : public FPDU
+struct FWarfareFamilyPDU
 {
 	GENERATED_BODY()
 
@@ -33,9 +33,9 @@ public:
 	void SetupFromOpenDIS(DIS::WarfareFamilyPdu* WarfareFamilyPDUIn);
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		FWarfareFamilyPdu WarfareFamilyPduStruct;
+		FWarfareFamilyPDU WarfareFamilyPDUStruct;
 
-	DIS::WarfareFamilyPdu ToOpenDIS();
+	void ToOpenDIS(DIS::WarfareFamilyPdu& WarfareFamilyPDUOut);
 
 	virtual TArray<uint8> ToBytes() override;
 };

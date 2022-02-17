@@ -9,7 +9,7 @@
 #include "GRILL_EntityStateUpdatePDU.generated.h"
 
 USTRUCT(BlueprintType)
-struct FEntityStateUpdatePDU : public FEntityInformationFamilyPdu
+struct FEntityStateUpdatePDU
 {
 	GENERATED_BODY()
 
@@ -35,14 +35,11 @@ struct FEntityStateUpdatePDU : public FEntityInformationFamilyPdu
 
 	FEntityStateUpdatePDU()
 	{
-		//checked
-		PduType = EPDUType::EntityStateUpdate;
 		EntityLocation = FVector(0, 0, 0);
 		EntityOrientation = FRotator(0, 0, 0);
 		EntityLocationDouble.Init(0, 3);
 		EntityLinearVelocity = FVector(0, 0, 0);
 		EntityAppearance = 0;
-		Padding = 0;
 		Padding1 = 0;
 	}
 };
@@ -61,9 +58,9 @@ public:
 	void SetupFromOpenDIS(DIS::EntityStateUpdatePdu* EntityStateUpdatePDUIn);
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		FEntityStateUpdatePDU EntityStateUpdatePduStruct;
+		FEntityStateUpdatePDU EntityStateUpdatePDUStruct;
 
-	DIS::EntityStateUpdatePdu ToOpenDIS();
+	void ToOpenDIS(DIS::EntityStateUpdatePdu& EntityStateUpdatePDUOut);
 
 	virtual TArray<uint8> ToBytes() override;
 };

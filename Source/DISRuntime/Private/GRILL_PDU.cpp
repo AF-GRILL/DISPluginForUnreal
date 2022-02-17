@@ -5,38 +5,28 @@
 
 UGRILL_PDU::UGRILL_PDU()
 {
-	PduStruct.ProtocolVersion = 6;
-	PduStruct.ExerciseID = 0;
-	PduStruct.PduType = EPDUType::Other;
-	PduStruct.ProtocolFamily = 0;
-	PduStruct.Timestamp = 0;
-	PduStruct.Length = 0;
-	PduStruct.Padding = 0;
+
 }
 
 void UGRILL_PDU::SetupFromOpenDIS(DIS::Pdu* PDUIn)
 {
-	PduStruct.ProtocolVersion = PDUIn->getProtocolVersion();
-	PduStruct.ExerciseID = PDUIn->getExerciseID();
-	PduStruct.PduType = static_cast<EPDUType>(PDUIn->getPduType());
-	PduStruct.ProtocolFamily = PDUIn->getProtocolFamily();
-	PduStruct.Timestamp = PDUIn->getTimestamp();
-	PduStruct.Length = PDUIn->getLength();
-	PduStruct.Padding = PDUIn->getPadding();
+	PDUStruct.ProtocolVersion = PDUIn->getProtocolVersion();
+	PDUStruct.ExerciseID = PDUIn->getExerciseID();
+	PDUStruct.PduType = static_cast<EPDUType>(PDUIn->getPduType());
+	PDUStruct.ProtocolFamily = PDUIn->getProtocolFamily();
+	PDUStruct.Timestamp = PDUIn->getTimestamp();
+	PDUStruct.Length = PDUIn->getLength();
+	PDUStruct.Padding = PDUIn->getPadding();
 }
 
-DIS::Pdu UGRILL_PDU::ToOpenDIS()
+void UGRILL_PDU::ToOpenDIS(DIS::Pdu& PDUOut)
 {
-	DIS::Pdu pduOut;
-
-	pduOut.setProtocolVersion(PduStruct.ProtocolVersion);
-	pduOut.setExerciseID(PduStruct.ExerciseID);
-	pduOut.setPduType(static_cast<unsigned char>(PduStruct.PduType));
-	pduOut.setTimestamp(PduStruct.Timestamp);
-	pduOut.setLength(PduStruct.Length);
-	pduOut.setPadding(PduStruct.Padding);
-
-    return pduOut;
+	PDUOut.setProtocolVersion(PDUStruct.ProtocolVersion);
+	PDUOut.setExerciseID(PDUStruct.ExerciseID);
+	PDUOut.setPduType(static_cast<unsigned char>(PDUStruct.PduType));
+	PDUOut.setTimestamp(PDUStruct.Timestamp);
+	PDUOut.setLength(PDUStruct.Length);
+	PDUOut.setPadding(PDUStruct.Padding);
 }
 
 TArray<uint8> UGRILL_PDU::ToBytes()
@@ -44,7 +34,10 @@ TArray<uint8> UGRILL_PDU::ToBytes()
 	DIS::DataStream buffer(DIS::BIG);
 
 	//marshal
-	ToOpenDIS().marshal(buffer);
+	DIS::Pdu pdu;
+
+	ToOpenDIS(pdu);
+	pdu.marshal(buffer);
 
 	TArray<uint8> byteArrayOut;
 	byteArrayOut.Init(0, buffer.size());
