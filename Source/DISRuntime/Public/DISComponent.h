@@ -179,9 +179,12 @@ protected:
 	virtual void BeginPlay() override;
 
 private:
-	UGRILL_EntityStatePDU* MostRecentEntityStatePDU;
-	UGRILL_EntityStatePDU* DeadReckoningEntityStatePDU;
-	UGRILL_EntityStatePDU* TempDeadReckonedPDU;
+	UPROPERTY()
+	UGRILL_EntityStatePDU* MostRecentEntityStatePDU = nullptr;
+	UPROPERTY()
+	UGRILL_EntityStatePDU* DeadReckoningEntityStatePDU = nullptr;
+	UPROPERTY()
+	UGRILL_EntityStatePDU* TempDeadReckonedPDU = nullptr;
 
 	/**
 	 * Gets the local yaw, pitch, and roll from the other parameters structure. The yaw, pitch, and roll act on the entity's local North, East, Down vectors.

@@ -13,6 +13,9 @@ UDISComponent::UDISComponent()
 	MostRecentEntityStatePDU = NewObject<UGRILL_EntityStatePDU>();
 	DeadReckoningEntityStatePDU = NewObject<UGRILL_EntityStatePDU>();
 	TempDeadReckonedPDU = NewObject<UGRILL_EntityStatePDU>();
+
+	PrimaryComponentTick.bCanEverTick = true;
+	PrimaryComponentTick.bStartWithTickEnabled = false;
 }
 
 // Called when the game starts
@@ -232,9 +235,9 @@ void UDISComponent::HandleEntityStatePDU(UGRILL_EntityStatePDU* NewEntityStatePD
 
 	//If tick is not enabled and dead reckoning is enabled, then enable tick
 	//Tick is off by default to prevent race conditions since Dead Reckoning relies on the Entity State PDU
-	if (!PrimaryComponentTick.bCanEverTick && PerformDeadReckoning)
+	if (!this->IsComponentTickEnabled() && PerformDeadReckoning)
 	{
-		PrimaryComponentTick.bCanEverTick = true;
+		this->SetComponentTickEnabled(true);
 	}
 }
 
@@ -261,9 +264,9 @@ void UDISComponent::HandleEntityStateUpdatePDU(UGRILL_EntityStateUpdatePDU* NewE
 
 	//If tick is not enabled and dead reckoning is enabled, then enable tick
 	//Tick is off by default to prevent race conditions since Dead Reckoning relies on the Entity State PDU
-	if (!PrimaryComponentTick.bCanEverTick && PerformDeadReckoning) 
+	if (!this->IsComponentTickEnabled() && PerformDeadReckoning)
 	{
-		PrimaryComponentTick.bCanEverTick = true;
+		this->SetComponentTickEnabled(true);
 	}
 }
 
@@ -287,7 +290,7 @@ bool UDISComponent::DeadReckoning(UGRILL_EntityStatePDU* EntityPDUToDeadReckon, 
 {
 	//Check if dead reckoning should be performed and if the entity is owned by another sim on the network
 	//If not, then don't do dead reckoning
-	if (!(PerformDeadReckoning && SpawnedFromNetwork))
+	if (!PerformDeadReckoning || !SpawnedFromNetwork)
 	{
 		PerformDeadReckoning = false;
 		return false;
