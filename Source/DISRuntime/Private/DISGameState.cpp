@@ -68,6 +68,12 @@ void ADISGameState::HandleOnDISEntityDestroyed(AActor* DestroyedActor)
 
 void ADISGameState::HandleEntityStatePDU(UGRILL_EntityStatePDU* EntityStatePDUIn)
 {
+	if (!IsValid(EntityStatePDUIn))
+	{
+		UE_LOG(LogDISGameState, Warning, TEXT("Received Entity State PDU was not valid. Ignoring the PDU."));
+		return;
+	}
+
 	//Find associated actor in the DISActorMappings map -- If actor does not exist spawn one
 	ADISEntity_Base* associatedActor = RawDISActorMappings[EntityStatePDUIn->EntityStatePDUStruct.EntityID];
 	if (associatedActor != nullptr)
@@ -96,6 +102,12 @@ void ADISGameState::HandleEntityStatePDU(UGRILL_EntityStatePDU* EntityStatePDUIn
 
 void ADISGameState::HandleEntityStateUpdatePDU(UGRILL_EntityStateUpdatePDU* EntityStateUpdatePDUIn)
 {
+	if (!IsValid(EntityStateUpdatePDUIn))
+	{
+		UE_LOG(LogDISGameState, Warning, TEXT("Received Entity State Update PDU was not valid. Ignoring the PDU."));
+		return;
+	}
+
 	//Find associated actor in the DISActorMappings map -- If actor does not exist spawn one
 	ADISEntity_Base* associatedActor = RawDISActorMappings[EntityStateUpdatePDUIn->EntityStateUpdatePDUStruct.EntityID];
 	if (associatedActor != nullptr)
@@ -127,8 +139,14 @@ void ADISGameState::HandleEntityStateUpdatePDU(UGRILL_EntityStateUpdatePDU* Enti
 
 void ADISGameState::HandleFirePDU(UGRILL_FirePDU* FirePDUIn)
 {
+	if (!IsValid(FirePDUIn))
+	{
+		UE_LOG(LogDISGameState, Warning, TEXT("Received Fire PDU was not valid. Ignoring the PDU."));
+		return;
+	}
+
 	//Get associated OpenDISComponent and relay information
-	UDISComponent* DISComponent = GetAssociatedDISComponent(FirePDUIn->FirePDUStruct.MunitionEntityID);
+	UDISComponent* DISComponent = GetAssociatedDISComponent(FirePDUIn->WarfareFamilyPDUStruct.FiringEntityID);
 
 	if (DISComponent != nullptr)
 	{
@@ -138,6 +156,12 @@ void ADISGameState::HandleFirePDU(UGRILL_FirePDU* FirePDUIn)
 
 void ADISGameState::HandleDetonationPDU(UGRILL_DetonationPDU* DetonationPDUIn)
 {
+	if (!IsValid(DetonationPDUIn)) 
+	{
+		UE_LOG(LogDISGameState, Warning, TEXT("Received Detonation PDU was not valid. Ignoring the PDU."));
+		return;
+	}
+
 	//Get associated OpenDISComponent and relay information
 	UDISComponent* DISComponent = GetAssociatedDISComponent(DetonationPDUIn->DetonationPDUStruct.MunitionEntityID);
 
@@ -149,6 +173,12 @@ void ADISGameState::HandleDetonationPDU(UGRILL_DetonationPDU* DetonationPDUIn)
 
 void ADISGameState::HandleRemoveEntityPDU(UGRILL_RemoveEntityPDU* RemoveEntityPDUIn)
 {
+	if (!IsValid(RemoveEntityPDUIn))
+	{
+		UE_LOG(LogDISGameState, Warning, TEXT("Received Remove Entity PDU was not valid. Ignoring the PDU."));
+		return;
+	}
+
 	//Verify that we are the appropriate sim to handle the RemoveEntityPDU
 	if (RemoveEntityPDUIn->SimManagementFamilyPDUStruct.ReceivingEntityID.Site == SiteID && RemoveEntityPDUIn->SimManagementFamilyPDUStruct.ReceivingEntityID.Application == ApplicationID)
 	{
@@ -164,6 +194,12 @@ void ADISGameState::HandleRemoveEntityPDU(UGRILL_RemoveEntityPDU* RemoveEntityPD
 
 void ADISGameState::SpawnNewEntityFromEntityState(UGRILL_EntityStatePDU* EntityStatePDUIn)
 {
+	if (!IsValid(EntityStatePDUIn))
+	{
+		UE_LOG(LogDISGameState, Warning, TEXT("Entity State PDU that was passed to spawn an entity from was not valid. Ignoring the PDU."));
+		return;
+	}
+
 	//If an actor was not found -- check to see if there is an associated actor for the entity type
 	TAssetSubclassOf<ADISEntity_Base>* associatedSoftClassReference = &RawDISClassMappings[EntityStatePDUIn->EntityStatePDUStruct.EntityType];
 	UClass* associatedClass = associatedSoftClassReference->LoadSynchronous();
@@ -189,7 +225,9 @@ void ADISGameState::SpawnNewEntityFromEntityState(UGRILL_EntityStatePDU* EntityS
 	//If so, spawn one and relay information to the associated component
 	if (associatedClass != nullptr)
 	{ 
-		ADISEntity_Base* spawnedActor = GetWorld()->SpawnActor<ADISEntity_Base>(associatedClass);
+		FActorSpawnParameters spawnParams = FActorSpawnParameters();
+		spawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+		ADISEntity_Base* spawnedActor = GetWorld()->SpawnActor<ADISEntity_Base>(associatedClass, spawnParams);
 
 		if (spawnedActor != nullptr)
 		{

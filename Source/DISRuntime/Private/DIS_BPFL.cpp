@@ -4,6 +4,8 @@
 #include "DIS_BPFL.h"
 #include "DISGameState.h"
 
+DEFINE_LOG_CATEGORY(LogDIS_BPFL);
+
 void UDIS_BPFL::CalculateLatLonHeightFromEcefXYZ(const FEarthCenteredEarthFixedDouble Ecef, FLatLonHeightDouble& OutLatLonHeightDegreesMeters)
 {
 	constexpr double EarthSemiMajorRadiusMeters = 6378137;
@@ -11,7 +13,7 @@ void UDIS_BPFL::CalculateLatLonHeightFromEcefXYZ(const FEarthCenteredEarthFixedD
 
 	const double Longitude = FMath::RadiansToDegrees(FMath::Atan2(Ecef.Y, Ecef.X));
 	// Latitude accurate to ~5 decimal places
-	const double Latitude = FMath::RadiansToDegrees(FMath::Atan((FMath::Square(EarthSemiMajorRadiusMeters) / FMath::Square(EarthSemiMinorRadiusMeters))*(Ecef.Z / FMath::Sqrt(FMath::Square(Ecef.X) + FMath::Square(Ecef.Y)))));
+	const double Latitude = FMath::RadiansToDegrees(FMath::Atan((FMath::Square(EarthSemiMajorRadiusMeters) / FMath::Square(EarthSemiMinorRadiusMeters)) * (Ecef.Z / FMath::Sqrt(FMath::Square(Ecef.X) + FMath::Square(Ecef.Y)))));
 
 	const double EarthSemiMajorRadiusMetersSquare = FMath::Square(EarthSemiMajorRadiusMeters);
 	const double EarthSemiMinorRadiusMetersSquare = FMath::Square(EarthSemiMinorRadiusMeters);
@@ -349,6 +351,13 @@ void UDIS_BPFL::CalculateLatLonHeightFromUnrealLocation(const FVector UELocation
 
 void UDIS_BPFL::GetUnrealRotationFromEntityStatePdu(const UGRILL_EntityStatePDU* EntityStatePdu, AGeoReferencingSystem* GeoReferencingSystem, FRotator& EntityRotation)
 {
+	if (!IsValid(EntityStatePdu) || !IsValid(GeoReferencingSystem))
+	{
+		EntityRotation = FRotator(0, 0, 0);
+		UE_LOG(LogDIS_BPFL, Warning, TEXT("Invalid Entity State PDU or GeoReference was passed to get Unreal rotation from. Returning Unreal rotation of (0, 0, 0)."));
+		return;
+	}
+
 	FEarthCenteredEarthFixedDouble ecefDouble = FEarthCenteredEarthFixedDouble(EntityStatePdu->EntityStatePDUStruct.EntityLocationDouble[0], EntityStatePdu->EntityStatePDUStruct.EntityLocationDouble[1], EntityStatePdu->EntityStatePDUStruct.EntityLocationDouble[2]);
 
 	FLatLonHeightDouble LatLonHeightDouble;
@@ -381,17 +390,34 @@ void UDIS_BPFL::GetUnrealRotationFromEntityStatePdu(const UGRILL_EntityStatePDU*
 
 void UDIS_BPFL::GetEntityUnrealLocationFromEntityStatePdu(const UGRILL_EntityStatePDU* EntityStatePdu, AGeoReferencingSystem* GeoReferencingSystem, FVector& EntityLocation)
 {
+	if (!IsValid(EntityStatePdu) || !IsValid(GeoReferencingSystem))
+	{
+		EntityLocation = FVector(0, 0, 0);
+		UE_LOG(LogDIS_BPFL, Warning, TEXT("Invalid Entity State PDU or GeoReference was passed to get Unreal location from. Returning Unreal location of (0, 0, 0)."));
+		return;
+	}
+
 	FEarthCenteredEarthFixedDouble ecefDouble = FEarthCenteredEarthFixedDouble(EntityStatePdu->EntityStatePDUStruct.EntityLocationDouble[0], EntityStatePdu->EntityStatePDUStruct.EntityLocationDouble[1], EntityStatePdu->EntityStatePDUStruct.EntityLocationDouble[2]);
 
 	FCartesianCoordinates cartCoords = FCartesianCoordinates(ecefDouble.X, ecefDouble.Y, ecefDouble.Z);
 
 	GeoReferencingSystem->ECEFToEngine(cartCoords, EntityLocation);
+
 }
 
 void UDIS_BPFL::GetEntityUnrealLocationAndOrientation(const UGRILL_EntityStatePDU* EntityStatePdu, AGeoReferencingSystem* GeoReferencingSystem, FVector& EntityLocation, FRotator& EntityRotation)
 {
+	if (!IsValid(EntityStatePdu) || !IsValid(GeoReferencingSystem))
+	{
+		EntityLocation = FVector(0,0,0);
+		EntityRotation = FRotator(0,0,0);
+		UE_LOG(LogDIS_BPFL, Warning, TEXT("Invalid Entity State PDU or GeoReference was passed to get Unreal location and rotation from. Returning location and rotation of (0, 0, 0)."));
+		return;
+	}
+
 	GetEntityUnrealLocationFromEntityStatePdu(EntityStatePdu, GeoReferencingSystem, EntityLocation);
 	GetUnrealRotationFromEntityStatePdu(EntityStatePdu, GeoReferencingSystem, EntityRotation);
+
 }
 
 void UDIS_BPFL::GetNorthEastDownVectorsFromUnrealLocation(const FVector UnrealLocation,
@@ -440,7 +466,7 @@ void UDIS_BPFL::GetHeadingPitchRollFromUnrealRotation(const FRotator EntityUnrea
 }
 
 void UDIS_BPFL::GetEastNorthUpVectorsFromNorthEastDownVectors(const FNorthEastDown NorthEastDownVectors,
-                                                              FEastNorthUp& EastNorthUpVectors)
+	FEastNorthUp& EastNorthUpVectors)
 {
 	const FMatrix NorthEastDownMatrix(NorthEastDownVectors.NorthVector, NorthEastDownVectors.EastVector, NorthEastDownVectors.DownVector, FVector(0));
 	const FMatrix EastNorthUpMatrix = ConvertNedAndEnu(NorthEastDownMatrix);

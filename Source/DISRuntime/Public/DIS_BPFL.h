@@ -11,6 +11,8 @@
 #include "GeoReferencingSystem.h"
 #include "DIS_BPFL.generated.h"
 
+DECLARE_LOG_CATEGORY_EXTERN(LogDIS_BPFL, Log, All);
+
 /**
  * 
  */
