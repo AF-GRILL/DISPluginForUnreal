@@ -5,7 +5,6 @@
 #include "CoreMinimal.h"
 #include "UObject/Object.h"
 #include "DISEnumsAndStructs.h"
-#include "DISEntity_Base.h"
 #include "DISRuntimeSettings.generated.h"
 
 /**
