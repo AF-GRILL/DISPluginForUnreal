@@ -29,7 +29,7 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FGroundClampingUpdate, TArray<FTrans
  * 
  * Currently should be used in conjunction with the DISEntity_Base actor to get full functionality.
  */
-UCLASS(Blueprintable, ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
+UCLASS(Blueprintable, ClassGroup = (Custom), meta = (BlueprintSpawnableComponent, DisplayName = "DIS Component"))
 class DISRUNTIME_API UDISComponent : public UActorComponent
 {
 	GENERATED_BODY()

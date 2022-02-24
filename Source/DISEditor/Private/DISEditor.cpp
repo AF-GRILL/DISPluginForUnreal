@@ -5,6 +5,8 @@
 #include "DISEditorCommands.h"
 #include "Misc/MessageDialog.h"
 #include "DISRuntimeSettings.h"
+#include "AssetTypeActions_Base.h"
+#include "DISEnumerationMappingsFactory.h"
 
 #include "ToolMenus.h"
 #include "LevelEditor.h"
@@ -14,7 +16,7 @@ static const FName UEOpenDISEditorTabName("DISEditor");
 #define LOCTEXT_NAMESPACE "FDISEditor"
 
 void FDISEditorModule::StartupModule()
-{	
+{
 	FDISEditorStyle::Initialize();
 	FDISEditorStyle::ReloadTextures();
 
@@ -39,6 +41,10 @@ void FDISEditorModule::StartupModule()
 			LOCTEXT("RuntimeSettingsDescription", "Project settings for the GRILL DIS for Unreal plugin"),
 			GetMutableDefault<UDISRuntimeSettings>());
 	}
+
+	IAssetTools& AssetTools = FModuleManager::LoadModuleChecked<FAssetToolsModule>("AssetTools").Get();
+	TSharedRef<IAssetTypeActions> ACT_UDISEnumerationMappingsDatabase = MakeShareable(new UDISEnumerationMappingsDatabase);
+	AssetTools.RegisterAssetTypeActions(ACT_UDISEnumerationMappingsDatabase);
 }
 
 void FDISEditorModule::ShutdownModule()
@@ -61,7 +67,7 @@ void FDISEditorModule::ShutdownModule()
 	}
 }
 
-void FDISEditorModule::DISProjectSettings_Clicked() 
+void FDISEditorModule::DISProjectSettings_Clicked()
 {
 	//Open the Project Settings at the OpenDIS plugins section
 	if (SettingsModule != nullptr)

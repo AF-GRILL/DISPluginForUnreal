@@ -12,7 +12,8 @@ public class DISEditor : ModuleRules
             new string[]
             {
                 "Core",
-                "DISRuntime"
+                "DISRuntime",
+                "AssetTools"
 				// ... add other public dependencies that you statically link with here ...
 			}
             );
