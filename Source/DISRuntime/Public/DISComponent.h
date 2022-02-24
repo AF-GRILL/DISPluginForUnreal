@@ -54,6 +54,7 @@ public:
 	void HandleFirePDU(UGRILL_FirePDU* FirePDUIn);
 	void HandleDetonationPDU(UGRILL_DetonationPDU* DetonationPDUIn);
 	void HandleRemoveEntityPDU(UGRILL_RemoveEntityPDU* RemoveEntityPDUIn);
+	void DoDeadReckoning(float DeltaTime);
 
 	/**
 	 * Called after a dead reckoning update is performed by the component.
