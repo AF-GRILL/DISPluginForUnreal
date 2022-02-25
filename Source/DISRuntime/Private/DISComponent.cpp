@@ -201,14 +201,6 @@ void UDISComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorCo
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
-	//Check if dead reckoning is supported/enabled. Broadcast dead reckoning update if it is
-	if (DeadReckoning(DeadReckoningEntityStatePDU, DeltaTime, TempDeadReckonedPDU))
-	{
-		DeadReckoningEntityStatePDU = TempDeadReckonedPDU;
-		OnDeadReckoningUpdate.Broadcast(DeadReckoningEntityStatePDU);
-
-		GroundClamping_Implementation();
-	}
 }
 
 void UDISComponent::HandleEntityStatePDU(UGRILL_EntityStatePDU* NewEntityStatePDU)
@@ -283,6 +275,18 @@ void UDISComponent::HandleDetonationPDU(UGRILL_DetonationPDU* DetonationPDUIn)
 void UDISComponent::HandleRemoveEntityPDU(UGRILL_RemoveEntityPDU* RemoveEntityPDUIn)
 {
 	OnReceivedRemoveEntityPDU.Broadcast(RemoveEntityPDUIn);
+}
+
+void UDISComponent::DoDeadReckoning(float DeltaTime)
+{
+	//Check if dead reckoning is supported/enabled. Broadcast dead reckoning update if it is
+	if (DeadReckoning(DeadReckoningEntityStatePDU, DeltaTime, TempDeadReckonedPDU))
+	{
+		DeadReckoningEntityStatePDU = TempDeadReckonedPDU;
+		OnDeadReckoningUpdate.Broadcast(DeadReckoningEntityStatePDU);
+
+		GroundClamping_Implementation();
+	}
 }
 
 // TODO: Cleanup copy pasted code in switch

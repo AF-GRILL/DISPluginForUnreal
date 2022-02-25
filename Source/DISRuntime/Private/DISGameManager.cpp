@@ -22,7 +22,7 @@ ADISGameManager* ADISGameManager::GetDISGameManager(UObject* WorldContextObject)
 		}
 		else if (NbActors > 1)
 		{
-			UE_LOG(LogDISGameManager, Error, TEXT("Multiple DISGameManager actors found. Only one actor should be used to configure your  DIS Game Manager."));
+			UE_LOG(LogDISGameManager, Error, TEXT("Multiple DISGameManager actors found. Only one actor should be used to configure your DIS Game Manager."));
 		}
 		else
 		{
@@ -59,6 +59,17 @@ void ADISGameManager::BeginPlay()
 
 			DISClassMappings.Add(EntityType, DISMapping.DISEntity);
 			RawDISClassMappings.insert({ EntityType, DISMapping.DISEntity });
+		}
+	}
+}
+
+void ADISGameManager::Tick(float DeltaTime)
+{
+	for (std::pair<FEntityID, AActor*> DisEntity : RawDISActorMappings) {
+		UDISComponent* EntityDisComponent = DisEntity.second->FindComponentByClass<UDISComponent>();
+
+		if (EntityDisComponent) {
+			EntityDisComponent->DoDeadReckoning(DeltaTime);
 		}
 	}
 }
