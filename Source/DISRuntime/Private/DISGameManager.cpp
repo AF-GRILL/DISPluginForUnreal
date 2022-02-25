@@ -65,11 +65,13 @@ void ADISGameManager::BeginPlay()
 
 void ADISGameManager::Tick(float DeltaTime)
 {
-	for (std::pair<FEntityID, AActor*> DisEntity : RawDISActorMappings) {
-		UDISComponent* EntityDisComponent = DisEntity.second->FindComponentByClass<UDISComponent>();
+	Super::Tick(DeltaTime);
 
-		if (EntityDisComponent) {
-			EntityDisComponent->DoDeadReckoning(DeltaTime);
+	for (std::pair<FEntityID, AActor*> DisEntity : RawDISActorMappings) {
+		UDISComponent* DISComponent = IDISInterface::Execute_GetActorDISComponent(DisEntity.second);
+
+		if (DISComponent) {
+			DISComponent->DoDeadReckoning(DeltaTime);
 		}
 	}
 }
