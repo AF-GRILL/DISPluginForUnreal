@@ -7,6 +7,15 @@
 
 DEFINE_LOG_CATEGORY(LogDISGameManager);
 
+ADISGameManager::ADISGameManager()
+{
+	PrimaryActorTick.bCanEverTick = true;
+	PrimaryActorTick.bStartWithTickEnabled = true;
+	PrimaryActorTick.bAllowTickOnDedicatedServer = true;
+
+	SetActorTickEnabled(true);
+}
+
 ADISGameManager* ADISGameManager::GetDISGameManager(UObject* WorldContextObject)
 {
 	ADISGameManager* Actor = nullptr;
@@ -70,6 +79,9 @@ void ADISGameManager::Tick(float DeltaTime)
 
 		if (EntityDisComponent) {
 			EntityDisComponent->DoDeadReckoning(DeltaTime);
+		}
+		else {
+			UE_LOG(LogTemp, Warning, TEXT("Cannot find DISComponent on entity %s"), *DisEntity.second->GetName())
 		}
 	}
 }

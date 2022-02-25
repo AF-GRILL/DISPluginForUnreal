@@ -21,7 +21,9 @@ class DISRUNTIME_API ADISGameManager : public AInfo
 {
 	GENERATED_BODY()
 
+
 public:
+	ADISGameManager();
 
 	UFUNCTION(BlueprintPure, Category = "GRILL DIS|Game Manager", meta = (WorldContext = "WorldContextObject"))
 		static ADISGameManager* GetDISGameManager(UObject* WorldContextObject);
