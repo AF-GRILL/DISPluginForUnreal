@@ -74,11 +74,13 @@ void ADISGameManager::BeginPlay()
 
 void ADISGameManager::Tick(float DeltaTime)
 {
-	for (std::pair<FEntityID, AActor*> DisEntity : RawDISActorMappings) {
-		UDISComponent* EntityDisComponent = DisEntity.second->FindComponentByClass<UDISComponent>();
+	Super::Tick(DeltaTime);
 
-		if (EntityDisComponent) {
-			EntityDisComponent->DoDeadReckoning(DeltaTime);
+	for (std::pair<FEntityID, AActor*> DisEntity : RawDISActorMappings) {
+		UDISComponent* DISComponent = IDISInterface::Execute_GetActorDISComponent(DisEntity.second);
+
+		if (DISComponent) {
+			DISComponent->DoDeadReckoning(DeltaTime);
 		}
 		else {
 			UE_LOG(LogTemp, Warning, TEXT("Cannot find DISComponent on entity %s"), *DisEntity.second->GetName())
@@ -145,31 +147,14 @@ void ADISGameManager::HandleEntityStateUpdatePDU(UGRILL_EntityStateUpdatePDU* En
 		return;
 	}
 
-	//Find associated actor in the DISActorMappings map -- If actor does not exist spawn one
-	AActor* associatedActor = RawDISActorMappings[EntityStateUpdatePDUIn->EntityStateUpdatePDUStruct.EntityID];
-	if (associatedActor != nullptr)
+	// NOTE: Entity State Update PDUs do not contain an Entity Type, so we cannot spawn an entity from one
+
+	//Get associated OpenDISComponent and relay information
+	UDISComponent* DISComponent = GetAssociatedDISComponent(EntityStateUpdatePDUIn->EntityStateUpdatePDUStruct.EntityID);
+
+	if (DISComponent != nullptr)
 	{
-		//If an actor was found, relay information to the associated component
-		UDISComponent* DISComponent = IDISInterface::Execute_GetActorDISComponent(associatedActor);
-
-		if (DISComponent != nullptr)
-		{
-			DISComponent->HandleEntityStateUpdatePDU(EntityStateUpdatePDUIn);
-		}
-	}
-	else
-	{
-		//Check if the entity has been deactivated -- Entity is deactivated if the 23rd bit of the Entity Appearance value is set
-		if (EntityStateUpdatePDUIn->EntityStateUpdatePDUStruct.EntityAppearance & (1 << 23))
-		{
-			UE_LOG(LogDISGameManager, Log, TEXT("Received Entity State Update PDU with a Deactivated Entity Appearance for an entity that is not in the level. Ignoring the PDU. Entity ID: %s"), *EntityStateUpdatePDUIn->EntityStateUpdatePDUStruct.EntityID.ToString());
-			return;
-		}
-
-		UGRILL_EntityStatePDU* espdu = NewObject<UGRILL_EntityStatePDU>();
-		espdu->SetupFromEntityStateUpdatePDU(EntityStateUpdatePDUIn);
-
-		SpawnNewEntityFromEntityState(espdu);
+		DISComponent->HandleEntityStateUpdatePDU(EntityStateUpdatePDUIn);
 	}
 }
 
@@ -192,7 +177,7 @@ void ADISGameManager::HandleFirePDU(UGRILL_FirePDU* FirePDUIn)
 
 void ADISGameManager::HandleDetonationPDU(UGRILL_DetonationPDU* DetonationPDUIn)
 {
-	if (!IsValid(DetonationPDUIn)) 
+	if (!IsValid(DetonationPDUIn))
 	{
 		UE_LOG(LogDISGameManager, Warning, TEXT("Received Detonation PDU was not valid. Ignoring the PDU."));
 		return;
@@ -260,7 +245,7 @@ void ADISGameManager::SpawnNewEntityFromEntityState(UGRILL_EntityStatePDU* Entit
 	}
 	//If so, spawn one and relay information to the associated component
 	if (associatedClass != nullptr)
-	{ 
+	{
 		FActorSpawnParameters spawnParams = FActorSpawnParameters();
 		spawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 		AActor* spawnedActor = GetWorld()->SpawnActor<AActor>(associatedClass, spawnParams);
