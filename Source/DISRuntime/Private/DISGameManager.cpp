@@ -7,6 +7,11 @@
 
 DEFINE_LOG_CATEGORY(LogDISGameManager);
 
+ADISGameManager::ADISGameManager() 
+{
+	PrimaryActorTick.bCanEverTick = true;
+}
+
 ADISGameManager* ADISGameManager::GetDISGameManager(UObject* WorldContextObject)
 {
 	ADISGameManager* Actor = nullptr;
@@ -58,7 +63,7 @@ void ADISGameManager::BeginPlay()
 			}
 
 			DISClassMappings.Add(EntityType, DISMapping.DISEntity);
-			RawDISClassMappings.insert({ EntityType, DISMapping.DISEntity });
+			RawDISClassMappings.insert_or_assign(EntityType, DISMapping.DISEntity);
 		}
 	}
 }
@@ -67,11 +72,20 @@ void ADISGameManager::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	for (std::pair<FEntityID, AActor*> DisEntity : RawDISActorMappings) {
-		UDISComponent* DISComponent = IDISInterface::Execute_GetActorDISComponent(DisEntity.second);
+	for (std::pair<FEntityID, AActor*> DisEntity : RawDISActorMappings)
+	{
+		if (IsValid(DisEntity.second))
+		{
+			UDISComponent* DISComponent = IDISInterface::Execute_GetActorDISComponent(DisEntity.second);
 
-		if (DISComponent) {
-			DISComponent->DoDeadReckoning(DeltaTime);
+			if (DISComponent)
+			{
+				DISComponent->DoDeadReckoning(DeltaTime);
+			}
+		}
+		else
+		{
+			UE_LOG(LogDISGameManager, Error, TEXT("Encountered null reference within RawDISActorMapping! Check C++ side usage of RawDISActorMapping to verify using properly!"));
 		}
 	}
 }
@@ -94,20 +108,14 @@ void ADISGameManager::HandleOnDISEntityDestroyed(AActor* DestroyedActor)
 	}
 }
 
-void ADISGameManager::HandleEntityStatePDU(UGRILL_EntityStatePDU* EntityStatePDUIn)
+void ADISGameManager::HandleEntityStatePDU(FEntityStatePDU EntityStatePDUIn)
 {
-	if (!IsValid(EntityStatePDUIn))
-	{
-		UE_LOG(LogDISGameManager, Warning, TEXT("Received Entity State PDU was not valid. Ignoring the PDU."));
-		return;
-	}
-
 	//Find associated actor in the DISActorMappings map -- If actor does not exist spawn one
-	AActor* associatedActor = RawDISActorMappings[EntityStatePDUIn->EntityStatePDUStruct.EntityID];
-	if (associatedActor != nullptr)
+	auto associatedActor = RawDISActorMappings.find(EntityStatePDUIn.EntityID);
+	if (associatedActor != RawDISActorMappings.end())
 	{
 		//If an actor was found, relay information to the associated component
-		UDISComponent* DISComponent = IDISInterface::Execute_GetActorDISComponent(associatedActor);
+		UDISComponent* DISComponent = IDISInterface::Execute_GetActorDISComponent(associatedActor->second);
 
 		if (DISComponent != nullptr)
 		{
@@ -117,9 +125,9 @@ void ADISGameManager::HandleEntityStatePDU(UGRILL_EntityStatePDU* EntityStatePDU
 	else
 	{
 		//Check if the entity has been deactivated -- Entity is deactivated if the 23rd bit of the Entity Appearance value is set
-		if (EntityStatePDUIn->EntityStatePDUStruct.EntityAppearance & (1 << 23))
+		if (EntityStatePDUIn.EntityAppearance & (1 << 23))
 		{
-			UE_LOG(LogDISGameManager, Log, TEXT("Received Entity State PDU with a Deactivated Entity Appearance for an entity that is not in the level. Ignoring the PDU. Entity marking: %s"), *EntityStatePDUIn->EntityStatePDUStruct.Marking);
+			UE_LOG(LogDISGameManager, Log, TEXT("Received Entity State PDU with a Deactivated Entity Appearance for an entity that is not in the level. Ignoring the PDU. Entity marking: %s"), *EntityStatePDUIn.Marking);
 			return;
 		}
 
@@ -127,18 +135,12 @@ void ADISGameManager::HandleEntityStatePDU(UGRILL_EntityStatePDU* EntityStatePDU
 	}
 }
 
-void ADISGameManager::HandleEntityStateUpdatePDU(UGRILL_EntityStateUpdatePDU* EntityStateUpdatePDUIn)
+void ADISGameManager::HandleEntityStateUpdatePDU(FEntityStateUpdatePDU EntityStateUpdatePDUIn)
 {
-	if (!IsValid(EntityStateUpdatePDUIn))
-	{
-		UE_LOG(LogDISGameManager, Warning, TEXT("Received Entity State Update PDU was not valid. Ignoring the PDU."));
-		return;
-	}
-
 	// NOTE: Entity State Update PDUs do not contain an Entity Type, so we cannot spawn an entity from one
 
 	//Get associated OpenDISComponent and relay information
-	UDISComponent* DISComponent = GetAssociatedDISComponent(EntityStateUpdatePDUIn->EntityStateUpdatePDUStruct.EntityID);
+	UDISComponent* DISComponent = GetAssociatedDISComponent(EntityStateUpdatePDUIn.EntityID);
 
 	if (DISComponent != nullptr)
 	{
@@ -146,16 +148,10 @@ void ADISGameManager::HandleEntityStateUpdatePDU(UGRILL_EntityStateUpdatePDU* En
 	}
 }
 
-void ADISGameManager::HandleFirePDU(UGRILL_FirePDU* FirePDUIn)
+void ADISGameManager::HandleFirePDU(FFirePDU FirePDUIn)
 {
-	if (!IsValid(FirePDUIn))
-	{
-		UE_LOG(LogDISGameManager, Warning, TEXT("Received Fire PDU was not valid. Ignoring the PDU."));
-		return;
-	}
-
 	//Get associated OpenDISComponent and relay information
-	UDISComponent* DISComponent = GetAssociatedDISComponent(FirePDUIn->WarfareFamilyPDUStruct.FiringEntityID);
+	UDISComponent* DISComponent = GetAssociatedDISComponent(FirePDUIn.FiringEntityID);
 
 	if (DISComponent != nullptr)
 	{
@@ -163,16 +159,10 @@ void ADISGameManager::HandleFirePDU(UGRILL_FirePDU* FirePDUIn)
 	}
 }
 
-void ADISGameManager::HandleDetonationPDU(UGRILL_DetonationPDU* DetonationPDUIn)
+void ADISGameManager::HandleDetonationPDU(FDetonationPDU DetonationPDUIn)
 {
-	if (!IsValid(DetonationPDUIn))
-	{
-		UE_LOG(LogDISGameManager, Warning, TEXT("Received Detonation PDU was not valid. Ignoring the PDU."));
-		return;
-	}
-
 	//Get associated OpenDISComponent and relay information
-	UDISComponent* DISComponent = GetAssociatedDISComponent(DetonationPDUIn->DetonationPDUStruct.MunitionEntityID);
+	UDISComponent* DISComponent = GetAssociatedDISComponent(DetonationPDUIn.MunitionEntityID);
 
 	if (DISComponent != nullptr)
 	{
@@ -180,19 +170,13 @@ void ADISGameManager::HandleDetonationPDU(UGRILL_DetonationPDU* DetonationPDUIn)
 	}
 }
 
-void ADISGameManager::HandleRemoveEntityPDU(UGRILL_RemoveEntityPDU* RemoveEntityPDUIn)
+void ADISGameManager::HandleRemoveEntityPDU(FRemoveEntityPDU RemoveEntityPDUIn)
 {
-	if (!IsValid(RemoveEntityPDUIn))
-	{
-		UE_LOG(LogDISGameManager, Warning, TEXT("Received Remove Entity PDU was not valid. Ignoring the PDU."));
-		return;
-	}
-
 	//Verify that we are the appropriate sim to handle the RemoveEntityPDU
-	if (RemoveEntityPDUIn->SimManagementFamilyPDUStruct.ReceivingEntityID.Site == SiteID && RemoveEntityPDUIn->SimManagementFamilyPDUStruct.ReceivingEntityID.Application == ApplicationID)
+	if (RemoveEntityPDUIn.ReceivingEntityID.Site == SiteID && RemoveEntityPDUIn.ReceivingEntityID.Application == ApplicationID)
 	{
 		//Get associated OpenDISComponent and relay information
-		UDISComponent* DISComponent = GetAssociatedDISComponent(RemoveEntityPDUIn->SimManagementFamilyPDUStruct.ReceivingEntityID);
+		UDISComponent* DISComponent = GetAssociatedDISComponent(RemoveEntityPDUIn.ReceivingEntityID);
 
 		if (DISComponent != nullptr)
 		{
@@ -201,16 +185,10 @@ void ADISGameManager::HandleRemoveEntityPDU(UGRILL_RemoveEntityPDU* RemoveEntity
 	}
 }
 
-void ADISGameManager::SpawnNewEntityFromEntityState(UGRILL_EntityStatePDU* EntityStatePDUIn)
+void ADISGameManager::SpawnNewEntityFromEntityState(FEntityStatePDU EntityStatePDUIn)
 {
-	if (!IsValid(EntityStatePDUIn))
-	{
-		UE_LOG(LogDISGameManager, Warning, TEXT("Entity State PDU that was passed to spawn an entity from was not valid. Ignoring the PDU."));
-		return;
-	}
-
 	//If an actor was not found -- check to see if there is an associated actor for the entity type
-	TSoftClassPtr<AActor>* associatedSoftClassReference = &RawDISClassMappings[EntityStatePDUIn->EntityStatePDUStruct.EntityType];
+	TSoftClassPtr<AActor>* associatedSoftClassReference = &RawDISClassMappings[EntityStatePDUIn.EntityType];
 	UClass* associatedClass = associatedSoftClassReference->LoadSynchronous();
 	if (!associatedClass)
 	{
@@ -218,7 +196,7 @@ void ADISGameManager::SpawnNewEntityFromEntityState(UGRILL_EntityStatePDU* Entit
 		for (auto Pair : RawDISClassMappings)
 		{
 			FEntityType Key = Pair.first;
-			FEntityType FilledKey = FEntityType(Pair.first).FillWildcards(EntityStatePDUIn->EntityStatePDUStruct.EntityType);
+			FEntityType FilledKey = FEntityType(Pair.first).FillWildcards(EntityStatePDUIn.EntityType);
 			if (!(Key == FilledKey))
 			{
 				Key = FilledKey;
@@ -226,7 +204,7 @@ void ADISGameManager::SpawnNewEntityFromEntityState(UGRILL_EntityStatePDU* Entit
 				WildcardMappings.insert({ Key, Pair.second });
 			}
 		}
-		TSoftClassPtr<AActor>* NewSoftClassRef = &WildcardMappings[EntityStatePDUIn->EntityStatePDUStruct.EntityType];
+		TSoftClassPtr<AActor>* NewSoftClassRef = &WildcardMappings[EntityStatePDUIn.EntityType];
 		if (NewSoftClassRef != nullptr) {
 			associatedClass = NewSoftClassRef->LoadSynchronous();
 		}
@@ -245,7 +223,7 @@ void ADISGameManager::SpawnNewEntityFromEntityState(UGRILL_EntityStatePDU* Entit
 			//Get DIS Component of the newly spawned actor
 			UDISComponent* DISComponent = IDISInterface::Execute_GetActorDISComponent(spawnedActor);
 			//Add actor to the map
-			AddDISEntityToMap(EntityStatePDUIn->EntityStatePDUStruct.EntityID, spawnedActor);
+			AddDISEntityToMap(EntityStatePDUIn.EntityID, spawnedActor);
 
 			if (DISComponent != nullptr)
 			{
@@ -257,7 +235,7 @@ void ADISGameManager::SpawnNewEntityFromEntityState(UGRILL_EntityStatePDU* Entit
 	else
 	{
 		//Otherwise notify the user that no such mapping exists
-		UE_LOG(LogDISGameManager, Warning, TEXT("No mapping exists between an actor and the DIS enumeration of: %s"), *EntityStatePDUIn->EntityStatePDUStruct.EntityType.ToString());
+		UE_LOG(LogDISGameManager, Warning, TEXT("No mapping exists between an actor and the DIS enumeration of: %s"), *EntityStatePDUIn.EntityType.ToString());
 	}
 }
 
@@ -266,11 +244,11 @@ UDISComponent* ADISGameManager::GetAssociatedDISComponent(FEntityID EntityIDIn)
 	UDISComponent* DISComponent = nullptr;
 
 	//Find associated actor in the DISActorMappings map
-	AActor* associatedActor = RawDISActorMappings[EntityIDIn];
-	if (associatedActor != nullptr)
+	auto associatedActor = RawDISActorMappings.find(EntityIDIn);
+	if (associatedActor != RawDISActorMappings.end())
 	{
 		//If an actor was found, relay information to the associated component
-		DISComponent = IDISInterface::Execute_GetActorDISComponent(associatedActor);
+		DISComponent = IDISInterface::Execute_GetActorDISComponent(associatedActor->second);
 	}
 
 	return DISComponent;
@@ -279,7 +257,7 @@ UDISComponent* ADISGameManager::GetAssociatedDISComponent(FEntityID EntityIDIn)
 void ADISGameManager::AddDISEntityToMap(FEntityID EntityIDToAdd, AActor* EntityToAdd)
 {
 	DISActorMappings.Add(EntityIDToAdd, EntityToAdd);
-	RawDISActorMappings[EntityIDToAdd] = EntityToAdd;
+	RawDISActorMappings.insert_or_assign(EntityIDToAdd, EntityToAdd);
 }
 
 bool ADISGameManager::RemoveDISEntityFromMap(FEntityID EntityIDToRemove)

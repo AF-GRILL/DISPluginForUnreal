@@ -9,13 +9,13 @@
 #include "Subsystems/GameInstanceSubsystem.h"
 #include "PDUProcessor.generated.h"
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FEntityStatePDUProcessed, UGRILL_EntityStatePDU*, EntityStatePDU);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FEntityStateUpdatePDUProcessed, UGRILL_EntityStateUpdatePDU*, EntityStateUpdatePDU);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FDetonationPDUProcessed, UGRILL_DetonationPDU*, DetonationPDU);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FFirePDUProcessed, UGRILL_FirePDU*, FirePDU);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FRemoveEntityPDUProcessed, UGRILL_RemoveEntityPDU*, RemoveEntityPDU);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FStartResumePDUProcessed, UGRILL_StartResumePDU*, StartResumePDU);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FStopFreezePDUProcessed, UGRILL_StopFreezePDU*, StopFreezePDU);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FEntityStatePDUProcessed, FEntityStatePDU, EntityStatePDU);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FEntityStateUpdatePDUProcessed, FEntityStateUpdatePDU, EntityStateUpdatePDU);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FDetonationPDUProcessed, FDetonationPDU, DetonationPDU);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FFirePDUProcessed, FFirePDU, FirePDU);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FRemoveEntityPDUProcessed, FRemoveEntityPDU, RemoveEntityPDU);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FStartResumePDUProcessed, FStartResumePDU, StartResumePDU);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FStopFreezePDUProcessed, FStopFreezePDU, StopFreezePDU);
 
 UCLASS()
 class DISRUNTIME_API UPDUProcessor : public UGameInstanceSubsystem

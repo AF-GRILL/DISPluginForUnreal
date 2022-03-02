@@ -23,6 +23,13 @@ class DISRUNTIME_API ADISGameManager : public AInfo
 
 public:
 
+	ADISGameManager();
+
+	/**
+	* Gets a reference to the DIS Game Manager actor in the current open level.
+	* Returns the reference to the Game Manager if one is found. Returns null if nothing is found or if multiple exist in the level.
+	* @param WorldContextObject Object to get a world object pointer from.
+	*/
 	UFUNCTION(BlueprintPure, Category = "GRILL DIS|Game Manager", meta = (WorldContext = "WorldContextObject"))
 		static ADISGameManager* GetDISGameManager(UObject* WorldContextObject);
 
@@ -31,31 +38,31 @@ public:
 	 * @param EntityStatePDUIn - The Entity State PDU to pass to the appropriate entity.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "GRILL DIS|Game Manager")
-		void HandleEntityStatePDU(UGRILL_EntityStatePDU* EntityStatePDUIn);
+		void HandleEntityStatePDU(FEntityStatePDU EntityStatePDUIn);
 	/**
 	 * Delegates the given Entity State Update PDU to the appropriate DIS Entity actor.
 	 * @param EntityStateUpdatePDUIn - The Entity State Update PDU to pass to the appropriate entity.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "GRILL DIS|Game Manager")
-		void HandleEntityStateUpdatePDU(UGRILL_EntityStateUpdatePDU* EntityStateUpdatePDUIn);
+		void HandleEntityStateUpdatePDU(FEntityStateUpdatePDU EntityStateUpdatePDUIn);
 	/**
 	 * Delegates the given Fire PDU to the appropriate DIS Entity actor.
 	 * @param FirePDUIn - The Fire PDU to pass to the appropriate entity.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "GRILL DIS|Game Manager")
-		void HandleFirePDU(UGRILL_FirePDU* FirePDUIn);
+		void HandleFirePDU(FFirePDU FirePDUIn);
 	/**
 	 * Delegates the given Detonation PDU to the appropriate DIS Entity actor.
 	 * @param DetonationPDUIn - The Detonation PDU to pass to the appropriate entity.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "GRILL DIS|Game Manager")
-		void HandleDetonationPDU(UGRILL_DetonationPDU* DetonationPDUIn);
+		void HandleDetonationPDU(FDetonationPDU DetonationPDUIn);
 	/**
 	 * Delegates the given Remove Entity PDU to the appropriate DIS Entity actor.
 	 * @param RemoveEntityPDUIn - The Remove Entity PDU to pass to the appropriate entity.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "GRILL DIS|Game Manager")
-		void HandleRemoveEntityPDU(UGRILL_RemoveEntityPDU* RemoveEntityPDUIn);
+		void HandleRemoveEntityPDU(FRemoveEntityPDU RemoveEntityPDUIn);
 
 	/**
 	 * Adds a new entry to the DIS Entity map.
@@ -107,6 +114,6 @@ protected:
 		int32 ApplicationID = 0;
 
 private:
-	void SpawnNewEntityFromEntityState(UGRILL_EntityStatePDU* EntityStatePDUIn);
+	void SpawnNewEntityFromEntityState(FEntityStatePDU EntityStatePDUIn);
 	UDISComponent* GetAssociatedDISComponent(FEntityID EntityIDIn);
 };
