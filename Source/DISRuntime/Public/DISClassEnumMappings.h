@@ -13,6 +13,9 @@ struct FDISClassEnumStruct
 {
 	GENERATED_BODY()
 
+	UPROPERTY(EditAnywhere)
+		FString FriendlyName;
+
 	UPROPERTY(EditAnywhere, meta = (MustImplement = "DISInterface"))
 		TSoftClassPtr<AActor> DISEntity;
 
@@ -30,7 +33,6 @@ class DISRUNTIME_API UDISClassEnumMappings : public UObject
 	
 public:
 
-	UPROPERTY(EditAnywhere,
-		Meta = (DisplayName = "DIS Class Enumeration Mappings", Tooltip = "Mappings between DIS enumerations and associated actors."))
+	UPROPERTY(EditAnywhere,	Meta = (DisplayName = "DIS Class Enumeration Mappings", Tooltip = "Mappings between DIS enumerations and associated actors.", TitleProperty = "FriendlyName"))
 		TArray<FDISClassEnumStruct> DISClassEnumArray;
 };
