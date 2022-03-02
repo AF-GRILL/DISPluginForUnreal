@@ -48,26 +48,52 @@ struct FPDU
 		Length = 0;
 		Padding = 0;
 	}
-};
 
-/**
- * 
- */
-UCLASS(BlueprintType)
-class DISRUNTIME_API UGRILL_PDU : public UObject
-{
-	GENERATED_BODY()
+	virtual ~FPDU() {}
 
-public:
-	UGRILL_PDU();
+	void SetupFromOpenDIS(DIS::Pdu* PDUIn)
+	{
+		ProtocolVersion = PDUIn->getProtocolVersion();
+		ExerciseID = PDUIn->getExerciseID();
+		PduType = static_cast<EPDUType>(PDUIn->getPduType());
+		ProtocolFamily = PDUIn->getProtocolFamily();
+		Timestamp = PDUIn->getTimestamp();
+		Length = PDUIn->getLength();
+		Padding = PDUIn->getPadding();
+	}
 
-	void SetupFromOpenDIS(DIS::Pdu* PDUIn);
+	void ToOpenDIS(DIS::Pdu& PDUOut)
+	{
+		PDUOut.setProtocolVersion(ProtocolVersion);
+		PDUOut.setExerciseID(ExerciseID);
+		PDUOut.setPduType(static_cast<unsigned char>(PduType));
+		PDUOut.setTimestamp(Timestamp);
+		PDUOut.setLength(Length);
+		PDUOut.setPadding(Padding);
+	}
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		FPDU PDUStruct;
-	
-	void ToOpenDIS(DIS::Pdu& PDUOut);
+	virtual TArray<uint8> ToBytes()
+	{
+		DIS::DataStream buffer(DIS::BIG);
 
-	UFUNCTION(BlueprintCallable, Category = "GRILL DIS|PDUs")
-		virtual TArray<uint8> ToBytes();
+		//marshal
+		DIS::Pdu pdu;
+
+		ToOpenDIS(pdu);
+		pdu.marshal(buffer);
+
+		return DISDataStreamToBytes(buffer);
+	}
+
+	TArray<uint8> DISDataStreamToBytes(DIS::DataStream DataStream) 
+	{
+		TArray<uint8> byteArrayOut;
+		byteArrayOut.Init(0, DataStream.size());
+
+		for (int i = 0; i < DataStream.size(); i++) {
+			byteArrayOut[i] = DataStream[i];
+		}
+
+		return byteArrayOut;
+	}
 };

@@ -1,17 +1,17 @@
 #pragma once
 
 //All low level custom PDUs
-#include "GRILL_DetonationPDU.h"
-#include "GRILL_EntityInformationFamilyPDU.h"
-#include "GRILL_EntityStatePDU.h"
-#include "GRILL_EntityStateUpdatePDU.h"
-#include "GRILL_FirePDU.h"
-#include "GRILL_PDU.h"
-#include "GRILL_RemoveEntityPDU.h"
-#include "GRILL_SimulationManagementFamilyPDU.h"
-#include "GRILL_StartResumePDU.h"
-#include "GRILL_StopFreezePDU.h"
-#include "GRILL_WarfareFamilyPDU.h"
+#include "PDUs/GRILL_PDU.h"
+#include "PDUs/EntityInfoFamily/GRILL_EntityInformationFamilyPDU.h"
+#include "PDUs/EntityInfoFamily/GRILL_EntityStatePDU.h"
+#include "PDUs/EntityInfoFamily/GRILL_EntityStateUpdatePDU.h"
+#include "PDUs/SimManagementFamily/GRILL_RemoveEntityPDU.h"
+#include "PDUs/SimManagementFamily/GRILL_SimulationManagementFamilyPDU.h"
+#include "PDUs/SimManagementFamily/GRILL_StartResumePDU.h"
+#include "PDUs/SimManagementFamily/GRILL_StopFreezePDU.h"
+#include "PDUs/WarfareFamily/GRILL_DetonationPDU.h"
+#include "PDUs/WarfareFamily/GRILL_FirePDU.h"
+#include "PDUs/WarfareFamily/GRILL_WarfareFamilyPDU.h"
 #include "PDUMasterInclude.generated.h"
 
 /**

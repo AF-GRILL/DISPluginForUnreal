@@ -44,8 +44,8 @@ void UPDUProcessor::ProcessDISPacket(TArray<uint8> InData)
 			DIS::DataStream ds((char*)&InData[0], bytesArrayLength, BigEndian);
 			pdu->unmarshal(ds);
 
-			UGRILL_EntityStatePDU* entityStatePDU = NewObject<UGRILL_EntityStatePDU>();
-			entityStatePDU->SetupFromOpenDIS(static_cast<DIS::EntityStatePdu*>(pdu));
+			FEntityStatePDU entityStatePDU;
+			entityStatePDU.SetupFromOpenDIS(static_cast<DIS::EntityStatePdu*>(pdu));
 
 			OnEntityStatePDUProcessed.Broadcast(entityStatePDU);
 
@@ -56,8 +56,8 @@ void UPDUProcessor::ProcessDISPacket(TArray<uint8> InData)
 			DIS::DataStream ds((char*)&InData[0], bytesArrayLength, BigEndian);
 			pdu->unmarshal(ds);
 
-			UGRILL_FirePDU* firePDU = NewObject<UGRILL_FirePDU>();
-			firePDU->SetupFromOpenDIS(static_cast<DIS::FirePdu*>(pdu));
+			FFirePDU firePDU;
+			firePDU.SetupFromOpenDIS(static_cast<DIS::FirePdu*>(pdu));
 
 			OnFirePDUProcessed.Broadcast(firePDU);
 
@@ -68,8 +68,8 @@ void UPDUProcessor::ProcessDISPacket(TArray<uint8> InData)
 			DIS::DataStream ds((char*)&InData[0], bytesArrayLength, BigEndian);
 			pdu->unmarshal(ds);
 
-			UGRILL_DetonationPDU* detonationPDU = NewObject<UGRILL_DetonationPDU>();
-			detonationPDU->SetupFromOpenDIS(static_cast<DIS::DetonationPdu*>(pdu));
+			FDetonationPDU detonationPDU;
+			detonationPDU.SetupFromOpenDIS(static_cast<DIS::DetonationPdu*>(pdu));
 
 			OnDetonationPDUProcessed.Broadcast(detonationPDU);
 
@@ -80,8 +80,8 @@ void UPDUProcessor::ProcessDISPacket(TArray<uint8> InData)
 			DIS::DataStream ds((char*)&InData[0], bytesArrayLength, BigEndian);
 			pdu->unmarshal(ds);
 
-			UGRILL_RemoveEntityPDU* removeEntityPDU = NewObject<UGRILL_RemoveEntityPDU>();
-			removeEntityPDU->SetupFromOpenDIS(static_cast<DIS::RemoveEntityPdu*>(pdu));
+			FRemoveEntityPDU removeEntityPDU;
+			removeEntityPDU.SetupFromOpenDIS(static_cast<DIS::RemoveEntityPdu*>(pdu));
 
 			OnRemoveEntityPDUProcessed.Broadcast(removeEntityPDU);
 
@@ -92,8 +92,8 @@ void UPDUProcessor::ProcessDISPacket(TArray<uint8> InData)
 			DIS::DataStream ds((char*)&InData[0], bytesArrayLength, BigEndian);
 			pdu->unmarshal(ds);
 
-			UGRILL_StartResumePDU* StartResumePDU = NewObject<UGRILL_StartResumePDU>();
-			StartResumePDU->SetupFromOpenDIS(static_cast<DIS::StartResumePdu*>(pdu));
+			FStartResumePDU StartResumePDU;
+			StartResumePDU.SetupFromOpenDIS(static_cast<DIS::StartResumePdu*>(pdu));
 
 			OnStartResumePDUProcessed.Broadcast(StartResumePDU);
 
@@ -104,8 +104,8 @@ void UPDUProcessor::ProcessDISPacket(TArray<uint8> InData)
 			DIS::DataStream ds((char*)&InData[0], bytesArrayLength, BigEndian);
 			pdu->unmarshal(ds);
 
-			UGRILL_StopFreezePDU* StopFreezePDU = NewObject<UGRILL_StopFreezePDU>();
-			StopFreezePDU->SetupFromOpenDIS(static_cast<DIS::StopFreezePdu*>(pdu));
+			FStopFreezePDU StopFreezePDU;
+			StopFreezePDU.SetupFromOpenDIS(static_cast<DIS::StopFreezePdu*>(pdu));
 
 			OnStopFreezePDUProcessed.Broadcast(StopFreezePDU);
 
@@ -116,8 +116,8 @@ void UPDUProcessor::ProcessDISPacket(TArray<uint8> InData)
 			DIS::DataStream ds((char*)&InData[0], bytesArrayLength, BigEndian);
 			pdu->unmarshal(ds);
 
-			UGRILL_EntityStateUpdatePDU* entityStateUpdatePDU = NewObject<UGRILL_EntityStateUpdatePDU>();
-			entityStateUpdatePDU->SetupFromOpenDIS(static_cast<DIS::EntityStateUpdatePdu*>(pdu));
+			FEntityStateUpdatePDU entityStateUpdatePDU;
+			entityStateUpdatePDU.SetupFromOpenDIS(static_cast<DIS::EntityStateUpdatePdu*>(pdu));
 
 			OnEntityStateUpdatePDUProcessed.Broadcast(entityStateUpdatePDU);
 
