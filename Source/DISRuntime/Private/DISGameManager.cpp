@@ -186,11 +186,12 @@ void ADISGameManager::HandleRemoveEntityPDU(FRemoveEntityPDU RemoveEntityPDUIn)
 }
 
 void ADISGameManager::SpawnNewEntityFromEntityState(FEntityStatePDU EntityStatePDUIn)
-{
-	//If an actor was not found -- check to see if there is an associated actor for the entity type
-	TSoftClassPtr<AActor>* associatedSoftClassReference = &RawDISClassMappings[EntityStatePDUIn.EntityType];
-	UClass* associatedClass = associatedSoftClassReference->LoadSynchronous();
-	if (!associatedClass)
+{	
+	auto associatedSoftClassReference = RawDISClassMappings.find(EntityStatePDUIn.EntityType);
+	UClass* associatedClass = nullptr;
+
+	//If an actor was not found, check to see if there is a wildcard mapping -- else, load the found actor
+	if (associatedSoftClassReference == RawDISClassMappings.end())
 	{
 		std::map<FEntityType, TSoftClassPtr<AActor>> WildcardMappings;
 		for (auto Pair : RawDISClassMappings)
@@ -204,12 +205,19 @@ void ADISGameManager::SpawnNewEntityFromEntityState(FEntityStatePDU EntityStateP
 				WildcardMappings.insert({ Key, Pair.second });
 			}
 		}
-		TSoftClassPtr<AActor>* NewSoftClassRef = &WildcardMappings[EntityStatePDUIn.EntityType];
-		if (NewSoftClassRef != nullptr) {
-			associatedClass = NewSoftClassRef->LoadSynchronous();
+
+		auto NewSoftClassRef = WildcardMappings.find(EntityStatePDUIn.EntityType);
+		if (NewSoftClassRef != WildcardMappings.end()) 
+		{
+			associatedClass = NewSoftClassRef->second.LoadSynchronous();
 		}
 	}
-	//If so, spawn one and relay information to the associated component
+	else
+	{
+		associatedClass = associatedSoftClassReference->second.LoadSynchronous();
+	}
+
+	//If an actor has been found, spawn one and relay information to the associated component
 	if (associatedClass != nullptr)
 	{
 		FActorSpawnParameters spawnParams = FActorSpawnParameters();
