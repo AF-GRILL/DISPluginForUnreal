@@ -49,22 +49,29 @@ void ADISGameManager::BeginPlay()
 	GetGameInstance()->GetSubsystem<UPDUProcessor>()->OnDetonationPDUProcessed.AddDynamic(this, &ADISGameManager::HandleDetonationPDU);
 	GetGameInstance()->GetSubsystem<UPDUProcessor>()->OnRemoveEntityPDUProcessed.AddDynamic(this, &ADISGameManager::HandleRemoveEntityPDU);
 
-	//Initialize DISClassMappings from the loaded settings
-	for (FDISClassEnumStruct DISMapping : DISClassEnum->DISClassEnumArray)
+	if (DISClassEnum) 
 	{
-		for (FEntityType EntityType : DISMapping.AssociatedDISEnumerations)
+		//Initialize DISClassMappings from the loaded settings
+		for (FDISClassEnumStruct DISMapping : DISClassEnum->DISClassEnumArray)
 		{
-			//If an actor was not found -- check to see if there is an associated actor for the entity type
-			TSoftClassPtr<AActor>* associatedSoftClassReference = DISClassMappings.Find(EntityType);
-
-			if (associatedSoftClassReference != nullptr)
+			for (FEntityType EntityType : DISMapping.AssociatedDISEnumerations)
 			{
-				UE_LOG(LogDISGameManager, Warning, TEXT("A DIS Enumeration mapping already exists for %s and is linked to %s. This enumeration will now point to: %s"), *EntityType.ToString(), *associatedSoftClassReference->GetAssetName(), *DISMapping.DISEntity.GetAssetName());
-			}
+				//If an actor was not found -- check to see if there is an associated actor for the entity type
+				TSoftClassPtr<AActor>* associatedSoftClassReference = DISClassMappings.Find(EntityType);
 
-			DISClassMappings.Add(EntityType, DISMapping.DISEntity);
-			RawDISClassMappings.insert_or_assign(EntityType, DISMapping.DISEntity);
+				if (associatedSoftClassReference != nullptr)
+				{
+					UE_LOG(LogDISGameManager, Warning, TEXT("A DIS Enumeration mapping already exists for %s and is linked to %s. This enumeration will now point to: %s"), *EntityType.ToString(), *associatedSoftClassReference->GetAssetName(), *DISMapping.DISEntity.GetAssetName());
+				}
+
+				DISClassMappings.Add(EntityType, DISMapping.DISEntity);
+				RawDISClassMappings.insert_or_assign(EntityType, DISMapping.DISEntity);
+			}
 		}
+	}
+	else
+	{
+		UE_LOG(LogDISGameManager, Error, TEXT("No DIS Class Enum Mapping has been set within the DIS Game Manager actor!"));
 	}
 }
 
