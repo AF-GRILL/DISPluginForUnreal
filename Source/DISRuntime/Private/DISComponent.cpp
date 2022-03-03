@@ -179,7 +179,9 @@ void UDISComponent::HandleEntityStatePDU(FEntityStatePDU NewEntityStatePDU)
 
 	LatestEntityStatePDUTimestamp = FDateTime::Now();
 	MostRecentEntityStatePDU = NewEntityStatePDU;
+	PreviousDeadReckonedPDU = MostRecentDeadReckonedEntityStatePDU;
 	MostRecentDeadReckonedEntityStatePDU = MostRecentEntityStatePDU;
+	DeltaTimeSinceLastPDU = 0;
 
 	EntityType = NewEntityStatePDU.EntityType;
 	EntityID = NewEntityStatePDU.EntityID;
@@ -196,6 +198,8 @@ void UDISComponent::HandleEntityStatePDU(FEntityStatePDU NewEntityStatePDU)
 	{
 		this->SetComponentTickEnabled(true);
 	}
+
+	bHasReceivedPdu = true;
 }
 
 void UDISComponent::HandleEntityStateUpdatePDU(FEntityStateUpdatePDU NewEntityStateUpdatePDU)
@@ -209,7 +213,9 @@ void UDISComponent::HandleEntityStateUpdatePDU(FEntityStateUpdatePDU NewEntitySt
 
 	LatestEntityStatePDUTimestamp = FDateTime::Now();
 	MostRecentEntityStatePDU = NewEntityStateUpdatePDU;
+	PreviousDeadReckonedPDU = MostRecentDeadReckonedEntityStatePDU;
 	MostRecentDeadReckonedEntityStatePDU = MostRecentEntityStatePDU;
+	DeltaTimeSinceLastPDU = 0;
 
 	EntityID = NewEntityStateUpdatePDU.EntityID;
 
@@ -244,12 +250,26 @@ void UDISComponent::HandleRemoveEntityPDU(FRemoveEntityPDU RemoveEntityPDUIn)
 
 void UDISComponent::DoDeadReckoning(float DeltaTime)
 {
+	DeltaTimeSinceLastPDU += DeltaTime;
 	//Check if dead reckoning is supported/enabled. Broadcast dead reckoning update if it is
 	if (DeadReckoning(MostRecentDeadReckonedEntityStatePDU, DeltaTime, TempDeadReckonedPDU))
 	{
 		MostRecentDeadReckonedEntityStatePDU = TempDeadReckonedPDU;
-		OnDeadReckoningUpdate.Broadcast(MostRecentDeadReckonedEntityStatePDU);
 
+		if (bHasReceivedPdu && DeltaTimeSinceLastPDU <= DeadReckoningSmoothingPeriodSeconds) {
+			DeadReckoning(PreviousDeadReckonedPDU, DeltaTime, SmoothingDeadReckonedPDU);
+			PreviousDeadReckonedPDU = SmoothingDeadReckonedPDU;
+
+			TempDeadReckonedPDU.EntityLocation = FMath::Lerp(SmoothingDeadReckonedPDU.EntityLocation, TempDeadReckonedPDU.EntityLocation, DeltaTimeSinceLastPDU / DeadReckoningSmoothingPeriodSeconds);
+			glm::dvec3 SmoothingLocationDouble = glm::dvec3(SmoothingDeadReckonedPDU.EntityLocationDouble[0], SmoothingDeadReckonedPDU.EntityLocationDouble[1], SmoothingDeadReckonedPDU.EntityLocationDouble[2]);
+			glm::dvec3 TempLocationDouble = glm::dvec3(TempDeadReckonedPDU.EntityLocationDouble[0], TempDeadReckonedPDU.EntityLocationDouble[1], TempDeadReckonedPDU.EntityLocationDouble[2]);
+			glm::dvec3 SmoothedLocationDouble = glm::mix(SmoothingLocationDouble, TempLocationDouble, DeltaTimeSinceLastPDU / DeadReckoningSmoothingPeriodSeconds);
+			/*TempDeadReckonedPDU.EntityLocationDouble = TArray<double>{ SmoothedLocationDouble[0], SmoothedLocationDouble[1], SmoothedLocationDouble[2] };
+			TempDeadReckonedPDU.EntityOrientation = FMath::Lerp(SmoothingDeadReckonedPDU.EntityOrientation.Quaternion(), TempDeadReckonedPDU.EntityOrientation.Quaternion(), DeltaTimeSinceLastPDU / DeadReckoningSmoothingPeriodSeconds).Rotator();*/
+		}
+
+		OnDeadReckoningUpdate.Broadcast(TempDeadReckonedPDU);
+		 
 		GroundClamping_Implementation();
 	}
 }

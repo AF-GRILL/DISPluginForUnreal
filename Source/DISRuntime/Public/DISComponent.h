@@ -151,6 +151,11 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|DIS Component|DIS Settings")
 		bool PerformDeadReckoning = true;
 	/**
+	* Number of seconds to smooth between dead reckoned information and packet information if dead reckoning is enabled
+	*/
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|DIS Component|DIS Settings", meta = (EditCondition = "PerfromDeadReckoning"))
+		float DeadReckoningSmoothingPeriodSeconds = 0.5f;
+	/**
 	 * Whether or not ground clamping should be performed for this entity.
 	 */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|DIS Component|DIS Settings")
@@ -167,6 +172,10 @@ protected:
 
 private:
 	FEntityStatePDU TempDeadReckonedPDU;
+	FEntityStatePDU SmoothingDeadReckonedPDU;
+	FEntityStatePDU PreviousDeadReckonedPDU;
+	float DeltaTimeSinceLastPDU = 0;
+	bool bHasReceivedPdu = false;
 
 	/**
 	 * Gets the local yaw, pitch, and roll from the other parameters structure. The yaw, pitch, and roll act on the entity's local North, East, Down vectors.
