@@ -13,61 +13,71 @@
 
 DECLARE_LOG_CATEGORY_EXTERN(LogUDPSubsystem, Log, All);
 
-USTRUCT()
-struct FUDPSettings
+USTRUCT(Blueprintable)
+struct FSocketSettings
 {
 	GENERATED_BODY()
 
-	/** Default sending socket IP string in form e.g. 127.0.0.1. */
-	FString SendIP;
+	/** Friendly description of what this socket is to be used for */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		FString SocketDescription;
 
-	/** Default connection port e.g. 3001*/
-	int32 SendPort;
-
-	/** Default receiving socket IP string in form e.g. 0.0.0.0 for all connections, may need 127.0.0.1 for some cases. */
-	FString ReceiveIP;
-
-	/** Default connection port e.g. 3002*/
-	int32 ReceivePort;
-
-	FString SendSocketName;
-	FString ReceiveSocketName;
-
-	/** in bytes */
-	int32 BufferSize;
-
-	/** If true will auto-connect on begin play to IP/port specified for sending udp messages, plus when emit is called */
-	bool bShouldAutoOpenSend;
-
-	/** If true will auto-listen on begin play to port specified for receiving udp messages. */
-	bool bShouldAutoOpenReceive;
+	/** Byte size the buffer of the socket should have. Defaults to roughly 2MB */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		int32 BufferSize;
 
 	/** Whether we should process our data on the gamethread or the udp thread. */
-	bool bReceiveDataOnGameThread;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		bool bReceiveDataOnGameThread;
 
-	bool bIsReceiveOpen;
-	bool bIsSendOpen;
-
-	FUDPSettings()
+	FSocketSettings()
 	{
-		bShouldAutoOpenSend = false;
-		bShouldAutoOpenReceive = false;
 		bReceiveDataOnGameThread = true;
-		SendIP = FString(TEXT("127.0.0.1"));
-		SendPort = 3001;
-		ReceiveIP = FString(TEXT("0.0.0.0"));
-		ReceivePort = 3000;
-		SendSocketName = FString(TEXT("UE4-DIS-Send"));
-		ReceiveSocketName = FString(TEXT("UE4-DIS-Receive"));
-
-		bIsReceiveOpen = false;
-		bIsSendOpen = false;
+		SocketDescription = FString(TEXT("UE4-DIS-Socket"));
 
 		BufferSize = 2 * 1024 * 1024;	//default roughly 2mb
 	}
 };
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FUDPSocketStateSignature, int32, Port);
+USTRUCT()
+struct FReceiveSocketMapValue
+{
+	GENERATED_BODY()
+
+	FSocket* ReceiveSocket;
+
+	FUdpSocketReceiver* UDPReceiver;
+
+	FReceiveSocketMapValue()
+	{
+		ReceiveSocket = nullptr;
+		UDPReceiver = nullptr;
+	}
+
+	FReceiveSocketMapValue(FSocket* NewReceiveSocket, FUdpSocketReceiver* NewUdpReceiver)
+	{
+		ReceiveSocket = NewReceiveSocket;
+		UDPReceiver = NewUdpReceiver;
+	}
+
+	bool CloseReceiveSocket()
+	{
+		bool bDidCloseCorrectly = false;
+
+		UDPReceiver->Stop();
+		delete UDPReceiver;
+		UDPReceiver = nullptr;
+
+		bDidCloseCorrectly = ReceiveSocket->Close();
+		ISocketSubsystem::Get(PLATFORM_SOCKETSUBSYSTEM)->DestroySocket(ReceiveSocket);
+		ReceiveSocket = nullptr;
+
+		return bDidCloseCorrectly;
+	}
+};
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FUDPReceiveSocketStateSignature, int32, ReceiveSocketID, FString, IpListeningOn, int32, PortListeningOn);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_FiveParams(FUDPSendSocketStateSignature, int32, SendSocketID, FString, LocalIp, int32, LocalPort, FString, PeerIp, int32, PeerPort);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FUDPMessageSignature, const TArray<uint8>&, Bytes, const FString&, IPAddress);
 
 UCLASS(ClassGroup = "Networking", meta = (BlueprintSpawnableComponent))
@@ -87,80 +97,86 @@ public:
 		FUDPMessageSignature OnReceivedBytes;
 
 	/** Called after a new receive UDP socket is opened.
-	Passes the bound port as a parameter. */
+	Passes the bound IP and port as a parameter. */
 	UPROPERTY(BlueprintAssignable, Category = "GRILL DIS|UDP Subsystem|Events")
-		FUDPSocketStateSignature OnReceiveSocketOpened;
+		FUDPReceiveSocketStateSignature OnReceiveSocketOpened;
 
 	/** Called after a receive UDP socket has been closed.
-	Passes the bound port as a parameter. */
+	Passes the bound IP and port as a parameter. */
 	UPROPERTY(BlueprintAssignable, Category = "GRILL DIS|UDP Subsystem|Events")
-		FUDPSocketStateSignature OnReceiveSocketClosed;
+		FUDPReceiveSocketStateSignature OnReceiveSocketClosed;
 
 	/** Called after a sned UDP socket has been opened.
-	Passes the bound port as a parameter. */
+	Passes the bound IP and port as a parameter. */
 	UPROPERTY(BlueprintAssignable, Category = "GRILL DIS|UDP Subsystem|Events")
-		FUDPSocketStateSignature OnSendSocketOpened;
+		FUDPSendSocketStateSignature OnSendSocketOpened;
 
 	/** Called after a send UDP socket has been closed.
-	Passes the bound port as a parameter. */
+	Passes the bound IP and port as a parameter. */
 	UPROPERTY(BlueprintAssignable, Category = "GRILL DIS|UDP Subsystem|Events")
-		FUDPSocketStateSignature OnSendSocketClosed;
+		FUDPSendSocketStateSignature OnSendSocketClosed;
 
-	/** Defining UDP sending and receiving Ips, ports, and other defaults */
-	FUDPSettings Settings;
-
-	/**
-	 * Opens a new UDP send socket at the given IP address and port. Closes an opened connection if there was one prior to creating a new one.
-	 * Returns whether or not the opening of the socket was successful.
-	 * @param InIP - The IP address to send UDP packets to.
-	 * @param InPort - The port to send UDP packets on.
-	 */
-	UFUNCTION(BlueprintCallable, Category = "GRILL DIS|UDP Subsystem")
-		bool OpenSendSocket(const FString& InIP = TEXT("127.0.0.1"), const int32 InPort = 3000);
-	/**
-	 * Closes the opened send socket.
-	 * Returns whether or not the send socket was closed successfully. If none are opened, returns true.
-	 */
-	UFUNCTION(BlueprintCallable, Category = "GRILL DIS|UDP Subsystem")
-		bool CloseSendSocket();
 	/**
 	 * Opens a new UDP receive socket at the given IP address and port. Closes an opened connection if there was one prior to creating a new one.
-	 * Returns whether or not the opening of the socket was successful.
-	 * @param InIP - The IP address to receive UDP packets from. Pass in '0.0.0.0' if all connections desired.
-	 * @param InPort - The port to receive UDP packets on.
+	 * Returns whether or not the opening of the socket was successful and the ID of the receive socket.
+	 * @param SocketSettings - The settings this seocket should utilize.
+	 * @param ReceiveSocketID - The ID of the opened receive socket.
+	 * @param IpToListenOn - The IP address to receive UDP packets from. Pass in '0.0.0.0' if all connections desired.
+	 * @param PortToListenOn - The port to receive UDP packets on.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "GRILL DIS|UDP Subsystem")
-		bool OpenReceiveSocket(const FString& InListenIP = TEXT("0.0.0.0"), const int32 InListenPort = 3001);
+		bool OpenReceiveSocket(FSocketSettings SocketSettings, int32& ReceiveSocketID, const FString& IpToListenOn = TEXT("0.0.0.0"), const int32 PortToListenOn = 3001);
 	/**
 	 * Closes the opened receive socket.
 	 * Returns whether or not the receive socket was closed successfully. If none are opened, returns true.
+	 * @param ReceiveSocketIdToClose - The ID of the receive socket to close.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "GRILL DIS|UDP Subsystem")
-		bool CloseReceiveSocket();
+		bool CloseReceiveSocket(int32 ReceiveSocketIdToClose);
+	/**
+	 * Opens a new UDP send socket at the given IP address and port. Closes an opened connection if there was one prior to creating a new one.
+	 * Returns whether or not the opening of the socket was successful and the ID of the send socket.
+	 * @param SocketSettings - The settings this seocket should utilize.
+	 * @param SendSocketID - The ID of the opened send socket.
+	 * @param IpToSendOn - The IP address to send UDP packets to.
+	 * @param PortToSendOn - The port to send UDP packets on.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "GRILL DIS|UDP Subsystem")
+		bool OpenSendSocket(FSocketSettings SocketSettings, int32& SendSocketID, const FString& IpToSendOn = TEXT("127.0.0.1"), const int32 PortToSendOn = 3000);
+	/**
+	 * Closes the opened send socket.
+	 * Returns whether or not the send socket was closed successfully. If none are opened, returns true.
+	 * @param SendSocketIdToClose - The ID of the send socket to close.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "GRILL DIS|UDP Subsystem")
+		bool CloseSendSocket(int32 SendSocketIdToClose);
 	/**
 	 * Sends bytes over the opened send socket.
-	 * Returns whether or not the sending was successful.
+	 * Returns whether or not the sending was successful for every opened socket.
 	 * @param Bytes - The bytes to send over UDP.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "GRILL DIS|UDP Subsystem")
 		bool EmitBytes(const TArray<uint8>& Bytes);
-
 	/**
-	 * Gets all information relating to the current receive settings.
+	 * Closes all opened receive sockets.
+	 * Returns whether or not all of the receive sockets were closed successfully. If none are opened, returns true.
 	 */
-	UFUNCTION(BlueprintPure, Category = "GRILL DIS|UDP Subsystem")
-		void GetUDPReceiveSettings(bool& CurrentlyConnected, FString& ReceiveIPAddress, int32& ReceivePort, bool& AutoConnectReceive);
+	UFUNCTION(BlueprintCallable, Category = "GRILL DIS|UDP Subsystem")
+		bool CloseAllReceiveSockets();
 	/**
-	 * Gets all information relating to the current send settings.
+	 * Closes all opened send sockets.
+	 * Returns whether or not all of the send sockets were closed successfully. If none are opened, returns true.
 	 */
-	UFUNCTION(BlueprintPure, Category = "GRILL DIS|UDP Subsystem")
-		void GetUDPSendSettings(bool& CurrentlyConnected, FString& SendIPAddress, int32& SendPort, bool& AutoConnectSend);
+	UFUNCTION(BlueprintCallable, Category = "GRILL DIS|UDP Subsystem")
+		bool CloseAllSendSockets();
 
 protected:
-	FSocket* SenderSocket;
-	FSocket* ReceiverSocket;
-	FUdpSocketReceiver* UDPReceiver;
-	FString SocketDescription;
-	TSharedPtr<FInternetAddr> RemoteAdress;
 	ISocketSubsystem* SocketSubsystem;
+
+	TMap<int32, FSocket*> AllSendSockets;
+	TMap<int32, FReceiveSocketMapValue> AllReceiveSockets;
+
+private:
+	int TotalSendSocketIterator = 0;
+	int TotalReceiveSocketIterator = 0;
 };

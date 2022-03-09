@@ -4,6 +4,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "DISComponent.h"
 #include "PDUProcessor.h"
+#include "UDPSubsystem.h"
 
 DEFINE_LOG_CATEGORY(LogDISGameManager);
 
@@ -48,6 +49,24 @@ void ADISGameManager::BeginPlay()
 	GetGameInstance()->GetSubsystem<UPDUProcessor>()->OnFirePDUProcessed.AddDynamic(this, &ADISGameManager::HandleFirePDU);
 	GetGameInstance()->GetSubsystem<UPDUProcessor>()->OnDetonationPDUProcessed.AddDynamic(this, &ADISGameManager::HandleDetonationPDU);
 	GetGameInstance()->GetSubsystem<UPDUProcessor>()->OnRemoveEntityPDUProcessed.AddDynamic(this, &ADISGameManager::HandleRemoveEntityPDU);
+
+	//Auto connect sockets if needed
+	if (AutoConnectReceiveAddresses) 
+	{
+		for (FSocketInfo socket : ReceiveSocketsToSetup)
+		{
+			int SocketID;
+			GetGameInstance()->GetSubsystem<UUDPSubsystem>()->OpenReceiveSocket(FSocketSettings(), SocketID, socket.IpAddress, socket.Port);
+		}
+	}
+	if (AutoConnectSendAddresses)
+	{
+		for (FSocketInfo socket : SendSocketsToSetup)
+		{
+			int SocketID;
+			GetGameInstance()->GetSubsystem<UUDPSubsystem>()->OpenSendSocket(FSocketSettings(), SocketID, socket.IpAddress, socket.Port);
+		}
+	}
 
 	if (DISClassEnum) 
 	{

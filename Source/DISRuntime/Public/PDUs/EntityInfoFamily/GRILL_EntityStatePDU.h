@@ -197,7 +197,7 @@ struct FEntityStatePDU : public FEntityInformationFamilyPDU
 		return FPDU::DISDataStreamToBytes(buffer);
 	}
 
-	void operator = (FEntityStateUpdatePDU EntityStateUpdatePDUIn)
+	FEntityStatePDU& operator = (FEntityStateUpdatePDU EntityStateUpdatePDUIn)
 	{
 		//pdu common parameters
 		ProtocolVersion = EntityStateUpdatePDUIn.ProtocolVersion;
@@ -217,5 +217,7 @@ struct FEntityStatePDU : public FEntityInformationFamilyPDU
 		EntityLinearVelocity = EntityStateUpdatePDUIn.EntityLinearVelocity;
 		EntityAppearance = EntityStateUpdatePDUIn.EntityAppearance;
 		ArticulationParameters = EntityStateUpdatePDUIn.ArticulationParameters;
+
+		return *this;
 	}
 };

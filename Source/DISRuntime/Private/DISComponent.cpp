@@ -165,7 +165,6 @@ glm::dvec3 UDISComponent::GetEntityBodyDeadReckonedPosition(const glm::dvec3 Ini
 void UDISComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
-
 }
 
 void UDISComponent::HandleEntityStatePDU(FEntityStatePDU NewEntityStatePDU)
@@ -178,32 +177,16 @@ void UDISComponent::HandleEntityStatePDU(FEntityStatePDU NewEntityStatePDU)
 		return;
 	}
 
-	LatestEntityStatePDUTimestamp = FDateTime::Now();
-	MostRecentEntityStatePDU = NewEntityStatePDU;
-	PreviousDeadReckonedPDU = MostRecentDeadReckonedEntityStatePDU;
-	MostRecentDeadReckonedEntityStatePDU = MostRecentEntityStatePDU;
-	DeltaTimeSinceLastPDU = 0;
+	UpdateCommonEntityStateInfo(NewEntityStatePDU);
 
 	EntityType = NewEntityStatePDU.EntityType;
-	EntityID = NewEntityStatePDU.EntityID;
-
-	GetOwner()->SetLifeSpan(DISTimeoutSeconds);
 
 	OnReceivedEntityStatePDU.Broadcast(NewEntityStatePDU);
 
 	GroundClamping_Implementation();
 
-	//If tick is not enabled and dead reckoning is enabled, then enable tick
-	//Tick is off by default to prevent race conditions since Dead Reckoning relies on the Entity State PDU
-	if (!this->IsComponentTickEnabled() && PerformDeadReckoning)
-	{
-		this->SetComponentTickEnabled(true);
-	}
-
 	//Update the smoothing dead reckoned PDU to be a smoothing period distance out -- this will be used as a target end point for smoothing
 	DeadReckoning(MostRecentEntityStatePDU, DeadReckoningSmoothingPeriodSeconds, SmoothingDeadReckonedPDU);
-
-	bHasReceivedPdu = true;
 }
 
 void UDISComponent::HandleEntityStateUpdatePDU(FEntityStateUpdatePDU NewEntityStateUpdatePDU)
@@ -216,31 +199,31 @@ void UDISComponent::HandleEntityStateUpdatePDU(FEntityStateUpdatePDU NewEntitySt
 		return;
 	}
 
-	LatestEntityStatePDUTimestamp = FDateTime::Now();
 	MostRecentEntityStatePDU = NewEntityStateUpdatePDU;
-	PreviousDeadReckonedPDU = MostRecentDeadReckonedEntityStatePDU;
-	MostRecentDeadReckonedEntityStatePDU = MostRecentEntityStatePDU;
-	DeltaTimeSinceLastPDU = 0;
 
-	EntityID = NewEntityStateUpdatePDU.EntityID;
-
-	GetOwner()->SetLifeSpan(DISTimeoutSeconds);
+	UpdateCommonEntityStateInfo(MostRecentEntityStatePDU);
 
 	OnReceivedEntityStateUpdatePDU.Broadcast(NewEntityStateUpdatePDU);
 
 	GroundClamping_Implementation();
 
-	//If tick is not enabled and dead reckoning is enabled, then enable tick
-	//Tick is off by default to prevent race conditions since Dead Reckoning relies on the Entity State PDU
-	if (!this->IsComponentTickEnabled() && PerformDeadReckoning)
-	{
-		this->SetComponentTickEnabled(true);
-	}
-
 	//Update the smoothing dead reckoned PDU to be a smoothing period distance out -- this will be used as a target end point for smoothing
 	DeadReckoning(MostRecentEntityStatePDU, DeadReckoningSmoothingPeriodSeconds, SmoothingDeadReckonedPDU);
+}
 
-	bHasReceivedPdu = true;
+void UDISComponent::UpdateCommonEntityStateInfo(FEntityStatePDU NewEntityStatePDU)
+{
+	LatestEntityStatePDUTimestamp = FDateTime::Now();
+	MostRecentEntityStatePDU = NewEntityStatePDU;
+	PreviousDeadReckonedPDU = MostRecentDeadReckonedEntityStatePDU;
+	MostRecentDeadReckonedEntityStatePDU = MostRecentEntityStatePDU;
+	DeltaTimeSinceLastPDU = 0;
+
+	EntityID = NewEntityStatePDU.EntityID;
+
+	GetOwner()->SetLifeSpan(DISTimeoutSeconds);
+	
+	NumberEntityStatePDUsReceived++;
 }
 
 void UDISComponent::HandleFirePDU(FFirePDU FirePDUIn)
@@ -263,14 +246,15 @@ void UDISComponent::DoDeadReckoning(float DeltaTime)
 	DeltaTimeSinceLastPDU += DeltaTime;
 	
 	//If more than one PDU has been received and were still in the smoothing period, then smooth
-	if (bHasReceivedPdu && DeltaTimeSinceLastPDU <= DeadReckoningSmoothingPeriodSeconds)
+	if (NumberEntityStatePDUsReceived > 1 && DeltaTimeSinceLastPDU <= DeadReckoningSmoothingPeriodSeconds)
 	{
 		MostRecentDeadReckonedEntityStatePDU.EntityLocation = FMath::Lerp(PreviousDeadReckonedPDU.EntityLocation, SmoothingDeadReckonedPDU.EntityLocation, DeltaTimeSinceLastPDU / DeadReckoningSmoothingPeriodSeconds);
-		glm::dvec3 SmoothingLocationDouble = glm::dvec3(SmoothingDeadReckonedPDU.EntityLocationDouble[0], SmoothingDeadReckonedPDU.EntityLocationDouble[1], SmoothingDeadReckonedPDU.EntityLocationDouble[2]);
-		glm::dvec3 TempLocationDouble = glm::dvec3(TempDeadReckonedPDU.EntityLocationDouble[0], TempDeadReckonedPDU.EntityLocationDouble[1], TempDeadReckonedPDU.EntityLocationDouble[2]);
-		glm::dvec3 SmoothedLocationDouble = glm::mix(SmoothingLocationDouble, TempLocationDouble, DeltaTimeSinceLastPDU / DeadReckoningSmoothingPeriodSeconds);
-		/*TempDeadReckonedPDU.EntityLocationDouble = TArray<double>{ SmoothedLocationDouble[0], SmoothedLocationDouble[1], SmoothedLocationDouble[2] };
-		TempDeadReckonedPDU.EntityOrientation = FMath::Lerp(SmoothingDeadReckonedPDU.EntityOrientation.Quaternion(), TempDeadReckonedPDU.EntityOrientation.Quaternion(), DeltaTimeSinceLastPDU / DeadReckoningSmoothingPeriodSeconds).Rotator();*/
+
+		MostRecentDeadReckonedEntityStatePDU.EntityLocationDouble[0] = FMath::Lerp(PreviousDeadReckonedPDU.EntityLocationDouble[0], SmoothingDeadReckonedPDU.EntityLocationDouble[0], DeltaTimeSinceLastPDU / DeadReckoningSmoothingPeriodSeconds);
+		MostRecentDeadReckonedEntityStatePDU.EntityLocationDouble[1] = FMath::Lerp(PreviousDeadReckonedPDU.EntityLocationDouble[1], SmoothingDeadReckonedPDU.EntityLocationDouble[1], DeltaTimeSinceLastPDU / DeadReckoningSmoothingPeriodSeconds);
+		MostRecentDeadReckonedEntityStatePDU.EntityLocationDouble[2] = FMath::Lerp(PreviousDeadReckonedPDU.EntityLocationDouble[2], SmoothingDeadReckonedPDU.EntityLocationDouble[2], DeltaTimeSinceLastPDU / DeadReckoningSmoothingPeriodSeconds);
+
+		//MostRecentDeadReckonedEntityStatePDU.EntityOrientation = FMath::Lerp(PreviousDeadReckonedPDU.EntityOrientation.Quaternion(), SmoothingDeadReckonedPDU.EntityOrientation.Quaternion(), DeltaTimeSinceLastPDU / DeadReckoningSmoothingPeriodSeconds).Rotator();
 
 		OnDeadReckoningUpdate.Broadcast(MostRecentDeadReckonedEntityStatePDU);
 
@@ -284,7 +268,6 @@ void UDISComponent::DoDeadReckoning(float DeltaTime)
 
 		GroundClamping_Implementation();
 	}
-
 }
 
 // TODO: Cleanup copy pasted code in switch

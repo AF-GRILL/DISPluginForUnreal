@@ -175,7 +175,9 @@ private:
 	FEntityStatePDU SmoothingDeadReckonedPDU;
 	FEntityStatePDU PreviousDeadReckonedPDU;
 	float DeltaTimeSinceLastPDU = 0;
-	bool bHasReceivedPdu = false;
+	int NumberEntityStatePDUsReceived = 0;
+
+	void UpdateCommonEntityStateInfo(FEntityStatePDU NewEntityStatePDU);
 
 	/**
 	 * Gets the local yaw, pitch, and roll from the other parameters structure. The yaw, pitch, and roll act on the entity's local North, East, Down vectors.

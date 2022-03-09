@@ -9,151 +9,41 @@ void UUDPSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 {
 	Super::Initialize(Collection);
 
-	//Load settings from the OpenDIS ProjectSettings
-	const UDISRuntimeSettings* const ProjectSettings = UDISRuntimeSettings::Get();
-	check(ProjectSettings);
-
-	Settings.bShouldAutoOpenSend = ProjectSettings->AutoConnectSend;
-	Settings.SendIP = ProjectSettings->AutoSendIPAddress;
-	Settings.SendPort = ProjectSettings->AutoSendPort;
-	Settings.bShouldAutoOpenReceive = ProjectSettings->AutoConnectReceive;
-	Settings.ReceiveIP = ProjectSettings->AutoReceiveIPAddress;
-	Settings.ReceivePort = ProjectSettings->AutoReceivePort;
-
-	if (Settings.bShouldAutoOpenSend)
-	{
-		OpenSendSocket(Settings.SendIP, Settings.SendPort);
-	}
-
-	if (Settings.bShouldAutoOpenReceive)
-	{
-		OpenReceiveSocket(Settings.ReceiveIP, Settings.ReceivePort);
-	}
+	SocketSubsystem = ISocketSubsystem::Get(PLATFORM_SOCKETSUBSYSTEM);
 }
 
 void UUDPSubsystem::Deinitialize()
 {
-	CloseSendSocket();
-	CloseReceiveSocket();
+	CloseAllSendSockets();
+	CloseAllReceiveSockets();
 
 	Super::Deinitialize();
 }
 
-bool UUDPSubsystem::CloseReceiveSocket()
+bool UUDPSubsystem::OpenReceiveSocket(FSocketSettings SocketSettings, int32& ReceiveSocketID, const FString& IpToListenOn /*= TEXT("0.0.0.0")*/, const int32 PortToListenOn /*= 3002*/)
 {
-	bool bDidCloseCorrectly = true;
-	Settings.bIsReceiveOpen = false;
-
-	if (ReceiverSocket)
-	{
-		UDPReceiver->Stop();
-		delete UDPReceiver;
-		UDPReceiver = nullptr;
-
-		bDidCloseCorrectly = ReceiverSocket->Close();
-		ISocketSubsystem::Get(PLATFORM_SOCKETSUBSYSTEM)->DestroySocket(ReceiverSocket);
-		ReceiverSocket = nullptr;
-
-		if (OnReceiveSocketClosed.IsBound())
-		{
-			OnReceiveSocketClosed.Broadcast(Settings.ReceivePort);
-		}
-	}
-
-	return bDidCloseCorrectly;
-}
-
-bool UUDPSubsystem::OpenSendSocket(const FString& InIP /*= TEXT("127.0.0.1")*/, const int32 InPort /*= 3000*/)
-{
-	Settings.SendIP = InIP;
-	Settings.SendPort = InPort;
-
-	RemoteAdress = ISocketSubsystem::Get(PLATFORM_SOCKETSUBSYSTEM)->CreateInternetAddr();
-
-	bool bIsValid;
-	RemoteAdress->SetIp(*Settings.SendIP, bIsValid);
-	RemoteAdress->SetPort(Settings.SendPort);
-
-	if (!bIsValid)
-	{
-		UE_LOG(LogUDPSubsystem, Error, TEXT("UDP address is invalid <%s:%d>"), *Settings.SendIP, Settings.SendPort);
-		return 0;
-	}
-
-	SenderSocket = FUdpSocketBuilder(*Settings.SendSocketName).AsReusable().WithBroadcast();
-
-	//Set Send Buffer Size
-	SenderSocket->SetSendBufferSize(Settings.BufferSize, Settings.BufferSize);
-	SenderSocket->SetReceiveBufferSize(Settings.BufferSize, Settings.BufferSize);
-
-	bool bDidConnect = SenderSocket->Connect(*RemoteAdress);
-	Settings.bIsSendOpen = true;
-	Settings.SendPort = SenderSocket->GetPortNo();
-
-	if (OnSendSocketOpened.IsBound())
-	{
-		OnSendSocketOpened.Broadcast(Settings.SendPort);
-	}
-
-	return Settings.bIsSendOpen;
-}
-
-bool UUDPSubsystem::CloseSendSocket()
-{
-	Settings.SendPort = 0;
-
-	bool bDidCloseCorrectly = true;
-	Settings.bIsSendOpen = false;
-
-	if (SenderSocket)
-	{
-		bDidCloseCorrectly = SenderSocket->Close();
-		ISocketSubsystem::Get(PLATFORM_SOCKETSUBSYSTEM)->DestroySocket(SenderSocket);
-		SenderSocket = nullptr;
-
-		if (OnSendSocketClosed.IsBound())
-		{
-			OnSendSocketClosed.Broadcast(Settings.SendPort);
-		}
-	}
-
-	return bDidCloseCorrectly;
-}
-
-bool UUDPSubsystem::OpenReceiveSocket(const FString& InListenIp /*= TEXT("0.0.0.0")*/, const int32 InListenPort /*= 3002*/)
-{
-	Settings.ReceiveIP = InListenIp;
-	Settings.ReceivePort = InListenPort;
-
-	bool bDidOpenCorrectly = true;
-
-	if (Settings.bIsReceiveOpen)
-	{
-		bDidOpenCorrectly = CloseReceiveSocket();
-	}
-
 	FIPv4Address Addr;
-	FIPv4Address::Parse(Settings.ReceiveIP, Addr);
+	FIPv4Address::Parse(IpToListenOn, Addr);
 	//Create Socket
-	FIPv4Endpoint Endpoint(Addr, Settings.ReceivePort);
+	FIPv4Endpoint Endpoint(Addr, PortToListenOn);
 
-	ReceiverSocket = FUdpSocketBuilder(*Settings.ReceiveSocketName)
+	FSocket* ReceiverSocket = FUdpSocketBuilder(SocketSettings.SocketDescription)
 		.AsNonBlocking()
-		.AsReusable()
+		//.AsReusable()
 		.BoundToEndpoint(Endpoint)
-		.WithReceiveBufferSize(Settings.BufferSize);
+		.WithReceiveBufferSize(SocketSettings.BufferSize);
 
 	if (ReceiverSocket == nullptr)
 	{
-		UE_LOG(LogUDPSubsystem, Error, TEXT("Failed to bind to %s:%s! Setup of receive socket failed."), *Settings.ReceiveIP, *FString::FromInt(Settings.ReceivePort));
+		UE_LOG(LogUDPSubsystem, Error, TEXT("Failed to bind to address <%s:%d>! Setup of receive socket failed. Verify given IP and Port are in valid ranges and that another socket is not already set up on the given address."), *IpToListenOn, PortToListenOn);
 		return false;
 	}
 
 	FTimespan ThreadWaitTime = FTimespan::FromMilliseconds(100);
 	FString ThreadName = FString::Printf(TEXT("UDP RECEIVER-FUDPWrapper"));
-	UDPReceiver = new FUdpSocketReceiver(ReceiverSocket, ThreadWaitTime, *ThreadName);
+	FUdpSocketReceiver* UDPReceiver = new FUdpSocketReceiver(ReceiverSocket, ThreadWaitTime, *ThreadName);
 
-	UDPReceiver->OnDataReceived().BindLambda([this](const FArrayReaderPtr& DataPtr, const FIPv4Endpoint& Endpoint)
+	UDPReceiver->OnDataReceived().BindLambda([this, SocketSettings](const FArrayReaderPtr& DataPtr, const FIPv4Endpoint& Endpoint)
 	{
 		if (!OnReceivedBytes.IsBound())
 		{
@@ -166,7 +56,7 @@ bool UUDPSubsystem::OpenReceiveSocket(const FString& InListenIp /*= TEXT("0.0.0.
 
 		FString SenderIp = Endpoint.Address.ToString();
 
-		if (Settings.bReceiveDataOnGameThread)
+		if (SocketSettings.bReceiveDataOnGameThread)
 		{
 			//Copy data to receiving thread via lambda capture
 			AsyncTask(ENamedThreads::GameThread, [this, Data, SenderIp]()
@@ -184,48 +74,172 @@ bool UUDPSubsystem::OpenReceiveSocket(const FString& InListenIp /*= TEXT("0.0.0.
 		}
 	});
 
-	Settings.bIsReceiveOpen = true;
-
 	if (OnReceiveSocketOpened.IsBound())
 	{
-		OnReceiveSocketOpened.Broadcast(Settings.ReceivePort);
+		OnReceiveSocketOpened.Broadcast(TotalReceiveSocketIterator, *IpToListenOn, PortToListenOn);
 	}
 
 	UDPReceiver->Start();
 
-	return bDidOpenCorrectly;
+	//Add new receive socket info to map and increase iterator
+	AllReceiveSockets.Add(TotalReceiveSocketIterator, FReceiveSocketMapValue(ReceiverSocket, UDPReceiver));
+	ReceiveSocketID = TotalSendSocketIterator;
+	TotalReceiveSocketIterator++;
+
+	return true;
+}
+
+bool UUDPSubsystem::CloseReceiveSocket(int32 ReceiveSocketIdToClose)
+{
+	bool bDidCloseCorrectly = true;
+
+	FReceiveSocketMapValue* MapValue = AllReceiveSockets.Find(ReceiveSocketIdToClose);
+
+	if (MapValue)
+	{
+		//Get IP and Port the socket was listening on prior to closing it
+		TSharedRef<FInternetAddr> Sender = SocketSubsystem->CreateInternetAddr();
+		MapValue->ReceiveSocket->GetAddress(*Sender);
+		FIPv4Endpoint Endpoint = FIPv4Endpoint(Sender);
+
+		FString Ip = Endpoint.Address.ToString();
+		int32 Port = Endpoint.Port;
+
+		//Close the receive socket
+		bDidCloseCorrectly = MapValue->CloseReceiveSocket();
+
+		//If bound, broadcast Receive Socket Closed event
+		if (OnReceiveSocketClosed.IsBound())
+		{
+			OnReceiveSocketClosed.Broadcast(ReceiveSocketIdToClose, Ip, Port);
+		}
+
+		AllReceiveSockets.Remove(ReceiveSocketIdToClose);
+	}
+
+	return bDidCloseCorrectly;
+}
+
+bool UUDPSubsystem::OpenSendSocket(FSocketSettings SocketSettings, int32& SendSocketID, const FString& IpToSendOn /*= TEXT("127.0.0.1")*/, const int32 PortToSendOn /*= 3000*/)
+{
+	TSharedPtr<FInternetAddr> RemoteAdress = SocketSubsystem->CreateInternetAddr();
+
+	bool bIsValid;
+	RemoteAdress->SetIp(*IpToSendOn, bIsValid);
+	RemoteAdress->SetPort(PortToSendOn);
+
+	if (!bIsValid)
+	{
+		UE_LOG(LogUDPSubsystem, Error, TEXT("UDP address is invalid <%s:%d>"), *IpToSendOn, PortToSendOn);
+		return 0;
+	}
+
+	FSocket* SenderSocket = FUdpSocketBuilder(SocketSettings.SocketDescription).AsReusable().WithBroadcast();
+
+	//Set Send Buffer Size
+	SenderSocket->SetSendBufferSize(SocketSettings.BufferSize, SocketSettings.BufferSize);
+	SenderSocket->SetReceiveBufferSize(SocketSettings.BufferSize, SocketSettings.BufferSize);
+
+	bool bDidConnect = SenderSocket->Connect(*RemoteAdress);
+	int32 LocalPort = SenderSocket->GetPortNo();
+
+	TSharedRef<FInternetAddr> Sender = SocketSubsystem->CreateInternetAddr();
+	SenderSocket->GetAddress(*Sender);
+	FString LocalIp = FIPv4Endpoint(Sender).Address.ToString();
+
+	if (OnSendSocketOpened.IsBound())
+	{
+		OnSendSocketOpened.Broadcast(TotalSendSocketIterator, LocalIp, LocalPort, IpToSendOn, PortToSendOn);
+	}
+
+	//Add new send socket info to map and increase iterator
+	AllSendSockets.Add(TotalSendSocketIterator, SenderSocket);
+	SendSocketID = TotalSendSocketIterator;
+	TotalSendSocketIterator++;
+
+	return true;
+}
+
+bool UUDPSubsystem::CloseSendSocket(int32 SendSocketIdToClose)
+{
+	bool bDidCloseCorrectly = true;
+
+	FSocket* SocketToClose = *AllSendSockets.Find(SendSocketIdToClose);
+
+	if (SocketToClose)
+	{
+		//Get the IP and Port the socket was sending to prior to closing it
+		TSharedRef<FInternetAddr> Sender = SocketSubsystem->CreateInternetAddr();
+		SocketToClose->GetAddress(*Sender);
+		FIPv4Endpoint LocalEndpoint = FIPv4Endpoint(Sender);
+		SocketToClose->GetPeerAddress(*Sender);
+		FIPv4Endpoint PeerEndpoint = FIPv4Endpoint(Sender);
+
+		FString LocalIp = LocalEndpoint.Address.ToString();
+		int32 LocalPort = LocalEndpoint.Port;
+		FString PeerIp = PeerEndpoint.Address.ToString();
+		int32 PeerPort = PeerEndpoint.Port;
+
+		//Close the send socket
+		bDidCloseCorrectly = SocketToClose->Close();
+		SocketSubsystem->DestroySocket(SocketToClose);
+		SocketToClose = nullptr;
+
+		//If bound, broadcast the Send Socket Closed event
+		if (OnSendSocketClosed.IsBound())
+		{
+			OnSendSocketClosed.Broadcast(SendSocketIdToClose, LocalIp, LocalPort, PeerIp, PeerPort);
+		}
+
+		AllSendSockets.Remove(SendSocketIdToClose);
+	}
+
+	return bDidCloseCorrectly;
 }
 
 bool UUDPSubsystem::EmitBytes(const TArray<uint8>& Bytes)
 {
 	bool bDidSendCorrectly = true;
 
-	if (SenderSocket && SenderSocket->GetConnectionState() == SCS_Connected)
+	for (const TPair<int32, FSocket*>& pair : AllSendSockets) 
 	{
-		int32 BytesSent = 0;
-		bDidSendCorrectly = SenderSocket->Send(Bytes.GetData(), Bytes.Num(), BytesSent);
-	}
-	else if (Settings.bShouldAutoOpenSend)
-	{
-		bool bDidOpen = OpenSendSocket(Settings.SendIP, Settings.SendPort);
-		return bDidOpen && EmitBytes(Bytes);
-	}
+		FSocket* SendSocket = pair.Value;
 
+		if (SendSocket && SendSocket->GetConnectionState() == SCS_Connected)
+		{
+			int32 BytesSent = 0;
+			bDidSendCorrectly = bDidSendCorrectly && SendSocket->Send(Bytes.GetData(), Bytes.Num(), BytesSent);
+		}
+	}
 	return bDidSendCorrectly;
 }
 
-void UUDPSubsystem::GetUDPReceiveSettings(bool& CurrentlyConnected, FString& ReceiveIPAddress, int32& ReceivePort, bool& AutoConnectReceive)
+bool UUDPSubsystem::CloseAllReceiveSockets()
 {
-	CurrentlyConnected = Settings.bIsReceiveOpen;
-	ReceiveIPAddress = Settings.ReceiveIP;
-	ReceivePort = Settings.ReceivePort;
-	AutoConnectReceive = Settings.bShouldAutoOpenReceive;
+	bool allClosedSuccessfully = true;
+
+	//Create a copy of the map to prevent removing entries while iterating
+	TMap<int32, FReceiveSocketMapValue> tempMap = AllReceiveSockets;
+
+	for (const TPair<int32, FReceiveSocketMapValue>& pair : tempMap)
+	{
+		allClosedSuccessfully = allClosedSuccessfully && CloseReceiveSocket(pair.Key);
+	}
+
+	return allClosedSuccessfully;
 }
 
-void UUDPSubsystem::GetUDPSendSettings(bool& CurrentlyConnected, FString& SendIPAddress, int32& SendPort, bool& AutoConnectSend)
+bool UUDPSubsystem::CloseAllSendSockets()
 {
-	CurrentlyConnected = Settings.bIsSendOpen;
-	SendIPAddress = Settings.SendIP;
-	SendPort = Settings.SendPort;
-	AutoConnectSend = Settings.bShouldAutoOpenSend;
+	bool allClosedSuccessfully = true;
+
+	//Create a copy of the map to prevent removing entries while iterating
+	TMap<int32, FSocket*> tempMap = AllSendSockets;
+
+	for (const TPair<int32, FSocket*>& pair : tempMap)
+	{
+		allClosedSuccessfully = allClosedSuccessfully && CloseSendSocket(pair.Key);
+	}
+
+	return allClosedSuccessfully;
 }

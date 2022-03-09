@@ -24,7 +24,7 @@ public:
 	virtual void PostEditChangeProperty(struct FPropertyChangedEvent& PropertyChangedEvent) override;
 #endif // WITH_EDITOR
 
-	UPROPERTY(GlobalConfig, EditAnywhere, Category = "DIS Networking",
+	/*UPROPERTY(GlobalConfig, EditAnywhere, Category = "DIS Networking",
 		Meta = (DisplayName = "Auto Connect Send", Tooltip = "Whether or not the UDP socket for sending DIS packets should be auto connected."))
 		bool AutoConnectSend = false;
 	UPROPERTY(GlobalConfig, EditAnywhere, Category = "DIS Networking",
@@ -41,7 +41,7 @@ public:
 		FString AutoReceiveIPAddress = "0.0.0.0";
 	UPROPERTY(GlobalConfig, EditAnywhere, Category = "DIS Networking",
 		Meta = (DisplayName = "Auto Receive Port", Tooltip = "The Port to receive UDP packets on if Auto Connect Receive is enabled. Valid Port ranges are from 1024 to 65535.", UIMin = 1024, UIMax = 65535, ClampMin = 1024, ClampMax = 65535))
-		int32 AutoReceivePort = 3000;
+		int32 AutoReceivePort = 3000;*/
 
 private:
 	static class UDISRuntimeSettings* DISSimSettingsSingleton;

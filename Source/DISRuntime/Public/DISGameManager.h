@@ -16,6 +16,20 @@ class UDISComponent;
 
 DECLARE_LOG_CATEGORY_EXTERN(LogDISGameManager, Log, All);
 
+USTRUCT(Blueprintable)
+struct FSocketInfo
+{
+	GENERATED_BODY()
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere,
+		Meta = (Tooltip = "The IP Address to either send UDP packets to or receive UDP packets from."))
+		FString IpAddress = "0.0.0.0";
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere,	
+		Meta = (Tooltip = "The Port to either send UDP packets to or receive UDP packets from. Valid Port ranges are from 1024 to 65535.", UIMin = 1024, UIMax = 65535, ClampMin = 1024, ClampMax = 65535))
+		int32 Port = 3000;
+};
+
 UCLASS(Blueprintable)
 class DISRUNTIME_API ADISGameManager : public AInfo
 {
@@ -112,6 +126,22 @@ protected:
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "GRILL DIS|Game Manager",
 		Meta = (DisplayName = "Application ID", Tooltip = "The Application ID of this application instance. Valid Application IDs range from 0 to 65535.", UIMin = 0, UIMax = 65535, ClampMin = 0, ClampMax = 65535))
 		int32 ApplicationID = 0;
+
+	//Whether or not to auto connect receive sockets
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "GRILL DIS|Game Manager|Networking")
+		bool AutoConnectReceiveAddresses;
+	//Receive sockets to auto setup
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "GRILL DIS|Game Manager|Networking",
+		meta = (DisplayName = "Auto Connect Receive Sockets", EditCondition = "AutoConnectReceiveAddresses"))
+		TArray<FSocketInfo> ReceiveSocketsToSetup;
+	//Whether or not to auto connect send sockets
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "GRILL DIS|Game Manager|Networking")
+		bool AutoConnectSendAddresses;
+	//Send sockets to auto setup
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "GRILL DIS|Game Manager|Networking",
+		meta = (DisplayName = "Auto Connect Send Sockets", EditCondition = "AutoConnectSendAddresses"))
+		TArray<FSocketInfo> SendSocketsToSetup;
+
 
 private:
 	void SpawnNewEntityFromEntityState(FEntityStatePDU EntityStatePDUIn);
