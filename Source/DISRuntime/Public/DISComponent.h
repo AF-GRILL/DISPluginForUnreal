@@ -153,7 +153,7 @@ public:
 	/**
 	* Number of seconds to smooth between dead reckoned information and packet information if dead reckoning is enabled
 	*/
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|DIS Component|DIS Settings", meta = (EditCondition = "PerfromDeadReckoning"))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|DIS Component|DIS Settings", meta = (EditCondition = "PerformDeadReckoning"))
 		float DeadReckoningSmoothingPeriodSeconds = 0.5f;
 	/**
 	 * Whether or not ground clamping should be performed for this entity.
@@ -163,7 +163,7 @@ public:
 	/**
 	 * The collision channel to use for ground clamping.
 	 */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|DIS Component|DIS Settings")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|DIS Component|DIS Settings", meta = (EditCondition = "PerformGroundClamping"))
 		TEnumAsByte<ETraceTypeQuery> GoundClampingCollisionChannel = UEngineTypes::ConvertToTraceType(ECollisionChannel::ECC_Visibility);
 
 protected:

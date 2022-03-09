@@ -245,28 +245,31 @@ void UDISComponent::DoDeadReckoning(float DeltaTime)
 {
 	DeltaTimeSinceLastPDU += DeltaTime;
 	
-	//If more than one PDU has been received and were still in the smoothing period, then smooth
-	if (NumberEntityStatePDUsReceived > 1 && DeltaTimeSinceLastPDU <= DeadReckoningSmoothingPeriodSeconds)
+	if (PerformDeadReckoning && SpawnedFromNetwork)
 	{
-		MostRecentDeadReckonedEntityStatePDU.EntityLocation = FMath::Lerp(PreviousDeadReckonedPDU.EntityLocation, SmoothingDeadReckonedPDU.EntityLocation, DeltaTimeSinceLastPDU / DeadReckoningSmoothingPeriodSeconds);
+		//If more than one PDU has been received and were still in the smoothing period, then smooth
+		if (NumberEntityStatePDUsReceived > 1 && DeltaTimeSinceLastPDU <= DeadReckoningSmoothingPeriodSeconds)
+		{
+			MostRecentDeadReckonedEntityStatePDU.EntityLocation = FMath::Lerp(PreviousDeadReckonedPDU.EntityLocation, SmoothingDeadReckonedPDU.EntityLocation, DeltaTimeSinceLastPDU / DeadReckoningSmoothingPeriodSeconds);
 
-		MostRecentDeadReckonedEntityStatePDU.EntityLocationDouble[0] = FMath::Lerp(PreviousDeadReckonedPDU.EntityLocationDouble[0], SmoothingDeadReckonedPDU.EntityLocationDouble[0], DeltaTimeSinceLastPDU / DeadReckoningSmoothingPeriodSeconds);
-		MostRecentDeadReckonedEntityStatePDU.EntityLocationDouble[1] = FMath::Lerp(PreviousDeadReckonedPDU.EntityLocationDouble[1], SmoothingDeadReckonedPDU.EntityLocationDouble[1], DeltaTimeSinceLastPDU / DeadReckoningSmoothingPeriodSeconds);
-		MostRecentDeadReckonedEntityStatePDU.EntityLocationDouble[2] = FMath::Lerp(PreviousDeadReckonedPDU.EntityLocationDouble[2], SmoothingDeadReckonedPDU.EntityLocationDouble[2], DeltaTimeSinceLastPDU / DeadReckoningSmoothingPeriodSeconds);
+			MostRecentDeadReckonedEntityStatePDU.EntityLocationDouble[0] = FMath::Lerp(PreviousDeadReckonedPDU.EntityLocationDouble[0], SmoothingDeadReckonedPDU.EntityLocationDouble[0], DeltaTimeSinceLastPDU / DeadReckoningSmoothingPeriodSeconds);
+			MostRecentDeadReckonedEntityStatePDU.EntityLocationDouble[1] = FMath::Lerp(PreviousDeadReckonedPDU.EntityLocationDouble[1], SmoothingDeadReckonedPDU.EntityLocationDouble[1], DeltaTimeSinceLastPDU / DeadReckoningSmoothingPeriodSeconds);
+			MostRecentDeadReckonedEntityStatePDU.EntityLocationDouble[2] = FMath::Lerp(PreviousDeadReckonedPDU.EntityLocationDouble[2], SmoothingDeadReckonedPDU.EntityLocationDouble[2], DeltaTimeSinceLastPDU / DeadReckoningSmoothingPeriodSeconds);
 
-		//MostRecentDeadReckonedEntityStatePDU.EntityOrientation = FMath::Lerp(PreviousDeadReckonedPDU.EntityOrientation.Quaternion(), SmoothingDeadReckonedPDU.EntityOrientation.Quaternion(), DeltaTimeSinceLastPDU / DeadReckoningSmoothingPeriodSeconds).Rotator();
+			//MostRecentDeadReckonedEntityStatePDU.EntityOrientation = FMath::Lerp(PreviousDeadReckonedPDU.EntityOrientation.Quaternion(), SmoothingDeadReckonedPDU.EntityOrientation.Quaternion(), DeltaTimeSinceLastPDU / DeadReckoningSmoothingPeriodSeconds).Rotator();
 
-		OnDeadReckoningUpdate.Broadcast(MostRecentDeadReckonedEntityStatePDU);
+			OnDeadReckoningUpdate.Broadcast(MostRecentDeadReckonedEntityStatePDU);
 
-		GroundClamping_Implementation();
-	}
-	else if (DeadReckoning(MostRecentDeadReckonedEntityStatePDU, DeltaTime, TempDeadReckonedPDU))
-	{
-		MostRecentDeadReckonedEntityStatePDU = TempDeadReckonedPDU;
+			GroundClamping_Implementation();
+		}
+		else if (DeadReckoning(MostRecentDeadReckonedEntityStatePDU, DeltaTime, TempDeadReckonedPDU))
+		{
+			MostRecentDeadReckonedEntityStatePDU = TempDeadReckonedPDU;
 
-		OnDeadReckoningUpdate.Broadcast(MostRecentDeadReckonedEntityStatePDU);
+			OnDeadReckoningUpdate.Broadcast(MostRecentDeadReckonedEntityStatePDU);
 
-		GroundClamping_Implementation();
+			GroundClamping_Implementation();
+		}
 	}
 }
 
