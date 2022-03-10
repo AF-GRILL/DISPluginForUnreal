@@ -140,70 +140,82 @@ void ADISGameManager::HandleOnDISEntityDestroyed(AActor* DestroyedActor)
 
 void ADISGameManager::HandleEntityStatePDU(FEntityStatePDU EntityStatePDUIn)
 {
-	//Find associated actor in the DISActorMappings map -- If actor does not exist spawn one
-	auto associatedActor = RawDISActorMappings.find(EntityStatePDUIn.EntityID);
-	if (associatedActor != RawDISActorMappings.end())
+	if (EntityStatePDUIn.ExerciseID == ExerciseID)
 	{
-		//If an actor was found, relay information to the associated component
-		UDISComponent* DISComponent = IDISInterface::Execute_GetActorDISComponent(associatedActor->second);
-
-		if (DISComponent != nullptr)
+		//Find associated actor in the DISActorMappings map -- If actor does not exist spawn one
+		auto associatedActor = RawDISActorMappings.find(EntityStatePDUIn.EntityID);
+		if (associatedActor != RawDISActorMappings.end())
 		{
-			DISComponent->HandleEntityStatePDU(EntityStatePDUIn);
-		}
-	}
-	else
-	{
-		//Check if the entity has been deactivated -- Entity is deactivated if the 23rd bit of the Entity Appearance value is set
-		if (EntityStatePDUIn.EntityAppearance & (1 << 23))
-		{
-			UE_LOG(LogDISGameManager, Log, TEXT("Received Entity State PDU with a Deactivated Entity Appearance for an entity that is not in the level. Ignoring the PDU. Entity marking: %s"), *EntityStatePDUIn.Marking);
-			return;
-		}
+			//If an actor was found, relay information to the associated component
+			UDISComponent* DISComponent = IDISInterface::Execute_GetActorDISComponent(associatedActor->second);
 
-		SpawnNewEntityFromEntityState(EntityStatePDUIn);
+			if (DISComponent != nullptr)
+			{
+				DISComponent->HandleEntityStatePDU(EntityStatePDUIn);
+			}
+		}
+		else
+		{
+			//Check if the entity has been deactivated -- Entity is deactivated if the 23rd bit of the Entity Appearance value is set
+			if (EntityStatePDUIn.EntityAppearance & (1 << 23))
+			{
+				UE_LOG(LogDISGameManager, Log, TEXT("Received Entity State PDU with a Deactivated Entity Appearance for an entity that is not in the level. Ignoring the PDU. Entity marking: %s"), *EntityStatePDUIn.Marking);
+				return;
+			}
+
+			SpawnNewEntityFromEntityState(EntityStatePDUIn);
+		}
 	}
 }
 
 void ADISGameManager::HandleEntityStateUpdatePDU(FEntityStateUpdatePDU EntityStateUpdatePDUIn)
 {
-	// NOTE: Entity State Update PDUs do not contain an Entity Type, so we cannot spawn an entity from one
-
-	//Get associated OpenDISComponent and relay information
-	UDISComponent* DISComponent = GetAssociatedDISComponent(EntityStateUpdatePDUIn.EntityID);
-
-	if (DISComponent != nullptr)
+	if (EntityStateUpdatePDUIn.ExerciseID == ExerciseID)
 	{
-		DISComponent->HandleEntityStateUpdatePDU(EntityStateUpdatePDUIn);
+		// NOTE: Entity State Update PDUs do not contain an Entity Type, so we cannot spawn an entity from one
+
+		//Get associated OpenDISComponent and relay information
+		UDISComponent* DISComponent = GetAssociatedDISComponent(EntityStateUpdatePDUIn.EntityID);
+
+		if (DISComponent != nullptr)
+		{
+			DISComponent->HandleEntityStateUpdatePDU(EntityStateUpdatePDUIn);
+		}
 	}
 }
 
 void ADISGameManager::HandleFirePDU(FFirePDU FirePDUIn)
 {
-	//Get associated OpenDISComponent and relay information
-	UDISComponent* DISComponent = GetAssociatedDISComponent(FirePDUIn.FiringEntityID);
-
-	if (DISComponent != nullptr)
+	if (FirePDUIn.ExerciseID == ExerciseID)
 	{
-		DISComponent->HandleFirePDU(FirePDUIn);
+		//Get associated OpenDISComponent and relay information
+		UDISComponent* DISComponent = GetAssociatedDISComponent(FirePDUIn.FiringEntityID);
+
+		if (DISComponent != nullptr)
+		{
+			DISComponent->HandleFirePDU(FirePDUIn);
+		}
 	}
 }
 
 void ADISGameManager::HandleDetonationPDU(FDetonationPDU DetonationPDUIn)
-{
-	//Get associated OpenDISComponent and relay information
-	UDISComponent* DISComponent = GetAssociatedDISComponent(DetonationPDUIn.MunitionEntityID);
-
-	if (DISComponent != nullptr)
+{	
+	if (DetonationPDUIn.ExerciseID == ExerciseID)
 	{
-		DISComponent->HandleDetonationPDU(DetonationPDUIn);
+		//Get associated OpenDISComponent and relay information
+		UDISComponent* DISComponent = GetAssociatedDISComponent(DetonationPDUIn.MunitionEntityID);
+
+		if (DISComponent != nullptr)
+		{
+			DISComponent->HandleDetonationPDU(DetonationPDUIn);
+		}
 	}
 }
 
 void ADISGameManager::HandleRemoveEntityPDU(FRemoveEntityPDU RemoveEntityPDUIn)
 {
 	//Verify that we are the appropriate sim to handle the RemoveEntityPDU
-	if (RemoveEntityPDUIn.ReceivingEntityID.Site == SiteID && RemoveEntityPDUIn.ReceivingEntityID.Application == ApplicationID)
+	if (RemoveEntityPDUIn.ExerciseID == ExerciseID && RemoveEntityPDUIn.ReceivingEntityID.Site == SiteID && RemoveEntityPDUIn.ReceivingEntityID.Application == ApplicationID)
 	{
 		//Get associated OpenDISComponent and relay information
 		UDISComponent* DISComponent = GetAssociatedDISComponent(RemoveEntityPDUIn.ReceivingEntityID);
