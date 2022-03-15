@@ -236,7 +236,7 @@ void ADISGameManager::SpawnNewEntityFromEntityState(FEntityStatePDU EntityStateP
 	if (associatedSoftClassReference == RawDISClassMappings.end())
 	{
 		std::map<FEntityType, TSoftClassPtr<AActor>> WildcardMappings;
-		for (auto Pair : RawDISClassMappings)
+		for (std::pair<FEntityType, TSoftClassPtr<AActor>> Pair : RawDISClassMappings)
 		{
 			FEntityType Key = Pair.first;
 			FEntityType FilledKey = FEntityType(Pair.first).FillWildcards(EntityStatePDUIn.EntityType);
@@ -252,11 +252,23 @@ void ADISGameManager::SpawnNewEntityFromEntityState(FEntityStatePDU EntityStateP
 		if (NewSoftClassRef != WildcardMappings.end()) 
 		{
 			associatedClass = NewSoftClassRef->second.LoadSynchronous();
+
+			if (associatedClass == nullptr)
+			{
+				UE_LOG(LogDISGameManager, Warning, TEXT("Mapping found, but points to a null class for the enumeration of: %s"), *EntityStatePDUIn.EntityType.ToString());
+				return;
+			}
 		}
 	}
 	else
 	{
 		associatedClass = associatedSoftClassReference->second.LoadSynchronous();
+
+		if (associatedClass == nullptr) 
+		{
+			UE_LOG(LogDISGameManager, Warning, TEXT("Mapping points to a null class for the enumeration of: %s"), *EntityStatePDUIn.EntityType.ToString());
+			return;
+		}
 	}
 
 	//If an actor has been found, spawn one and relay information to the associated component

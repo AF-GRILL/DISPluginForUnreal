@@ -31,102 +31,105 @@ void UPDUProcessor::ProcessDISPacket(TArray<uint8> InData)
 		return;
 	}
 
-	DIS::Pdu* pdu = NULL;
+	EPDUType receivedPDUType = static_cast<EPDUType>(InData[PDU_TYPE_POSITION]);
 
-	pdu = DIS::PduBank::GetStaticPDU(static_cast<DIS::PDUType>(InData[PDU_TYPE_POSITION]));
-	if (pdu)
+	//For list of enums for PDU type refer to SISO-REF-010-2015, ANNEX A
+	switch (receivedPDUType)
 	{
-		//For list of enums for PDU type refer to SISO-REF-010-2015, ANNEX A
-		switch (static_cast<EPDUType>(pdu->getPduType()))
-		{
-		case EPDUType::EntityState:
-		{
-			DIS::DataStream ds((char*)&InData[0], bytesArrayLength, BigEndian);
-			pdu->unmarshal(ds);
+	case EPDUType::EntityState:
+	{
+		DIS::EntityStatePdu* receivedESPDU = new DIS::EntityStatePdu();
+		DIS::DataStream ds((char*)&InData[0], bytesArrayLength, BigEndian);
+		receivedESPDU->unmarshal(ds);
 
-			FEntityStatePDU entityStatePDU;
-			entityStatePDU.SetupFromOpenDIS(static_cast<DIS::EntityStatePdu*>(pdu));
+		FEntityStatePDU entityStatePDU;
+		entityStatePDU.SetupFromOpenDIS(receivedESPDU);
 
-			OnEntityStatePDUProcessed.Broadcast(entityStatePDU);
+		OnEntityStatePDUProcessed.Broadcast(entityStatePDU);
 
-			break;
-		}
-		case EPDUType::Fire:
-		{
-			DIS::DataStream ds((char*)&InData[0], bytesArrayLength, BigEndian);
-			pdu->unmarshal(ds);
+		break;
+	}
+	case EPDUType::Fire:
+	{
+		DIS::FirePdu* receivedFirePDU = new DIS::FirePdu();
+		DIS::DataStream ds((char*)&InData[0], bytesArrayLength, BigEndian);
+		receivedFirePDU->unmarshal(ds);
 
-			FFirePDU firePDU;
-			firePDU.SetupFromOpenDIS(static_cast<DIS::FirePdu*>(pdu));
+		FFirePDU firePDU;
+		firePDU.SetupFromOpenDIS(receivedFirePDU);
 
-			OnFirePDUProcessed.Broadcast(firePDU);
+		OnFirePDUProcessed.Broadcast(firePDU);
 
-			break;
-		}
-		case EPDUType::Detonation:
-		{
-			DIS::DataStream ds((char*)&InData[0], bytesArrayLength, BigEndian);
-			pdu->unmarshal(ds);
+		break;
+	}
+	case EPDUType::Detonation:
+	{
+		DIS::DetonationPdu* receivedDetonationPDU = new DIS::DetonationPdu();
+		DIS::DataStream ds((char*)&InData[0], bytesArrayLength, BigEndian);
+		receivedDetonationPDU->unmarshal(ds);
 
-			FDetonationPDU detonationPDU;
-			detonationPDU.SetupFromOpenDIS(static_cast<DIS::DetonationPdu*>(pdu));
+		FDetonationPDU detonationPDU;
+		detonationPDU.SetupFromOpenDIS(receivedDetonationPDU);
 
-			OnDetonationPDUProcessed.Broadcast(detonationPDU);
+		OnDetonationPDUProcessed.Broadcast(detonationPDU);
 
-			break;
-		}
-		case EPDUType::RemoveEntity:
-		{
-			DIS::DataStream ds((char*)&InData[0], bytesArrayLength, BigEndian);
-			pdu->unmarshal(ds);
+		break;
+	}
+	case EPDUType::RemoveEntity:
+	{
+		DIS::RemoveEntityPdu* receivedRemoveEntityPDU = new DIS::RemoveEntityPdu();
+		DIS::DataStream ds((char*)&InData[0], bytesArrayLength, BigEndian);
+		receivedRemoveEntityPDU->unmarshal(ds);
 
-			FRemoveEntityPDU removeEntityPDU;
-			removeEntityPDU.SetupFromOpenDIS(static_cast<DIS::RemoveEntityPdu*>(pdu));
+		FRemoveEntityPDU removeEntityPDU;
+		removeEntityPDU.SetupFromOpenDIS(receivedRemoveEntityPDU);
 
-			OnRemoveEntityPDUProcessed.Broadcast(removeEntityPDU);
+		OnRemoveEntityPDUProcessed.Broadcast(removeEntityPDU);
 
-			break;
-		}
-		case EPDUType::Start_Resume:
-		{
-			DIS::DataStream ds((char*)&InData[0], bytesArrayLength, BigEndian);
-			pdu->unmarshal(ds);
+		break;
+	}
+	case EPDUType::Start_Resume:
+	{
+		DIS::StartResumePdu* receivedStartResumePDU = new DIS::StartResumePdu();
+		DIS::DataStream ds((char*)&InData[0], bytesArrayLength, BigEndian);
+		receivedStartResumePDU->unmarshal(ds);
 
-			FStartResumePDU StartResumePDU;
-			StartResumePDU.SetupFromOpenDIS(static_cast<DIS::StartResumePdu*>(pdu));
+		FStartResumePDU StartResumePDU;
+		StartResumePDU.SetupFromOpenDIS(receivedStartResumePDU);
 
-			OnStartResumePDUProcessed.Broadcast(StartResumePDU);
+		OnStartResumePDUProcessed.Broadcast(StartResumePDU);
 
-			break;
-		}
-		case EPDUType::Stop_Freeze:
-		{
-			DIS::DataStream ds((char*)&InData[0], bytesArrayLength, BigEndian);
-			pdu->unmarshal(ds);
+		break;
+	}
+	case EPDUType::Stop_Freeze:
+	{
+		DIS::StopFreezePdu* receivedStopFreezePDU = new DIS::StopFreezePdu();
+		DIS::DataStream ds((char*)&InData[0], bytesArrayLength, BigEndian);
+		receivedStopFreezePDU->unmarshal(ds);
 
-			FStopFreezePDU StopFreezePDU;
-			StopFreezePDU.SetupFromOpenDIS(static_cast<DIS::StopFreezePdu*>(pdu));
+		FStopFreezePDU StopFreezePDU;
+		StopFreezePDU.SetupFromOpenDIS(receivedStopFreezePDU);
 
-			OnStopFreezePDUProcessed.Broadcast(StopFreezePDU);
+		OnStopFreezePDUProcessed.Broadcast(StopFreezePDU);
 
-			break;
-		}
-		case EPDUType::EntityStateUpdate:
-		{
-			DIS::DataStream ds((char*)&InData[0], bytesArrayLength, BigEndian);
-			pdu->unmarshal(ds);
+		break;
+	}
+	case EPDUType::EntityStateUpdate:
+	{
+		DIS::EntityStateUpdatePdu* receivedESUPDU = new DIS::EntityStateUpdatePdu();
+		DIS::DataStream ds((char*)&InData[0], bytesArrayLength, BigEndian);
+		receivedESUPDU->unmarshal(ds);
 
-			FEntityStateUpdatePDU entityStateUpdatePDU;
-			entityStateUpdatePDU.SetupFromOpenDIS(static_cast<DIS::EntityStateUpdatePdu*>(pdu));
+		FEntityStateUpdatePDU entityStateUpdatePDU;
+		entityStateUpdatePDU.SetupFromOpenDIS(receivedESUPDU);
 
-			OnEntityStateUpdatePDUProcessed.Broadcast(entityStateUpdatePDU);
+		OnEntityStateUpdatePDUProcessed.Broadcast(entityStateUpdatePDU);
 
-			break;
-		}
-		default:
-		{
-			break;
-		}
-		}
+		break;
+	}
+	default:
+	{
+		break;
+	}
 	}
 }

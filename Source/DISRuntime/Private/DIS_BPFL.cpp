@@ -11,13 +11,14 @@ void UDIS_BPFL::CalculateLatLonHeightFromEcefXYZ(const FEarthCenteredEarthFixedD
 	constexpr double EarthSemiMajorRadiusMeters = 6378137;
 	constexpr double EarthSemiMinorRadiusMeters = 6356752.3142;
 
-	const double Longitude = FMath::RadiansToDegrees(FMath::Atan2(Ecef.Y, Ecef.X));
-	// Latitude accurate to ~5 decimal places
-	const double Latitude = FMath::RadiansToDegrees(FMath::Atan((FMath::Square(EarthSemiMajorRadiusMeters) / FMath::Square(EarthSemiMinorRadiusMeters)) * (Ecef.Z / FMath::Sqrt(FMath::Square(Ecef.X) + FMath::Square(Ecef.Y)))));
-
 	const double EarthSemiMajorRadiusMetersSquare = FMath::Square(EarthSemiMajorRadiusMeters);
 	const double EarthSemiMinorRadiusMetersSquare = FMath::Square(EarthSemiMinorRadiusMeters);
 	const double DistFromXToY = FMath::Sqrt(FMath::Square(Ecef.X) + FMath::Square(Ecef.Y));
+
+	const double Longitude = FMath::RadiansToDegrees(FMath::Atan2(Ecef.Y, Ecef.X));
+	// Latitude accurate to ~5 decimal places
+	const double Latitude = FMath::RadiansToDegrees(FMath::Atan((EarthSemiMajorRadiusMetersSquare / EarthSemiMinorRadiusMetersSquare) * (Ecef.Z / DistFromXToY)));
+
 	const double CosLatitude = FMath::Cos(FMath::DegreesToRadians(Latitude));
 	const double SinLatitude = FMath::Sin(FMath::DegreesToRadians(Latitude));
 	const double Height = (DistFromXToY / CosLatitude) - (EarthSemiMajorRadiusMetersSquare / FMath::Sqrt(
@@ -402,7 +403,6 @@ void UDIS_BPFL::GetEntityUnrealLocationFromEntityStatePdu(const FEntityStatePDU 
 	FCartesianCoordinates cartCoords = FCartesianCoordinates(ecefDouble.X, ecefDouble.Y, ecefDouble.Z);
 
 	GeoReferencingSystem->ECEFToEngine(cartCoords, EntityLocation);
-
 }
 
 void UDIS_BPFL::GetEntityUnrealLocationAndOrientation(const FEntityStatePDU EntityStatePdu, AGeoReferencingSystem* GeoReferencingSystem, FVector& EntityLocation, FRotator& EntityRotation)
