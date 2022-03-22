@@ -80,6 +80,10 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FUDPReceiveSocketStateSignature, 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_FiveParams(FUDPSendSocketStateSignature, int32, SendSocketID, FString, LocalIp, int32, LocalPort, FString, PeerIp, int32, PeerPort);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FUDPMessageSignature, const TArray<uint8>&, Bytes, const FString&, IPAddress);
 
+DECLARE_STATS_GROUP(TEXT("UDPSubsystem_Game"), STATGROUP_UDPSubsystem, STATCAT_Advanced);
+DECLARE_CYCLE_STAT(TEXT("ReceiveBytes"), STAT_ReceiveBytes, STATGROUP_UDPSubsystem);
+DECLARE_CYCLE_STAT(TEXT("SendBytes"), STAT_SendBytes, STATGROUP_UDPSubsystem);
+
 UCLASS(ClassGroup = "Networking", meta = (BlueprintSpawnableComponent))
 class DISRUNTIME_API UUDPSubsystem : public UGameInstanceSubsystem
 {

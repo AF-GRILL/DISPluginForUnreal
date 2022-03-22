@@ -24,6 +24,7 @@ void UPDUProcessor::HandleOnReceivedUDPBytes(const TArray<uint8>& Bytes, const F
 
 void UPDUProcessor::ProcessDISPacket(TArray<uint8> InData)
 {
+	SCOPE_CYCLE_COUNTER(STAT_ProcessDISPacket);
 	int bytesArrayLength = InData.Num();
 
 	if (bytesArrayLength < 1)

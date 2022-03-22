@@ -17,6 +17,9 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FRemoveEntityPDUProcessed, FRemoveEn
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FStartResumePDUProcessed, FStartResumePDU, StartResumePDU);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FStopFreezePDUProcessed, FStopFreezePDU, StopFreezePDU);
 
+DECLARE_STATS_GROUP(TEXT("PDUProcessor_Game"), STATGROUP_PDUProcessor, STATCAT_Advanced);
+DECLARE_CYCLE_STAT(TEXT("ProcessDISPacket"), STAT_ProcessDISPacket, STATGROUP_PDUProcessor);
+
 UCLASS()
 class DISRUNTIME_API UPDUProcessor : public UGameInstanceSubsystem
 {

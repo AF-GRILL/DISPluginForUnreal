@@ -243,6 +243,7 @@ void UDISComponent::HandleRemoveEntityPDU(FRemoveEntityPDU RemoveEntityPDUIn)
 
 void UDISComponent::DoDeadReckoning(float DeltaTime)
 {
+	SCOPE_CYCLE_COUNTER(STAT_DoDeadReckoning);
 	DeltaTimeSinceLastPDU += DeltaTime;
 	
 	if (PerformDeadReckoning && SpawnedFromNetwork)
@@ -256,7 +257,7 @@ void UDISComponent::DoDeadReckoning(float DeltaTime)
 			MostRecentDeadReckonedEntityStatePDU.EntityLocationDouble[1] = FMath::Lerp(PreviousDeadReckonedPDU.EntityLocationDouble[1], SmoothingDeadReckonedPDU.EntityLocationDouble[1], DeltaTimeSinceLastPDU / DeadReckoningSmoothingPeriodSeconds);
 			MostRecentDeadReckonedEntityStatePDU.EntityLocationDouble[2] = FMath::Lerp(PreviousDeadReckonedPDU.EntityLocationDouble[2], SmoothingDeadReckonedPDU.EntityLocationDouble[2], DeltaTimeSinceLastPDU / DeadReckoningSmoothingPeriodSeconds);
 
-			//MostRecentDeadReckonedEntityStatePDU.EntityOrientation = FMath::Lerp(PreviousDeadReckonedPDU.EntityOrientation.Quaternion(), SmoothingDeadReckonedPDU.EntityOrientation.Quaternion(), DeltaTimeSinceLastPDU / DeadReckoningSmoothingPeriodSeconds).Rotator();
+			MostRecentDeadReckonedEntityStatePDU.EntityOrientation = FMath::Lerp(PreviousDeadReckonedPDU.EntityOrientation.Quaternion(), SmoothingDeadReckonedPDU.EntityOrientation.Quaternion(), DeltaTimeSinceLastPDU / DeadReckoningSmoothingPeriodSeconds).Rotator();
 
 			OnDeadReckoningUpdate.Broadcast(MostRecentDeadReckonedEntityStatePDU);
 

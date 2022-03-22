@@ -16,6 +16,9 @@ class UDISComponent;
 
 DECLARE_LOG_CATEGORY_EXTERN(LogDISGameManager, Log, All);
 
+DECLARE_STATS_GROUP(TEXT("DISGameManager_Game"), STATGROUP_DISGameManager, STATCAT_Advanced);
+DECLARE_CYCLE_STAT(TEXT("GetAssociatedDISComponent"), STAT_GetAssociatedDISComponent, STATGROUP_DISGameManager);
+
 USTRUCT(Blueprintable)
 struct FSocketInfo
 {
