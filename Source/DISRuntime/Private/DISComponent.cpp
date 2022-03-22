@@ -243,11 +243,11 @@ void UDISComponent::HandleRemoveEntityPDU(FRemoveEntityPDU RemoveEntityPDUIn)
 
 void UDISComponent::DoDeadReckoning(float DeltaTime)
 {
-	SCOPE_CYCLE_COUNTER(STAT_DoDeadReckoning);
 	DeltaTimeSinceLastPDU += DeltaTime;
 	
 	if (PerformDeadReckoning && SpawnedFromNetwork)
 	{
+		SCOPE_CYCLE_COUNTER(STAT_DoDeadReckoning);
 		//If more than one PDU has been received and were still in the smoothing period, then smooth
 		if (NumberEntityStatePDUsReceived > 1 && DeltaTimeSinceLastPDU <= DeadReckoningSmoothingPeriodSeconds)
 		{
@@ -591,6 +591,7 @@ void UDISComponent::GroundClamping_Implementation()
 	//Verify that ground clamping is enabled, the entity is owned by another sim, is of the ground domain, and that it is not a munition
 	if (PerformGroundClamping && SpawnedFromNetwork && EntityType.Domain == 1 && EntityType.EntityKind != 2)
 	{
+		SCOPE_CYCLE_COUNTER(STAT_GroundClamping);
 		//Get the most recent calculated ECEF location of the entity from the dead reckoned ESPDU
 		FEarthCenteredEarthFixedDouble ecefDouble = FEarthCenteredEarthFixedDouble(MostRecentDeadReckonedEntityStatePDU.EntityLocationDouble[0],
 			MostRecentDeadReckonedEntityStatePDU.EntityLocationDouble[1], MostRecentDeadReckonedEntityStatePDU.EntityLocationDouble[2]);

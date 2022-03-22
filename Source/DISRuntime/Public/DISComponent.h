@@ -21,6 +21,7 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FGroundClampingUpdate, TArray<FTrans
 
 DECLARE_STATS_GROUP(TEXT("GRILLDIS_Game"), STATGROUP_DISComponent, STATCAT_Advanced);
 DECLARE_CYCLE_STAT(TEXT("DoDeadReckoning"), STAT_DoDeadReckoning, STATGROUP_DISComponent);
+DECLARE_CYCLE_STAT(TEXT("GroundClamping"), STAT_GroundClamping, STATGROUP_DISComponent);
 
 /**
  * The DISComponent handles basic DIS functionality.
