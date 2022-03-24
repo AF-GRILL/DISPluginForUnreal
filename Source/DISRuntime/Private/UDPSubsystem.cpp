@@ -45,6 +45,7 @@ bool UUDPSubsystem::OpenReceiveSocket(FSocketSettings SocketSettings, int32& Rec
 
 	UDPReceiver->OnDataReceived().BindLambda([this, SocketSettings](const FArrayReaderPtr& DataPtr, const FIPv4Endpoint& Endpoint)
 	{
+		SCOPE_CYCLE_COUNTER(STAT_ReceiveBytes);
 		if (!OnReceivedBytes.IsBound())
 		{
 			return;
@@ -199,6 +200,7 @@ bool UUDPSubsystem::CloseSendSocket(int32 SendSocketIdToClose)
 
 bool UUDPSubsystem::EmitBytes(const TArray<uint8>& Bytes)
 {
+	SCOPE_CYCLE_COUNTER(STAT_SendBytes);
 	bool bDidSendCorrectly = true;
 
 	for (const TPair<int32, FSocket*>& pair : AllSendSockets) 

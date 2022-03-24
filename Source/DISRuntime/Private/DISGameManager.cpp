@@ -303,6 +303,7 @@ void ADISGameManager::SpawnNewEntityFromEntityState(FEntityStatePDU EntityStateP
 
 UDISComponent* ADISGameManager::GetAssociatedDISComponent(FEntityID EntityIDIn)
 {
+	SCOPE_CYCLE_COUNTER(STAT_GetAssociatedDISComponent);
 	UDISComponent* DISComponent = nullptr;
 
 	//Find associated actor in the DISActorMappings map
