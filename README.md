@@ -12,7 +12,7 @@
 	- The GeoReferencingSystem actor is required in a level and can be found from the GeoReference Plugin by Epic Games. This plugin should be included when the GRILL DIS for Unreal plugin is installed and it should be enabled by default.
     	- This actor stores the Origin Location in real world coordinates in either LLA or in Projected CRS. This is used for conversions between real world coordinated and Unreal Engine coordinates.
         	- The website http://epsg.io/ can be used for getting Projected CRS locations.
-	- The DIS Game Manager actor is also required in the level and is build into the GRILL DIS for Unreal plugin.
+	- The DIS Game Manager actor is also required in the level and is built into the GRILL DIS for Unreal plugin.
 		- This actor stores the DIS Enumeration to class mappings and other various DIS information.
 		- **DIS Enumeration Mappings**: Contains desired actor to DIS Enumeration mappings.
 	        - _**NOTE:**_ The actors tied to DIS Enumerations have to implement the DIS Interface supplied by the GRILL DIS for Unreal plugin and also should have a DIS Component attached to them. Implement the DIS Interface functions to return the
@@ -20,18 +20,17 @@
 	    - **Exercise ID**: The exercise ID of the DIS sim this project will be associated with.
 	    - **Site ID**: The site ID of this DIS sim.
 	    - **Application ID**: The application ID of this DIS sim.
+		
+	    - **Auto Connect Send Addresses**: Whether or not the UDP sockets for sending DIS packets should be auto connected.
+	    - **Auto Connect Send Sockets**: The send sockets to automatically setup if 'Auto Connect Send Addresses' is enabled.
+	    - **Auto Connect Receive Addresses**: Whether or not the UDP socket for receiving DIS packets should be auto connected.
+	    - **Auto Connect Receive Sockets**: The receive sockets to automatically setup if 'Auto Connect Receive Addresses' is enabled.
+	        - _**NOTE:**_ An IP address of 0.0.0.0 will listen to all incoming DIS packets.
 
 # Project Settings
 
 - Access the GRILL DIS for Unreal project settings by clicking on the 'GRILL DIS' button in the Level Editor toolbar or go to Project Settings > GRILL DIS.
-- Inside of these project settings the below can be set:
-    - **Auto Connect Send**: Whether or not the UDP socket for sending DIS packets should be auto connected.
-    - **Auto Send IP Address**: The IP address to send UDP packets to if Auto Connect Send is enabled.
-    - **Auto Send Port**: The port for sending UDP packets on.
-    - **Auto Connect Receive**: Whether or not the UDP socket for receiving DIS packets should be auto connected.
-    - **Auto Receive IP Address**: The IP address to receive UDP packets from if Auto Connect Receive is enabled.
-        - _**NOTE:**_ An IP address of 0.0.0.0 will listen to all incoming DIS packets.
-    - **Auto Receive Port**: The port for receiving UDP packets on.
+- There are currently no settings inside of the DIS project settings.
 
 # UDP Subsystem
 
@@ -42,8 +41,8 @@
     - Close Receive Socket
     - Open Send Socket
     - Close Send Socket
-    - Get UDP Receive Settings
-    - Get UDP Send Settings
+	- Close All Send Sockets
+	- Close All Receive Sockets
 Contains event bindings for:
     - On Receive Socket Opened
     - On Receive Socket Closed
@@ -95,8 +94,21 @@ Contains event bindings for:
 		- How long to wait after an Entity State PDU is received before deleting. Gets refreshed after an Entity State PDU is received.
     - Entity Type
     - Entity ID
+	- DIS Culling Mode
+		- Culls DIS packets based on settings
+			- Options:
+				- None
+				- Cull Dead Reckoning
+					- Cull Dead Reckoning updates
+				- Cull All
+	- DIS Culling Distance
+		- The distance away from the camera that entities will start to have DIS packets culled.
     - Perform Dead Reckoning
         - Whether or not dead reckoning should be performed.
+	- Perform Dead Reckoning Smoothing
+		- Whether or not to smooth location/rotation changes after receiving a new Entity State update. Prevents entity teleporting.
+	- Dead Reckoning Smoothing Period Seconds
+		- Time in seconds that smoothing should take place.
     - Perform Ground Clamping
         - Whether or not ground clamping should be perfoemd.
     - Ground Clamping Collision Channel
