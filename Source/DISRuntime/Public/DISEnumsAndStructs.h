@@ -20,6 +20,14 @@
 #include "DISEnumsAndStructs.generated.h"
 
 UENUM(BlueprintType)
+enum class EDISCullingMode : uint8
+{
+	None,
+	CullDeadReckoning,
+	CullAll
+};
+
+UENUM(BlueprintType)
 enum class EForceID : uint8
 {
 	Other    UMETA(DisplayName = "Other"),

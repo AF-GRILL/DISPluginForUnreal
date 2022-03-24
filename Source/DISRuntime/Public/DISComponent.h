@@ -7,6 +7,7 @@
 #include "DISEnumsAndStructs.h"
 #include "PDUMasterInclude.h"
 #include "glm/gtx/quaternion.hpp"
+#include "GeoReferencingSystem.h"
 #include "DISComponent.generated.h"
 
 DECLARE_LOG_CATEGORY_EXTERN(LogDISComponent, Log, All);
@@ -95,6 +96,9 @@ public:
 	/**
 	 * Called after Ground Clamping is performed by the component.
 	 * Passes ground clamp transforms (if clamping multiple points) as a parameter.
+	 * 
+	 * NOTE: Gets called after receiving Entity State PDUs or finishing Dead Reckoning Updates if Ground Clamping is enabled on the DISComponent.
+	 * Respective Entity State and Dead Reckoning events are called first. Implementing Ground Clamping location updates on top of these event may cause jitter in actor location.
 	 */
 	UPROPERTY(BlueprintAssignable, Category = "GRILL DIS|DIS Component|Event")
 		FGroundClampingUpdate OnGroundClampingUpdate;
@@ -145,6 +149,18 @@ public:
 	 */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|DIS Component|DIS Info")
 		FEntityID EntityID;
+
+	/**
+	 * Determines what all DIS info should be culled. Allows for updates to happen less frequently for entities that aren't currently important.
+	 * The distance that culling should happen is handled by the DISCullingDistance variable.
+	 */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|DIS Component|DIS Settings")
+		EDISCullingMode DISCullingMode = EDISCullingMode::None;
+	/**
+	 * The distance in Unreal units from the camera that culling should begin happening.
+	 */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|DIS Component|DIS Settings")
+		float DISCullingDistance = 0.0f;
 	/**
 	 * Whether or not dead reckoning should be performed for this entity.
 	 */
@@ -171,13 +187,16 @@ protected:
 	virtual void BeginPlay() override;
 
 private:
-	FEntityStatePDU TempDeadReckonedPDU;
-	FEntityStatePDU SmoothingDeadReckonedPDU;
+	TArray<double> EntityECEFLocationDifference;
+	FRotator EntityRotationDifference;
+	AGeoReferencingSystem* GeoReferencingSystem;
+
 	FEntityStatePDU PreviousDeadReckonedPDU;
 	float DeltaTimeSinceLastPDU = 0;
 	int NumberEntityStatePDUsReceived = 0;
 
 	void UpdateCommonEntityStateInfo(FEntityStatePDU NewEntityStatePDU);
+	FEntityStatePDU SmoothDeadReckoning(FEntityStatePDU DeadReckonPDUToSmooth);
 
 	/**
 	 * Gets the local yaw, pitch, and roll from the other parameters structure. The yaw, pitch, and roll act on the entity's local North, East, Down vectors.

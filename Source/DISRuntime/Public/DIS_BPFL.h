@@ -324,6 +324,27 @@ public:
 	static void GetHeadingPitchRollFromUnrealRotation(const FRotator EntityUnrealRotation, const FVector EntityUnrealLocation, AGeoReferencingSystem* GeoReferencingSystem, FHeadingPitchRoll& HeadingPitchRollDegrees);
 
 	/**
+	 * Gets the Psi (Yaw), Theta (Pitch), and Phi (Roll) in degrees of the given unreal rotation at the given unreal location
+	 * @param EntityUnrealRotation The unreal rotation rotator of the entity
+	 * @param EntityUnrealLocation The unreal location of the entity relative to the origin
+	 * @param GeoReferencingSystem The GeoReferencing Subsystem reference.
+	 * @param PsiThetaPhiDegrees The entity's Psi (Yaw), Theta (Pitch), and Phi (Roll) in degrees
+	 */
+	UFUNCTION(BlueprintPure, Category = "GRILL DIS|Unit Conversions")
+		static void GetPsiThetaPhiDegreesFromUnrealRotation(const FRotator EntityUnrealRotation, const FVector EntityUnrealLocation, AGeoReferencingSystem* GeoReferencingSystem, FPsiThetaPhi& PsiThetaPhiDegrees);
+
+	/**
+	 * Gets the ECEF location and the Psi (Yaw), Theta (Pitch), and Phi (Roll) in degrees of the given unreal rotation at the given unreal location
+	 * @param EntityUnrealRotation The unreal rotation rotator of the entity
+	 * @param EntityUnrealLocation The unreal location of the entity relative to the origin
+	 * @param GeoReferencingSystem The GeoReferencing Subsystem reference.
+	 * @param EcefXYZ The ECEF location of the given UE location.
+	 * @param PsiThetaPhiDegrees The entity's Psi (Yaw), Theta (Pitch), and Phi (Roll) in degrees
+	 */
+	UFUNCTION(BlueprintPure, Category = "GRILL DIS|Unit Conversions")
+		static void GetEcefXYZAndPsiThetaPhiDegreesFromUnreal(const FRotator EntityUnrealRotation, const FVector EntityUnrealLocation, AGeoReferencingSystem* GeoReferencingSystem, FEarthCenteredEarthFixedFloat& EcefXYZ, FPsiThetaPhi& PsiThetaPhiDegrees);
+
+	/**
 	 * Get the East, North, and Up vectors from the North, East, and Down vector struct
 	 * @param NorthEastDownVectors The North, East, and Down vectors representing the current orientation
 	 * @param EastNorthUpVectors The resulting East, North, and Up vectors representing the current orientation

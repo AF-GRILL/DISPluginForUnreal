@@ -18,6 +18,9 @@ UDISComponent::UDISComponent()
 void UDISComponent::BeginPlay()
 {
 	Super::BeginPlay();
+
+	EntityECEFLocationDifference.Init(0, 3);
+	GeoReferencingSystem = AGeoReferencingSystem::GetGeoReferencingSystem(GetWorld());
 }
 
 bool UDISComponent::GetLocalEulerAngles(TArray<uint8> OtherDeadReckoningParameters, FRotator& LocalRotator)
@@ -184,9 +187,6 @@ void UDISComponent::HandleEntityStatePDU(FEntityStatePDU NewEntityStatePDU)
 	OnReceivedEntityStatePDU.Broadcast(NewEntityStatePDU);
 
 	GroundClamping_Implementation();
-
-	//Update the smoothing dead reckoned PDU to be a smoothing period distance out -- this will be used as a target end point for smoothing
-	DeadReckoning(MostRecentEntityStatePDU, DeadReckoningSmoothingPeriodSeconds, SmoothingDeadReckonedPDU);
 }
 
 void UDISComponent::HandleEntityStateUpdatePDU(FEntityStateUpdatePDU NewEntityStateUpdatePDU)
@@ -200,15 +200,11 @@ void UDISComponent::HandleEntityStateUpdatePDU(FEntityStateUpdatePDU NewEntitySt
 	}
 
 	MostRecentEntityStatePDU = NewEntityStateUpdatePDU;
-
 	UpdateCommonEntityStateInfo(MostRecentEntityStatePDU);
 
 	OnReceivedEntityStateUpdatePDU.Broadcast(NewEntityStateUpdatePDU);
 
 	GroundClamping_Implementation();
-
-	//Update the smoothing dead reckoned PDU to be a smoothing period distance out -- this will be used as a target end point for smoothing
-	DeadReckoning(MostRecentEntityStatePDU, DeadReckoningSmoothingPeriodSeconds, SmoothingDeadReckonedPDU);
 }
 
 void UDISComponent::UpdateCommonEntityStateInfo(FEntityStatePDU NewEntityStatePDU)
@@ -219,10 +215,17 @@ void UDISComponent::UpdateCommonEntityStateInfo(FEntityStatePDU NewEntityStatePD
 	MostRecentDeadReckonedEntityStatePDU = MostRecentEntityStatePDU;
 	DeltaTimeSinceLastPDU = 0;
 
+	//Get difference in ECEF between most recent dead reckoning location and last known Dead Reckoning location
+	EntityECEFLocationDifference[0] = MostRecentEntityStatePDU.EntityLocationDouble[0] - PreviousDeadReckonedPDU.EntityLocationDouble[0];
+	EntityECEFLocationDifference[1] = MostRecentEntityStatePDU.EntityLocationDouble[1] - PreviousDeadReckonedPDU.EntityLocationDouble[1];
+	EntityECEFLocationDifference[2] = MostRecentEntityStatePDU.EntityLocationDouble[2] - PreviousDeadReckonedPDU.EntityLocationDouble[2];
+
+	EntityRotationDifference = MostRecentEntityStatePDU.EntityOrientation - PreviousDeadReckonedPDU.EntityOrientation;
+
 	EntityID = NewEntityStatePDU.EntityID;
 
 	GetOwner()->SetLifeSpan(DISTimeoutSeconds);
-	
+
 	NumberEntityStatePDUsReceived++;
 }
 
@@ -244,27 +247,36 @@ void UDISComponent::HandleRemoveEntityPDU(FRemoveEntityPDU RemoveEntityPDUIn)
 void UDISComponent::DoDeadReckoning(float DeltaTime)
 {
 	DeltaTimeSinceLastPDU += DeltaTime;
-	
+
 	if (PerformDeadReckoning && SpawnedFromNetwork)
 	{
-		//If more than one PDU has been received and were still in the smoothing period, then smooth
-		if (NumberEntityStatePDUsReceived > 1 && DeltaTimeSinceLastPDU <= DeadReckoningSmoothingPeriodSeconds)
+		//Check if Dead Reckoning updates should be culled or not.
+		if (DISCullingMode == EDISCullingMode::CullDeadReckoning || DISCullingMode == EDISCullingMode::CullAll)
 		{
-			MostRecentDeadReckonedEntityStatePDU.EntityLocation = FMath::Lerp(PreviousDeadReckonedPDU.EntityLocation, SmoothingDeadReckonedPDU.EntityLocation, DeltaTimeSinceLastPDU / DeadReckoningSmoothingPeriodSeconds);
+			//If so, get the player camera and cull beyond specified distance.
+			APlayerCameraManager* camManager = GetWorld()->GetFirstPlayerController()->PlayerCameraManager;
+			if (camManager)
+			{
+				FVector userCameraLocation = camManager->GetCameraLocation();
+				float distanceToUser = UKismetMathLibrary::Vector_Distance(GetOwner()->GetActorLocation(), userCameraLocation);
 
-			MostRecentDeadReckonedEntityStatePDU.EntityLocationDouble[0] = FMath::Lerp(PreviousDeadReckonedPDU.EntityLocationDouble[0], SmoothingDeadReckonedPDU.EntityLocationDouble[0], DeltaTimeSinceLastPDU / DeadReckoningSmoothingPeriodSeconds);
-			MostRecentDeadReckonedEntityStatePDU.EntityLocationDouble[1] = FMath::Lerp(PreviousDeadReckonedPDU.EntityLocationDouble[1], SmoothingDeadReckonedPDU.EntityLocationDouble[1], DeltaTimeSinceLastPDU / DeadReckoningSmoothingPeriodSeconds);
-			MostRecentDeadReckonedEntityStatePDU.EntityLocationDouble[2] = FMath::Lerp(PreviousDeadReckonedPDU.EntityLocationDouble[2], SmoothingDeadReckonedPDU.EntityLocationDouble[2], DeltaTimeSinceLastPDU / DeadReckoningSmoothingPeriodSeconds);
-
-			//MostRecentDeadReckonedEntityStatePDU.EntityOrientation = FMath::Lerp(PreviousDeadReckonedPDU.EntityOrientation.Quaternion(), SmoothingDeadReckonedPDU.EntityOrientation.Quaternion(), DeltaTimeSinceLastPDU / DeadReckoningSmoothingPeriodSeconds).Rotator();
-
-			OnDeadReckoningUpdate.Broadcast(MostRecentDeadReckonedEntityStatePDU);
-
-			GroundClamping_Implementation();
+				if (distanceToUser > DISCullingDistance)
+				{
+					//In case users are relying on Dead Reckoning for their entity movement, just send them the most recent Dead Reckoned PDU again
+					OnDeadReckoningUpdate.Broadcast(MostRecentDeadReckonedEntityStatePDU);
+					return;
+				}
+			}
 		}
-		else if (DeadReckoning(MostRecentDeadReckonedEntityStatePDU, DeltaTime, TempDeadReckonedPDU))
+
+		if (DeadReckoning(MostRecentEntityStatePDU, DeltaTimeSinceLastPDU, MostRecentDeadReckonedEntityStatePDU))
 		{
-			MostRecentDeadReckonedEntityStatePDU = TempDeadReckonedPDU;
+			//If more than one PDU has been received and we're still in the smoothing period, then smooth
+			if (NumberEntityStatePDUsReceived > 1 && DeltaTimeSinceLastPDU <= DeadReckoningSmoothingPeriodSeconds)
+			{
+				//Only update temp Dead Reckoning PDU. We don't want this smoothing to change the actual Dead Reckoning calculations
+				MostRecentDeadReckonedEntityStatePDU = SmoothDeadReckoning(MostRecentDeadReckonedEntityStatePDU);
+			}
 
 			OnDeadReckoningUpdate.Broadcast(MostRecentDeadReckonedEntityStatePDU);
 
@@ -287,7 +299,8 @@ bool UDISComponent::DeadReckoning(FEntityStatePDU EntityPDUToDeadReckon, float D
 	DeadReckonedEntityPDU = EntityPDUToDeadReckon;
 	bool bSupported = true;
 
-	switch (EntityPDUToDeadReckon.DeadReckoningParameters.DeadReckoningAlgorithm) {
+	switch (EntityPDUToDeadReckon.DeadReckoningParameters.DeadReckoningAlgorithm)
+	{
 	case 1: // Static
 	{
 		FRotator LocalRotator;
@@ -319,6 +332,7 @@ bool UDISComponent::DeadReckoning(FEntityStatePDU EntityPDUToDeadReckon, float D
 
 		DeadReckonedEntityPDU.EntityLocation.X = CalculatedPositionVector[0];
 		DeadReckonedEntityPDU.EntityLocation.Y = CalculatedPositionVector[1];
+		DeadReckonedEntityPDU.EntityLocation.Z = CalculatedPositionVector[2];
 
 		if (bUseOtherParams)
 		{
@@ -606,7 +620,7 @@ void UDISComponent::GroundClamping_Implementation()
 
 		//Get the location the object is supposed to be at according to the most recent dead reckoning update.
 		FVector actorLocation;
-		UDIS_BPFL::GetEntityUnrealLocationFromEntityStatePdu(MostRecentDeadReckonedEntityStatePDU, AGeoReferencingSystem::GetGeoReferencingSystem(GetWorld()), actorLocation);
+		UDIS_BPFL::GetEntityUnrealLocationFromEntityStatePdu(MostRecentDeadReckonedEntityStatePDU, GeoReferencingSystem, actorLocation);
 
 		FHitResult lineTraceHitResult;
 		FVector endLocation = (clampDirection * 100000) + actorLocation;
@@ -631,4 +645,24 @@ void UDISComponent::GroundClamping_Implementation()
 			OnGroundClampingUpdate.Broadcast(allClampTransforms);
 		}
 	}
+}
+
+FEntityStatePDU UDISComponent::SmoothDeadReckoning(FEntityStatePDU DeadReckonPDUToSmooth)
+{
+	FEntityStatePDU SmoothedDeadReckonPDU = DeadReckonPDUToSmooth;
+
+	float alpha = UKismetMathLibrary::MapRangeClamped(DeltaTimeSinceLastPDU, 0.0f, DeadReckoningSmoothingPeriodSeconds, 0.0f, 1.0f);
+
+	//Lerp location for smoothing
+	SmoothedDeadReckonPDU.EntityLocationDouble[0] -= FMath::Lerp(EntityECEFLocationDifference[0], 0., alpha);
+	SmoothedDeadReckonPDU.EntityLocationDouble[1] -= FMath::Lerp(EntityECEFLocationDifference[1], 0., alpha);
+	SmoothedDeadReckonPDU.EntityLocationDouble[2] -= FMath::Lerp(EntityECEFLocationDifference[2], 0., alpha);
+
+	SmoothedDeadReckonPDU.EntityLocation.X = SmoothedDeadReckonPDU.EntityLocationDouble[0];
+	SmoothedDeadReckonPDU.EntityLocation.Y = SmoothedDeadReckonPDU.EntityLocationDouble[1];
+	SmoothedDeadReckonPDU.EntityLocation.Z = SmoothedDeadReckonPDU.EntityLocationDouble[2];
+
+	SmoothedDeadReckonPDU.EntityOrientation -= FMath::Lerp(EntityRotationDifference, FRotator(0, 0, 0), alpha);
+
+	return SmoothedDeadReckonPDU;
 }
