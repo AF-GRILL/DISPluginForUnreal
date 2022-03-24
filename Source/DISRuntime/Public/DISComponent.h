@@ -171,9 +171,14 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|DIS Component|DIS Settings")
 		bool PerformDeadReckoning = true;
 	/**
+	 * Whether or not dead reckoning should be locally smoothed for this entity.
+	 */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|DIS Component|DIS Settings", meta = (EditCondition = "PerformDeadReckoning"))
+		bool PerformDeadReckoningSmoothing = true;
+	/**
 	* Number of seconds to smooth between dead reckoned information and packet information if dead reckoning is enabled
 	*/
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|DIS Component|DIS Settings", meta = (EditCondition = "PerformDeadReckoning"))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|DIS Component|DIS Settings", meta = (EditCondition = "PerformDeadReckoning && PerformDeadReckoningSmoothing"))
 		float DeadReckoningSmoothingPeriodSeconds = 0.5f;
 	/**
 	 * Whether or not ground clamping should be performed for this entity.
