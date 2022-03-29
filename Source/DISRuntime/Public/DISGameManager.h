@@ -8,6 +8,7 @@
 #include "DISEnumsAndStructs.h"
 #include "PDUMasterInclude.h"
 #include "DISClassEnumMappings.h"
+#include "UDPSubsystem.h"
 #include "GameFramework/Info.h"
 #include "DISGameManager.generated.h"
 
@@ -20,7 +21,7 @@ DECLARE_STATS_GROUP(TEXT("DISGameManager_Game"), STATGROUP_DISGameManager, STATC
 DECLARE_CYCLE_STAT(TEXT("GetAssociatedDISComponent"), STAT_GetAssociatedDISComponent, STATGROUP_DISGameManager);
 
 USTRUCT(Blueprintable)
-struct FSocketInfo
+struct FSendSocketInfo
 {
 	GENERATED_BODY()
 
@@ -31,6 +32,26 @@ struct FSocketInfo
 	UPROPERTY(BlueprintReadWrite, EditAnywhere,	
 		Meta = (Tooltip = "The Port to either send UDP packets to or receive UDP packets from. Valid Port ranges are from 1024 to 65535.", UIMin = 1024, UIMax = 65535, ClampMin = 1024, ClampMax = 65535))
 		int32 Port = 3000;
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere)
+		FSendSocketSettings SocketSettings;
+};
+
+USTRUCT(Blueprintable)
+struct FReceiveSocketInfo
+{
+	GENERATED_BODY()
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere,
+		Meta = (Tooltip = "The IP Address to either send UDP packets to or receive UDP packets from."))
+		FString IpAddress = "0.0.0.0";
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere,
+		Meta = (Tooltip = "The Port to either send UDP packets to or receive UDP packets from. Valid Port ranges are from 1024 to 65535.", UIMin = 1024, UIMax = 65535, ClampMin = 1024, ClampMax = 65535))
+		int32 Port = 3000;
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere)
+		FReceiveSocketSettings SocketSettings;
 };
 
 UCLASS(Blueprintable)
@@ -136,14 +157,14 @@ protected:
 	//Receive sockets to auto setup
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "GRILL DIS|Game Manager|Networking",
 		meta = (DisplayName = "Auto Connect Receive Sockets", EditCondition = "AutoConnectReceiveAddresses"))
-		TArray<FSocketInfo> ReceiveSocketsToSetup;
+		TArray<FReceiveSocketInfo> ReceiveSocketsToSetup;
 	//Whether or not to auto connect send sockets
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "GRILL DIS|Game Manager|Networking")
 		bool AutoConnectSendAddresses;
 	//Send sockets to auto setup
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "GRILL DIS|Game Manager|Networking",
 		meta = (DisplayName = "Auto Connect Send Sockets", EditCondition = "AutoConnectSendAddresses"))
-		TArray<FSocketInfo> SendSocketsToSetup;
+		TArray<FSendSocketInfo> SendSocketsToSetup;
 
 
 private:

@@ -10,6 +10,10 @@ void UUDPSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 	Super::Initialize(Collection);
 
 	SocketSubsystem = ISocketSubsystem::Get(PLATFORM_SOCKETSUBSYSTEM);
+
+	bool canBindAll = false;
+	TSharedRef<FInternetAddr> Sender = SocketSubsystem->GetLocalHostAddr(*GLog, canBindAll);
+	LocalIPAddress = Sender->ToString(false);
 }
 
 void UUDPSubsystem::Deinitialize()
@@ -20,7 +24,7 @@ void UUDPSubsystem::Deinitialize()
 	Super::Deinitialize();
 }
 
-bool UUDPSubsystem::OpenReceiveSocket(FSocketSettings SocketSettings, int32& ReceiveSocketID, const FString& IpToListenOn /*= TEXT("0.0.0.0")*/, const int32 PortToListenOn /*= 3002*/)
+bool UUDPSubsystem::OpenReceiveSocket(FReceiveSocketSettings SocketSettings, int32& ReceiveSocketID, const FString& IpToListenOn /*= TEXT("0.0.0.0")*/, const int32 PortToListenOn /*= 3002*/)
 {
 	FIPv4Address Addr;
 	FIPv4Address::Parse(IpToListenOn, Addr);
@@ -56,6 +60,11 @@ bool UUDPSubsystem::OpenReceiveSocket(FSocketSettings SocketSettings, int32& Rec
 		DataPtr->Serialize(Data.GetData(), DataPtr->TotalSize());
 
 		FString SenderIp = Endpoint.Address.ToString();
+
+		if (SocketSettings.bIgnorePacketsFromLocalIP && SenderIp.Equals(LocalIPAddress))
+		{
+			return;
+		}
 
 		if (SocketSettings.bReceiveDataOnGameThread)
 		{
@@ -121,7 +130,7 @@ bool UUDPSubsystem::CloseReceiveSocket(int32 ReceiveSocketIdToClose)
 	return bDidCloseCorrectly;
 }
 
-bool UUDPSubsystem::OpenSendSocket(FSocketSettings SocketSettings, int32& SendSocketID, const FString& IpToSendOn /*= TEXT("127.0.0.1")*/, const int32 PortToSendOn /*= 3000*/)
+bool UUDPSubsystem::OpenSendSocket(FSendSocketSettings SocketSettings, int32& SendSocketID, const FString& IpToSendOn /*= TEXT("127.0.0.1")*/, const int32 PortToSendOn /*= 3000*/)
 {
 	TSharedPtr<FInternetAddr> RemoteAdress = SocketSubsystem->CreateInternetAddr();
 
