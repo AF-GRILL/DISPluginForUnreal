@@ -13,7 +13,7 @@
 - Certain actors are required to be in a given level in order for the plugin to work as desired. These are listed below:
 	- _**NOTE:**_ Only one of each unique actor type listed below should be in a single level.
 
-![GeoReferencingSystemActor](/uploads/fce46082a48e39082378792b53fa600c/image.png)
+![GeoReferencingSystemActor](/uploads/fef79bd727d84024ae0b1ce00e742b7b/image.png)
 
 - The GeoReferencingSystem actor is required in a level and can be found from the GeoReference Plugin by Epic Games. This plugin should be included when the GRILL DIS for Unreal plugin is installed and it should be enabled by default.
     - This actor stores the Origin Location in real world coordinates in either LLA or in Projected CRS. This is used for conversions between real world coordinated and Unreal Engine coordinates.
