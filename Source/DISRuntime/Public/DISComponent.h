@@ -31,8 +31,6 @@ DECLARE_CYCLE_STAT(TEXT("GroundClamping"), STAT_GroundClamping, STATGROUP_DISCom
  * By default the DISComponent offers packet handling for the associated DIS entity, 
  * basic dead reckoning, basic ground clamping, and maintains a living list of appropriate
  * DIS variables (such as Entity ID).
- * 
- * Currently should be used in conjunction with the DISEntity_Base actor to get full functionality.
  */
 UCLASS(Blueprintable, ClassGroup = (Custom), meta = (BlueprintSpawnableComponent, DisplayName = "DIS Component"))
 class DISRUNTIME_API UDISComponent : public UActorComponent
