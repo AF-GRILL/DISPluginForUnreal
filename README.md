@@ -25,7 +25,7 @@
 - The DIS Game Manager actor is also required in the level and is built into the GRILL DIS for Unreal plugin.
 	- This actor stores the DIS Enumeration to class mappings and other various DIS information.
 	- **DIS Enumeration Mappings**: Contains desired actor to DIS Enumeration mappings.
-        - _**NOTE:**_ The actors tied to DIS Enumerations have to implement the DIS Interface supplied by the GRILL DIS for Unreal plugin and also should have a DIS Component attached to them. Implement the DIS Interface functions to return the associated DIS component of the actor.
+        - _**NOTE:**_ The actors tied to DIS Enumerations have to implement the DIS Interface supplied by the GRILL DIS for Unreal plugin and also should have a DIS Component attached to them. Implement the DIS Interface functions to return the associated DIS component of the actor. Refer to the _**DIS Interface**_ section below.
     - **Exercise ID**: The exercise ID of the DIS sim this project will be associated with.
     - **Site ID**: The site ID of this DIS sim.
     - **Application ID**: The application ID of this DIS sim.
