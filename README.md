@@ -101,7 +101,7 @@
 
 # DIS Actor Component
 
-![DISComponent](/uploads/645155ffefbfb12b05683c34e736e420/image.png)
+![DISComponent](/uploads/8dfdfcf056510c04df3d5d2376de4063/image.png)
 
 - The DIS Component is responsible for handling all DIS functionality and DIS PDU updates for its associated DIS Entity.
 - Handles dead reckoning and ground clamping updates.
