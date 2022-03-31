@@ -1,4 +1,4 @@
-![DISPluginLogo](Resources/Icon128.png)
+[![DISPluginLogo](Resources/Icon128.png)](https://www.af-grill.com/)
 
 # Getting Started
 
