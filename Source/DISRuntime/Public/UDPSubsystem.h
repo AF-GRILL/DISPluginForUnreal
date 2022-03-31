@@ -28,7 +28,7 @@ struct FSendSocketSettings
 
 	FSendSocketSettings()
 	{
-		SocketDescription = FString(TEXT("UE4-DIS-Socket"));
+		SocketDescription = FString(TEXT("UE4-DIS-Send-Socket"));
 
 		BufferSize = 2 * 1024 * 1024;	//default roughly 2mb
 	}
@@ -57,7 +57,7 @@ struct FReceiveSocketSettings
 
 	FReceiveSocketSettings()
 	{
-		SocketDescription = FString(TEXT("UE4-DIS-Socket"));
+		SocketDescription = FString(TEXT("UE4-DIS-Receive-Socket"));
 
 		BufferSize = 2 * 1024 * 1024;	//default roughly 2mb
 
