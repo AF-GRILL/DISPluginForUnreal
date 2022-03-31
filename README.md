@@ -178,7 +178,7 @@
         - _**NOTE**_: If a DIS Enumeration is received on the network and no mapping exists for it, an appropriate message is logged and the packet is ignored.
         - For a breakdown of the individual elements of a DIS Enumeration, refer to the [Naval Postgraduate School's Documentation](http://faculty.nps.edu/brutzman/vrtp/mil/navy/nps/disenumerations/jdbehtmlfiles/pdu/28.htm#:~:text=Description%3A%20The%20type%20of%20entity,necessary%20for%20describing%20the%20entity.).
 
-![DISEnumMappingSettings](Resources/ReadMeImages/DISEnumMappingSettings.png)
+![DISEnumMappingsSettings](Resources/ReadMeImages/DISEnumMappingsSettings.png)
 
 # DIS Blueprint Function Library
 
