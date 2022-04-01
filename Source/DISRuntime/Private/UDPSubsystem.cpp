@@ -29,13 +29,24 @@ bool UUDPSubsystem::OpenReceiveSocket(FReceiveSocketSettings SocketSettings, int
 	FIPv4Address Addr;
 	FIPv4Address::Parse(IpToListenOn, Addr);
 	//Create Socket
-	FIPv4Endpoint Endpoint(Addr, PortToListenOn);
 
-	FSocket* ReceiverSocket = FUdpSocketBuilder(SocketSettings.SocketDescription)
+	FSocket* ReceiverSocket;
+	FUdpSocketBuilder SocketBuilder = FUdpSocketBuilder(SocketSettings.SocketDescription)
 		.AsNonBlocking()
 		//.AsReusable()
-		.BoundToEndpoint(Endpoint)
 		.WithReceiveBufferSize(SocketSettings.BufferSize);
+		
+	//Handle setting up of socket based on multicast or not
+	if (SocketSettings.bUseMulticast)
+	{
+		FIPv4Endpoint Endpoint(FIPv4Address::Any, PortToListenOn);
+		ReceiverSocket = SocketBuilder.BoundToEndpoint(Endpoint).JoinedToGroup(Addr);
+	}
+	else
+	{
+		FIPv4Endpoint Endpoint(Addr, PortToListenOn);
+		ReceiverSocket = SocketBuilder.BoundToEndpoint(Endpoint);
+	}
 
 	if (ReceiverSocket == nullptr)
 	{
@@ -144,7 +155,33 @@ bool UUDPSubsystem::OpenSendSocket(FSendSocketSettings SocketSettings, int32& Se
 		return 0;
 	}
 
-	FSocket* SenderSocket = FUdpSocketBuilder(SocketSettings.SocketDescription).AsReusable().WithBroadcast();
+	FSocket* SenderSocket;
+	FUdpSocketBuilder SocketBuilder = FUdpSocketBuilder(SocketSettings.SocketDescription).AsReusable();
+	
+	//Handle setting up send socket based on different connection types
+	switch (SocketSettings.SendSocketConnectionType)
+	{
+	case EConnectionType::Broadcast:
+	{
+		SenderSocket = SocketBuilder.WithBroadcast();
+		break;
+	}
+	case EConnectionType::Multicast:
+	{
+		FIPv4Address Addr;
+		FIPv4Address::Parse(IpToSendOn, Addr);
+		SenderSocket = SocketBuilder.JoinedToGroup(Addr);
+		break;
+	}
+	case EConnectionType::Unicast:
+	{
+		SenderSocket = SocketBuilder;
+		break;
+	}
+	default:
+		UE_LOG(LogUDPSubsystem, Error, TEXT("Invalid Connection Type passed to Open Send Socket!"));
+		return false;
+	}
 
 	//Set Send Buffer Size
 	SenderSocket->SetSendBufferSize(SocketSettings.BufferSize, SocketSettings.BufferSize);

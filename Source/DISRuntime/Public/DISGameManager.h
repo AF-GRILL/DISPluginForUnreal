@@ -26,7 +26,7 @@ struct FSendSocketInfo
 	GENERATED_BODY()
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere,
-		Meta = (Tooltip = "The IP Address to either send UDP packets to or receive UDP packets from."))
+		Meta = (Tooltip = "The IP Address to send UDP packets to."))
 		FString IpAddress = "0.0.0.0";
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere,	
@@ -43,7 +43,7 @@ struct FReceiveSocketInfo
 	GENERATED_BODY()
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere,
-		Meta = (Tooltip = "The IP Address to either send UDP packets to or receive UDP packets from."))
+		Meta = (Tooltip = "The IP Address to receive UDP packets from."))
 		FString IpAddress = "0.0.0.0";
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere,
