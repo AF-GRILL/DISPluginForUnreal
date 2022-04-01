@@ -40,6 +40,8 @@ struct FSendSocketSettings
 
 	FSendSocketSettings()
 	{
+		SendSocketConnectionType = EConnectionType::Broadcast;
+
 		SocketDescription = FString(TEXT("UE4-DIS-Send-Socket"));
 
 		BufferSize = 2 * 1024 * 1024;	//default roughly 2mb
