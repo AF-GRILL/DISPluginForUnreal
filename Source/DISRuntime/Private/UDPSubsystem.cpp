@@ -39,6 +39,12 @@ bool UUDPSubsystem::OpenReceiveSocket(FReceiveSocketSettings SocketSettings, int
 	//Handle setting up of socket based on multicast or not
 	if (SocketSettings.bUseMulticast)
 	{
+		//Setup multicast loopback if enabled
+		if (SocketSettings.bAllowLoopback)
+		{
+			SocketBuilder = SocketBuilder.WithMulticastLoopback();
+		}
+
 		FIPv4Endpoint Endpoint(FIPv4Address::Any, PortToListenOn);
 		ReceiverSocket = SocketBuilder.BoundToEndpoint(Endpoint).JoinedToGroup(Addr);
 	}
@@ -72,7 +78,8 @@ bool UUDPSubsystem::OpenReceiveSocket(FReceiveSocketSettings SocketSettings, int
 
 		FString SenderIp = Endpoint.Address.ToString();
 
-		if (SocketSettings.bIgnorePacketsFromLocalIP && SenderIp.Equals(LocalIPAddress))
+		//Ignore packets from self if loopback is disabled. This will cover ignoring broadcast packets. Ignoring multicast packets is covered in setting up of the receive socket above through MulticastLoopback.
+		if (!SocketSettings.bAllowLoopback && SenderIp.Equals(LocalIPAddress))
 		{
 			return;
 		}

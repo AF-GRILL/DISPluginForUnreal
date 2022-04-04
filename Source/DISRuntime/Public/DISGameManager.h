@@ -26,8 +26,8 @@ struct FSendSocketInfo
 	GENERATED_BODY()
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere,
-		Meta = (Tooltip = "The IP Address to send UDP packets to."))
-		FString IpAddress = "0.0.0.0";
+		Meta = (Tooltip = "The IP Address to send UDP packets to.\n\nIf Multicast is enabled, the IP Address should represent the Multicast Address. The valid Multicast Address range is 224.0.0.1 to 239.255.255.255"))
+		FString IpAddress = "255.255.255.255";
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere,	
 		Meta = (Tooltip = "The Port to either send UDP packets to or receive UDP packets from. Valid Port ranges are from 1024 to 65535.", UIMin = 1024, UIMax = 65535, ClampMin = 1024, ClampMax = 65535))
@@ -43,7 +43,7 @@ struct FReceiveSocketInfo
 	GENERATED_BODY()
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere,
-		Meta = (Tooltip = "The IP Address to receive UDP packets from."))
+		Meta = (Tooltip = "The IP Address to receive UDP packets from. An IP Address of 0.0.0.0 listens to all connection on the specified port.\n\nIf Multicast is enabled, the IP Address should represent the Multicast Address. The valid Multicast Address range is 224.0.0.1 to 239.255.255.255"))
 		FString IpAddress = "0.0.0.0";
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere,

@@ -65,9 +65,9 @@ struct FReceiveSocketSettings
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		bool bUseMulticast;
 
-	/** Whether we should ignore packets originating from ourself or not. */
+	/** Set to true to process packets sent by the local machine. */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		bool bIgnorePacketsFromLocalIP;
+		bool bAllowLoopback;
 
 	/** Whether we should process our data on the gamethread or the udp thread. */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
@@ -80,7 +80,7 @@ struct FReceiveSocketSettings
 		BufferSize = 2 * 1024 * 1024;	//default roughly 2mb
 
 		bUseMulticast = false;
-		bIgnorePacketsFromLocalIP = true;
+		bAllowLoopback = false;
 		bReceiveDataOnGameThread = true;
 	}
 };
