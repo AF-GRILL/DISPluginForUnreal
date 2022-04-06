@@ -28,6 +28,7 @@ public class DISRuntime : ModuleRules
 		PrivateDependencyModuleNames.AddRange(
 			new string[]
 			{
+                "Projects",
 				"Slate",
 				"CoreUObject",
 				"Engine",

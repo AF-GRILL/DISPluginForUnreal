@@ -1,16 +1,22 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
 
 #include "DISRuntime.h"
+#include "Interfaces/IPluginManager.h"
 
 #define LOCTEXT_NAMESPACE "FDISRuntime"
 
 void FDISRuntimeModule::StartupModule()
 {
 	// This code will execute after your module is loaded into memory; the exact timing is specified in the .uplugin file per-module
-
-	//Get the location of the Plugins folder and append the location of the OpenDIS6.dll within the folder.
-	FString openDISPluginDir = FPaths::ProjectPluginsDir().Append("\\GRILLDISForUnreal\\Source\\ThirdParty\\Binaries\\Win64\\OpenDIS6.dll");
-	DLLHandle = FPlatformProcess::GetDllHandle(*openDISPluginDir);
+	//Get the location of the GRILL DIS Plugin folder
+	TSharedPtr<IPlugin> GrillDIS = IPluginManager::Get().FindPlugin("GRILLDISForUnreal");
+	
+	if (GrillDIS)
+	{
+		//Append the location of the OpenDIS6.dll within the plugin folder
+		FString openDISPluginDir = GrillDIS->GetBaseDir().Append("\\Source\\ThirdParty\\Binaries\\Win64\\OpenDIS6.dll");
+		DLLHandle = FPlatformProcess::GetDllHandle(*openDISPluginDir);
+	}
 }
 
 void FDISRuntimeModule::ShutdownModule()
