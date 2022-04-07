@@ -324,10 +324,9 @@ void UDIS_BPFL::GetUnrealRotationFromEntityStatePdu(const FEntityStatePDU Entity
 	FNorthEastDown NorthEastDownVectors;
 	CalculateNorthEastDownVectorsFromLatLon(LatLonHeight.X, LatLonHeight.Y, NorthEastDownVectors);
 
-	FVector enuRot = FVector(GeoReferencingSystem->OriginProjectedCoordinatesEasting, GeoReferencingSystem->OriginProjectedCoordinatesNorthing, GeoReferencingSystem->OriginProjectedCoordinatesUp);
+	//Get NED of the world origin
 	FNorthEastDown originNorthEastDown;
-
-	GeoReferencingSystem->GetENUVectorsAtProjectedLocation(enuRot, originNorthEastDown.EastVector, originNorthEastDown.NorthVector, originNorthEastDown.DownVector);
+	GeoReferencingSystem->GetENUVectorsAtEngineLocation(FVector(0, 0, 0), originNorthEastDown.EastVector, originNorthEastDown.NorthVector, originNorthEastDown.DownVector);
 	originNorthEastDown.DownVector *= -1;
 
 	// Get the rotational difference between calculated NED and Unreal origin NED
@@ -409,10 +408,9 @@ void UDIS_BPFL::GetHeadingPitchRollFromUnrealRotation(const FRotator EntityUnrea
 	FNorthEastDown NorthEastDownVectors;
 	GetNorthEastDownVectorsFromUnrealLocation(EntityUnrealLocation, GeoReferencingSystem, NorthEastDownVectors);
 
-	const FVector enuRot = FVector(GeoReferencingSystem->OriginProjectedCoordinatesEasting, GeoReferencingSystem->OriginProjectedCoordinatesNorthing, GeoReferencingSystem->OriginProjectedCoordinatesUp);
+	//Get NED of the world origin
 	FNorthEastDown OriginNorthEastDown;
-
-	GeoReferencingSystem->GetENUVectorsAtProjectedLocation(enuRot, OriginNorthEastDown.EastVector, OriginNorthEastDown.NorthVector, OriginNorthEastDown.DownVector);
+	GeoReferencingSystem->GetENUVectorsAtEngineLocation(FVector(0, 0, 0), OriginNorthEastDown.EastVector, OriginNorthEastDown.NorthVector, OriginNorthEastDown.DownVector);
 	OriginNorthEastDown.DownVector *= -1;
 
 	// Get the rotational difference between calculated NED and Unreal origin NED
