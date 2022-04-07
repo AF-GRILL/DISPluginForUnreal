@@ -577,16 +577,39 @@ void UDISComponent::GroundClamping_Implementation()
 	{
 		SCOPE_CYCLE_COUNTER(STAT_GroundClamping);
 
-		//Get the most recent calculated ECEF location of the entity from the dead reckoned ESPDU
-		//Get the LLH location of the entity from the ECEF location
-		FVector latLonHeight;
-		UDIS_BPFL::CalculateLatLonHeightFromEcefXYZ(MostRecentDeadReckonedEntityStatePDU.EcefLocation, latLonHeight);
+		FVector clampDirection;
 
-		//Get the North East Down vectors from the calculated LLH
-		FNorthEastDown northEastDownVectors;
-		UDIS_BPFL::CalculateNorthEastDownVectorsFromLatLon(latLonHeight.X, latLonHeight.Y, northEastDownVectors);
-		//Set clamp direction using the North East Down down vector
-		FVector clampDirection = northEastDownVectors.DownVector;
+		//Determine the planet shape being used to figure out clamp direction
+		switch (GeoReferencingSystem->PlanetShape)
+		{
+		case EPlanetShape::RoundPlanet:
+		{
+			//Get the most recent calculated ECEF location of the entity from the dead reckoned ESPDU
+			//Get the LLH location of the entity from the ECEF location
+			FVector latLonHeight;
+			UDIS_BPFL::CalculateLatLonHeightFromEcefXYZ(MostRecentDeadReckonedEntityStatePDU.EcefLocation, latLonHeight);
+
+			//Get the North East Down vectors from the calculated LLH
+			FNorthEastDown northEastDownVectors;
+			UDIS_BPFL::CalculateNorthEastDownVectorsFromLatLon(latLonHeight.X, latLonHeight.Y, northEastDownVectors);
+			//Set clamp direction using the North East Down down vector
+			clampDirection = northEastDownVectors.DownVector;
+
+			break;
+		}
+		case EPlanetShape::FlatPlanet:
+		{
+			clampDirection = FVector::DownVector;
+
+			break;
+		}
+		default:
+		{
+			clampDirection = FVector::DownVector;
+
+			break;
+		}
+		}
 
 		//Get the location the object is supposed to be at according to the most recent dead reckoning update.
 		FVector actorLocation;
