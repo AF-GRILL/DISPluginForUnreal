@@ -185,7 +185,10 @@ void UDISComponent::HandleEntityStatePDU(FEntityStatePDU NewEntityStatePDU)
 
 	OnReceivedEntityStatePDU.Broadcast(NewEntityStatePDU);
 
-	GroundClamping_Implementation();
+	if (!PerformDeadReckoning)
+	{
+		GroundClamping_Implementation();
+	}
 }
 
 void UDISComponent::HandleEntityStateUpdatePDU(FEntityStateUpdatePDU NewEntityStateUpdatePDU)
@@ -203,7 +206,10 @@ void UDISComponent::HandleEntityStateUpdatePDU(FEntityStateUpdatePDU NewEntitySt
 
 	OnReceivedEntityStateUpdatePDU.Broadcast(NewEntityStateUpdatePDU);
 
-	GroundClamping_Implementation();
+	if (!PerformDeadReckoning)
+	{
+		GroundClamping_Implementation();
+	}
 }
 
 void UDISComponent::UpdateCommonEntityStateInfo(FEntityStatePDU NewEntityStatePDU)
