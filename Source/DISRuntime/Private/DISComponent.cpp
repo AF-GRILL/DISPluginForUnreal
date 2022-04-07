@@ -610,9 +610,6 @@ void UDISComponent::GroundClamping_Implementation()
 	if (PerformGroundClamping && SpawnedFromNetwork && EntityType.Domain == 1 && EntityType.EntityKind != 2)
 	{
 		SCOPE_CYCLE_COUNTER(STAT_GroundClamping);
-		//Get the most recent calculated ECEF location of the entity from the dead reckoned ESPDU
-		FEarthCenteredEarthFixedDouble ecefDouble = FEarthCenteredEarthFixedDouble(MostRecentDeadReckonedEntityStatePDU.EntityLocationDouble[0],
-			MostRecentDeadReckonedEntityStatePDU.EntityLocationDouble[1], MostRecentDeadReckonedEntityStatePDU.EntityLocationDouble[2]);
 
 		FVector clampDirection;
 
@@ -621,6 +618,10 @@ void UDISComponent::GroundClamping_Implementation()
 		{
 		case EPlanetShape::RoundPlanet:
 		{
+			//Get the most recent calculated ECEF location of the entity from the dead reckoned ESPDU
+			FEarthCenteredEarthFixedDouble ecefDouble = FEarthCenteredEarthFixedDouble(MostRecentDeadReckonedEntityStatePDU.EntityLocationDouble[0],
+			MostRecentDeadReckonedEntityStatePDU.EntityLocationDouble[1], MostRecentDeadReckonedEntityStatePDU.EntityLocationDouble[2]);
+
 			//Get the LLH location of the entity from the ECEF location
 			FLatLonHeightDouble llhDouble;
 			UDIS_BPFL::CalculateLatLonHeightFromEcefXYZ(ecefDouble, llhDouble);
