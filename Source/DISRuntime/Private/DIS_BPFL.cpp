@@ -381,10 +381,9 @@ void UDIS_BPFL::GetUnrealRotationFromEntityStatePdu(const FEntityStatePDU Entity
 	FNorthEastDown NorthEastDownVectors;
 	CalculateNorthEastDownVectorsFromLatLon(LatLonHeightDouble.Latitude, LatLonHeightDouble.Longitude, NorthEastDownVectors);
 
-	FCartesianCoordinates cartCoords = FCartesianCoordinates(GeoReferencingSystem->OriginProjectedCoordinatesEasting, GeoReferencingSystem->OriginProjectedCoordinatesNorthing, GeoReferencingSystem->OriginProjectedCoordinatesUp);
+	//Get NED of the world origin
 	FNorthEastDown originNorthEastDown;
-
-	GeoReferencingSystem->GetENUVectorsAtProjectedLocation(cartCoords, originNorthEastDown.EastVector, originNorthEastDown.NorthVector, originNorthEastDown.DownVector);
+	GeoReferencingSystem->GetENUVectorsAtEngineLocation(FVector(0, 0, 0), originNorthEastDown.EastVector, originNorthEastDown.NorthVector, originNorthEastDown.DownVector);
 	originNorthEastDown.DownVector *= -1;
 
 	// Get the rotational difference between calculated NED and Unreal origin NED
@@ -472,10 +471,9 @@ void UDIS_BPFL::GetHeadingPitchRollFromUnrealRotation(const FRotator EntityUnrea
 	FNorthEastDown NorthEastDownVectors;
 	GetNorthEastDownVectorsFromUnrealLocation(EntityUnrealLocation, GeoReferencingSystem, NorthEastDownVectors);
 
-	const FCartesianCoordinates CartCoords = FCartesianCoordinates(GeoReferencingSystem->OriginProjectedCoordinatesEasting, GeoReferencingSystem->OriginProjectedCoordinatesNorthing, GeoReferencingSystem->OriginProjectedCoordinatesUp);
+	//Get NED of the world origin
 	FNorthEastDown OriginNorthEastDown;
-
-	GeoReferencingSystem->GetENUVectorsAtProjectedLocation(CartCoords, OriginNorthEastDown.EastVector, OriginNorthEastDown.NorthVector, OriginNorthEastDown.DownVector);
+	GeoReferencingSystem->GetENUVectorsAtEngineLocation(FVector(0, 0, 0), OriginNorthEastDown.EastVector, OriginNorthEastDown.NorthVector, OriginNorthEastDown.DownVector);
 	OriginNorthEastDown.DownVector *= -1;
 
 	// Get the rotational difference between calculated NED and Unreal origin NED
