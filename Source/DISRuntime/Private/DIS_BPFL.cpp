@@ -309,20 +309,66 @@ void UDIS_BPFL::CalculateLatLonHeightFromUnrealLocation(const FVector UELocation
 	CalculateLatLonHeightFromEcefXYZ(ecefLoc, LatLonHeightDegreesMeters);
 }
 
-void UDIS_BPFL::GetUnrealRotationFromEntityStatePdu(const FEntityStatePDU EntityStatePdu, AGeoReferencingSystem* GeoReferencingSystem, FRotator& EntityRotation)
+void UDIS_BPFL::GetUnrealRotationFromHeadingPitchRollDegreesAtLatLon(const FHeadingPitchRoll EntityHeadingPitchRollDegrees, const float LatitudeDegrees, const float LongitudeDegrees, AGeoReferencingSystem* GeoReferencingSystem, FRotator& EntityRotation)
 {
 	if (!IsValid(GeoReferencingSystem))
 	{
 		EntityRotation = FRotator(0, 0, 0);
-		UE_LOG(LogDIS_BPFL, Warning, TEXT("Invalid Entity State PDU or GeoReference was passed to get Unreal rotation from. Returning Unreal rotation of (0, 0, 0)."));
+		UE_LOG(LogDIS_BPFL, Warning, TEXT("Invalid GeoReference was passed to get Unreal rotation from. Returning Unreal rotation of (0, 0, 0)."));
 		return;
 	}
 
-	FVector LatLonHeight;
-	CalculateLatLonHeightFromEcefXYZ(EntityStatePdu.EcefLocation, LatLonHeight);
+	FHeadingPitchRoll headingPitchRollRadians;
+	headingPitchRollRadians.Heading = FMath::DegreesToRadians(EntityHeadingPitchRollDegrees.Heading);
+	headingPitchRollRadians.Pitch = FMath::DegreesToRadians(EntityHeadingPitchRollDegrees.Pitch);
+	headingPitchRollRadians.Roll = FMath::DegreesToRadians(EntityHeadingPitchRollDegrees.Roll);
+
+	GetUnrealRotationFromHeadingPitchRollRadiansAtLatLon(headingPitchRollRadians, LatitudeDegrees, LongitudeDegrees, GeoReferencingSystem, EntityRotation);
+}
+
+void UDIS_BPFL::GetUnrealRotationFromHeadingPitchRollRadiansAtLatLon(const FHeadingPitchRoll EntityHeadingPitchRollRadians, const float LatitudeDegrees, const float LongitudeDegrees, AGeoReferencingSystem* GeoReferencingSystem, FRotator& EntityRotation)
+{
+	if (!IsValid(GeoReferencingSystem))
+	{
+		EntityRotation = FRotator(0, 0, 0);
+		UE_LOG(LogDIS_BPFL, Warning, TEXT("Invalid GeoReference was passed to get Unreal rotation from. Returning Unreal rotation of (0, 0, 0)."));
+		return;
+	}
+
+	FPsiThetaPhi psiThetaPhiRadians;
+	CalculatePsiThetaPhiRadiansFromHeadingPitchRollRadiansAtLatLon(EntityHeadingPitchRollRadians, LatitudeDegrees, LongitudeDegrees, psiThetaPhiRadians);
+
+	GetUnrealRotationFromPsiThetaPhiRadiansAtLatLon(psiThetaPhiRadians, LatitudeDegrees, LongitudeDegrees, GeoReferencingSystem, EntityRotation);
+}
+
+void UDIS_BPFL::GetUnrealRotationFromPsiThetaPhiDegreesAtLatLon(const FPsiThetaPhi EntityPsiThetaPhiDegrees, const float LatitudeDegrees, const float LongitudeDegrees, AGeoReferencingSystem* GeoReferencingSystem, FRotator& EntityRotation)
+{
+	if (!IsValid(GeoReferencingSystem))
+	{
+		EntityRotation = FRotator(0, 0, 0);
+		UE_LOG(LogDIS_BPFL, Warning, TEXT("Invalid GeoReference was passed to get Unreal rotation from. Returning Unreal rotation of (0, 0, 0)."));
+		return;
+	}
+
+	FPsiThetaPhi psiThetaPhiRadians;
+	psiThetaPhiRadians.Psi = FMath::DegreesToRadians(EntityPsiThetaPhiDegrees.Psi);
+	psiThetaPhiRadians.Theta = FMath::DegreesToRadians(EntityPsiThetaPhiDegrees.Theta);
+	psiThetaPhiRadians.Phi = FMath::DegreesToRadians(EntityPsiThetaPhiDegrees.Phi);
+
+	GetUnrealRotationFromPsiThetaPhiRadiansAtLatLon(psiThetaPhiRadians, LatitudeDegrees, LongitudeDegrees, GeoReferencingSystem, EntityRotation);
+}
+
+void UDIS_BPFL::GetUnrealRotationFromPsiThetaPhiRadiansAtLatLon(const FPsiThetaPhi EntityPsiThetaPhiRadians, const float LatitudeDegrees, const float LongitudeDegrees, AGeoReferencingSystem* GeoReferencingSystem, FRotator& EntityRotation)
+{
+	if (!IsValid(GeoReferencingSystem))
+	{
+		EntityRotation = FRotator(0, 0, 0);
+		UE_LOG(LogDIS_BPFL, Warning, TEXT("Invalid GeoReference was passed to get Unreal rotation from. Returning Unreal rotation of (0, 0, 0)."));
+		return;
+	}
 
 	FNorthEastDown NorthEastDownVectors;
-	CalculateNorthEastDownVectorsFromLatLon(LatLonHeight.X, LatLonHeight.Y, NorthEastDownVectors);
+	CalculateNorthEastDownVectorsFromLatLon(LatitudeDegrees, LongitudeDegrees, NorthEastDownVectors);
 
 	//Get NED of the world origin
 	FNorthEastDown originNorthEastDown;
@@ -334,10 +380,8 @@ void UDIS_BPFL::GetUnrealRotationFromEntityStatePdu(const FEntityStatePDU Entity
 	const auto YAxisRotationAngle = FVector::DotProduct(NorthEastDownVectors.DownVector, originNorthEastDown.DownVector);
 	const auto ZAxisRotationAngle = FVector::DotProduct(NorthEastDownVectors.NorthVector, originNorthEastDown.NorthVector);
 
-	FPsiThetaPhi PsiThetaPhiRadians = FPsiThetaPhi(EntityStatePdu.EntityOrientation.Yaw, EntityStatePdu.EntityOrientation.Pitch, EntityStatePdu.EntityOrientation.Roll);
-
 	FHeadingPitchRoll HeadingPitchRollDegrees;
-	CalculateHeadingPitchRollDegreesFromPsiThetaPhiRadiansAtLatLon(PsiThetaPhiRadians, LatLonHeight.X, LatLonHeight.Y, HeadingPitchRollDegrees);
+	CalculateHeadingPitchRollDegreesFromPsiThetaPhiRadiansAtLatLon(EntityPsiThetaPhiRadians, LatitudeDegrees, LongitudeDegrees, HeadingPitchRollDegrees);
 
 	EntityRotation.Roll = HeadingPitchRollDegrees.Roll + XAxisRotationAngle;
 	EntityRotation.Pitch = HeadingPitchRollDegrees.Pitch + YAxisRotationAngle;
@@ -345,25 +389,69 @@ void UDIS_BPFL::GetUnrealRotationFromEntityStatePdu(const FEntityStatePDU Entity
 	EntityRotation.Yaw = HeadingPitchRollDegrees.Heading + ZAxisRotationAngle - 90;
 }
 
+void UDIS_BPFL::GetUnrealLocationFromLatLonHeight(const FVector LatLonHeightDegreesMeters, AGeoReferencingSystem* GeoReferencingSystem, FVector& EntityLocation)
+{
+	if (!IsValid(GeoReferencingSystem))
+	{
+		EntityLocation = FVector(0, 0, 0);
+		UE_LOG(LogDIS_BPFL, Warning, TEXT("Invalid GeoReference was passed to get Unreal location from. Returning Unreal location of (0, 0, 0)."));
+		return;
+	}
+
+	FVector ecefXYZFloat;
+	CalculateEcefXYZFromLatLonHeight(LatLonHeightDegreesMeters, ecefXYZFloat);
+
+	GetUnrealLocationFromEcefXYZ(ecefXYZFloat, GeoReferencingSystem, EntityLocation);
+}
+
+void UDIS_BPFL::GetUnrealLocationFromEcefXYZ(const FVector EcefXYZ, AGeoReferencingSystem* GeoReferencingSystem, FVector& EntityLocation)
+{
+	if (!IsValid(GeoReferencingSystem))
+	{
+		EntityLocation = FVector(0, 0, 0);
+		UE_LOG(LogDIS_BPFL, Warning, TEXT("Invalid GeoReference was passed to get Unreal location from. Returning Unreal location of (0, 0, 0)."));
+		return;
+	}
+
+	GeoReferencingSystem->ECEFToEngine(EcefXYZ, EntityLocation);
+}
+
+void UDIS_BPFL::GetUnrealRotationFromEntityStatePdu(const FEntityStatePDU EntityStatePdu, AGeoReferencingSystem* GeoReferencingSystem, FRotator& EntityRotation)
+{
+	if (!IsValid(GeoReferencingSystem))
+	{
+		EntityRotation = FRotator(0, 0, 0);
+		UE_LOG(LogDIS_BPFL, Warning, TEXT("Invalid GeoReference was passed to get Unreal rotation from. Returning Unreal rotation of (0, 0, 0)."));
+		return;
+	}
+
+	FPsiThetaPhi PsiThetaPhiRadians = FPsiThetaPhi(EntityStatePdu.EntityOrientation.Yaw, EntityStatePdu.EntityOrientation.Pitch, EntityStatePdu.EntityOrientation.Roll);
+
+	FVector LatLonHeightDouble;
+	CalculateLatLonHeightFromEcefXYZ(EntityStatePdu.EcefLocation, LatLonHeightDouble);
+
+	GetUnrealRotationFromPsiThetaPhiRadiansAtLatLon(PsiThetaPhiRadians, LatLonHeightDouble.X, LatLonHeightDouble.Y, GeoReferencingSystem, EntityRotation);
+}
+
 void UDIS_BPFL::GetEntityUnrealLocationFromEntityStatePdu(const FEntityStatePDU EntityStatePdu, AGeoReferencingSystem* GeoReferencingSystem, FVector& EntityLocation)
 {
 	if (!IsValid(GeoReferencingSystem))
 	{
 		EntityLocation = FVector(0, 0, 0);
-		UE_LOG(LogDIS_BPFL, Warning, TEXT("Invalid Entity State PDU or GeoReference was passed to get Unreal location from. Returning Unreal location of (0, 0, 0)."));
+		UE_LOG(LogDIS_BPFL, Warning, TEXT("Invalid GeoReference was passed to get Unreal location from. Returning Unreal location of (0, 0, 0)."));
 		return;
 	}
 
 	GeoReferencingSystem->ECEFToEngine(EntityStatePdu.EcefLocation, EntityLocation);
 }
 
-void UDIS_BPFL::GetEntityUnrealLocationAndOrientation(const FEntityStatePDU EntityStatePdu, AGeoReferencingSystem* GeoReferencingSystem, FVector& EntityLocation, FRotator& EntityRotation)
+void UDIS_BPFL::GetEntityUnrealLocationAndOrientationFromEntityStatePdu(const FEntityStatePDU EntityStatePdu, AGeoReferencingSystem* GeoReferencingSystem, FVector& EntityLocation, FRotator& EntityRotation)
 {
 	if (!IsValid(GeoReferencingSystem))
 	{
 		EntityLocation = FVector(0,0,0);
 		EntityRotation = FRotator(0,0,0);
-		UE_LOG(LogDIS_BPFL, Warning, TEXT("Invalid Entity State PDU or GeoReference was passed to get Unreal location and rotation from. Returning location and rotation of (0, 0, 0)."));
+		UE_LOG(LogDIS_BPFL, Warning, TEXT("Invalid GeoReference was passed to get Unreal location and rotation from. Returning location and rotation of (0, 0, 0)."));
 		return;
 	}
 
