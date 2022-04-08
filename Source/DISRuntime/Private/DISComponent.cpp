@@ -283,9 +283,10 @@ void UDISComponent::DoDeadReckoning(float DeltaTime)
 			}
 
 			OnDeadReckoningUpdate.Broadcast(MostRecentDeadReckonedEntityStatePDU);
-
-			GroundClamping_Implementation();
 		}
+
+		//Perform ground clamping last
+		GroundClamping_Implementation();
 	}
 }
 
