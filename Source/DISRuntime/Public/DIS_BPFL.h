@@ -313,12 +313,12 @@ public:
 
 	/**
 	 * Get the Unreal location from the given latitude in degrees, longitude in degrees, and height in meters location.
-	 * @param LatLonHeight The LLH location to get the Unreal location from.
+	 * @param LatLonHeightDegreesMeters The LLH location to get the Unreal location from.
 	 * @param GeoReferencingSystem The GeoReferencing Subsystem reference.
 	 * @param EntityLocation The Unreal location of the given LLH location
 	*/
 	UFUNCTION(BlueprintPure, Category = "GRILL DIS|Unit Conversions")
-		static void GetUnrealLocationFromLatLonHeight(const FLatLonHeightFloat LatLonHeight, AGeoReferencingSystem* GeoReferencingSystem, FVector& EntityLocation);
+		static void GetUnrealLocationFromLatLonHeight(const FLatLonHeightFloat LatLonHeightDegreesMeters, AGeoReferencingSystem* GeoReferencingSystem, FVector& EntityLocation);
 
 	/**
 	 * Get the Unreal location from the given ECEF XYZ location

@@ -369,7 +369,7 @@ void UDIS_BPFL::GetUnrealRotationFromHeadingPitchRollDegreesAtLatLon(const FHead
 	if (!IsValid(GeoReferencingSystem))
 	{
 		EntityRotation = FRotator(0, 0, 0);
-		UE_LOG(LogDIS_BPFL, Warning, TEXT("Invalid Entity State PDU or GeoReference was passed to get Unreal rotation from. Returning Unreal rotation of (0, 0, 0)."));
+		UE_LOG(LogDIS_BPFL, Warning, TEXT("Invalid GeoReference was passed to get Unreal location from. Returning Unreal location of (0, 0, 0)."));
 		return;
 	}
 
@@ -386,7 +386,7 @@ void UDIS_BPFL::GetUnrealRotationFromHeadingPitchRollRadiansAtLatLon(const FHead
 	if (!IsValid(GeoReferencingSystem))
 	{
 		EntityRotation = FRotator(0, 0, 0);
-		UE_LOG(LogDIS_BPFL, Warning, TEXT("Invalid Entity State PDU or GeoReference was passed to get Unreal rotation from. Returning Unreal rotation of (0, 0, 0)."));
+		UE_LOG(LogDIS_BPFL, Warning, TEXT("Invalid GeoReference was passed to get Unreal location from. Returning Unreal location of (0, 0, 0)."));
 		return;
 	}
 
@@ -401,7 +401,7 @@ void UDIS_BPFL::GetUnrealRotationFromPsiThetaPhiDegreesAtLatLon(const FPsiThetaP
 	if (!IsValid(GeoReferencingSystem))
 	{
 		EntityRotation = FRotator(0, 0, 0);
-		UE_LOG(LogDIS_BPFL, Warning, TEXT("Invalid Entity State PDU or GeoReference was passed to get Unreal rotation from. Returning Unreal rotation of (0, 0, 0)."));
+		UE_LOG(LogDIS_BPFL, Warning, TEXT("Invalid GeoReference was passed to get Unreal location from. Returning Unreal location of (0, 0, 0)."));
 		return;
 	}
 
@@ -418,7 +418,7 @@ void UDIS_BPFL::GetUnrealRotationFromPsiThetaPhiRadiansAtLatLon(const FPsiThetaP
 	if (!IsValid(GeoReferencingSystem))
 	{
 		EntityRotation = FRotator(0, 0, 0);
-		UE_LOG(LogDIS_BPFL, Warning, TEXT("Invalid Entity State PDU or GeoReference was passed to get Unreal rotation from. Returning Unreal rotation of (0, 0, 0)."));
+		UE_LOG(LogDIS_BPFL, Warning, TEXT("Invalid GeoReference was passed to get Unreal location from. Returning Unreal location of (0, 0, 0)."));
 		return;
 	}
 
@@ -449,7 +449,7 @@ void UDIS_BPFL::GetUnrealLocationFromLatLonHeight(const FLatLonHeightFloat LatLo
 	if (!IsValid(GeoReferencingSystem))
 	{
 		EntityLocation = FVector(0, 0, 0);
-		UE_LOG(LogDIS_BPFL, Warning, TEXT("Invalid Entity State PDU or GeoReference was passed to get Unreal rotation from. Returning Unreal rotation of (0, 0, 0)."));
+		UE_LOG(LogDIS_BPFL, Warning, TEXT("Invalid GeoReference was passed to get Unreal location from. Returning Unreal location of (0, 0, 0)."));
 		return;
 	}
 
@@ -464,7 +464,7 @@ void UDIS_BPFL::GetUnrealLocationFromEcefXYZ(const FEarthCenteredEarthFixedFloat
 	if (!IsValid(GeoReferencingSystem))
 	{
 		EntityLocation = FVector(0, 0, 0);
-		UE_LOG(LogDIS_BPFL, Warning, TEXT("Invalid Entity State PDU or GeoReference was passed to get Unreal rotation from. Returning Unreal rotation of (0, 0, 0)."));
+		UE_LOG(LogDIS_BPFL, Warning, TEXT("Invalid GeoReference was passed to get Unreal location from. Returning Unreal location of (0, 0, 0)."));
 		return;
 	}
 
@@ -480,7 +480,7 @@ void UDIS_BPFL::GetUnrealLocationFromEcefXYZ(const FEarthCenteredEarthFixedDoubl
 	if (!IsValid(GeoReferencingSystem))
 	{
 		EntityLocation = FVector(0, 0, 0);
-		UE_LOG(LogDIS_BPFL, Warning, TEXT("Invalid Entity State PDU or GeoReference was passed to get Unreal rotation from. Returning Unreal rotation of (0, 0, 0)."));
+		UE_LOG(LogDIS_BPFL, Warning, TEXT("Invalid GeoReference was passed to get Unreal location from. Returning Unreal location of (0, 0, 0)."));
 		return;
 	}
 
@@ -494,7 +494,7 @@ void UDIS_BPFL::GetUnrealRotationFromEntityStatePdu(const FEntityStatePDU Entity
 	if (!IsValid(GeoReferencingSystem))
 	{
 		EntityRotation = FRotator(0, 0, 0);
-		UE_LOG(LogDIS_BPFL, Warning, TEXT("Invalid Entity State PDU or GeoReference was passed to get Unreal rotation from. Returning Unreal rotation of (0, 0, 0)."));
+		UE_LOG(LogDIS_BPFL, Warning, TEXT("Invalid GeoReference was passed to get Unreal rotation from. Returning Unreal rotation of (0, 0, 0)."));
 		return;
 	}
 
@@ -513,7 +513,7 @@ void UDIS_BPFL::GetEntityUnrealLocationFromEntityStatePdu(const FEntityStatePDU 
 	if (!IsValid(GeoReferencingSystem))
 	{
 		EntityLocation = FVector(0, 0, 0);
-		UE_LOG(LogDIS_BPFL, Warning, TEXT("Invalid Entity State PDU or GeoReference was passed to get Unreal location from. Returning Unreal location of (0, 0, 0)."));
+		UE_LOG(LogDIS_BPFL, Warning, TEXT("Invalid GeoReference was passed to get Unreal location from. Returning Unreal location of (0, 0, 0)."));
 		return;
 	}
 
@@ -530,7 +530,7 @@ void UDIS_BPFL::GetEntityUnrealLocationAndOrientationFromEntityStatePdu(const FE
 	{
 		EntityLocation = FVector(0,0,0);
 		EntityRotation = FRotator(0,0,0);
-		UE_LOG(LogDIS_BPFL, Warning, TEXT("Invalid Entity State PDU or GeoReference was passed to get Unreal location and rotation from. Returning location and rotation of (0, 0, 0)."));
+		UE_LOG(LogDIS_BPFL, Warning, TEXT("Invalid GeoReference was passed to get Unreal location and rotation from. Returning location and rotation of (0, 0, 0)."));
 		return;
 	}
 
