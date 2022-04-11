@@ -72,19 +72,39 @@
 # DIS Game Manager
 
 - The DIS Game Manager is responsible for creating/removing DIS entities as packets are processed by the PDU Processor Subsystem. It also informs the appropriate DIS Entities when DIS packets are received that impact them. This is done through notifying their associated DIS Component.
-
-- Has variables for:
+- The DIS Game Manager has the following settings:
     - **DIS Enumeration Mappings**: Contains desired actor to DIS Enumeration mappings.
         - _**NOTE:**_ The actors tied to DIS Enumerations have to implement the DIS Interface supplied by the GRILL DIS for Unreal plugin and also should have a DIS Component attached to them. Implement the DIS Interface functions to return the associated DIS component of the actor. Refer to the _**DIS Interface**_ section below.
     - **Exercise ID**: The exercise ID of the DIS sim this project will be associated with.
     - **Site ID**: The site ID of this DIS sim.
-    - **Application ID**: The application ID of this DIS sim.
-		
+    - **Application ID**: The application ID of this DIS sim. 
     - **Auto Connect Send Addresses**: Whether or not the UDP sockets for sending DIS packets should be auto connected.
     - **Auto Connect Send Sockets**: The send sockets to automatically setup if 'Auto Connect Send Addresses' is enabled.
+        - IP Address
+            - The IP address to send DIS packets on. Should be a Multicast address if the socket connection type is set to Multicast.
+        - Port
+            - The port to send DIS packets on.
+        - Send Socket Connection Type
+            - The type of send socket to use. Options are: Broadcast, Multicast, and Unicast.
+        - Socket Description
+            - Friendly description for the the socket.
+        - Buffer Size
+            - The max buffer size for this socket.
     - **Auto Connect Receive Addresses**: Whether or not the UDP socket for receiving DIS packets should be auto connected.
     - **Auto Connect Receive Sockets**: The receive sockets to automatically setup if 'Auto Connect Receive Addresses' is enabled.
-        - _**NOTE:**_ An IP address of 0.0.0.0 will listen to all incoming DIS packets.
+        - IP Address
+            - The IP address to send DIS packets on. Should be a Multicast address if the socket connection type is set to Multicast.
+            - _**NOTE:**_ An IP address of 0.0.0.0 will listen to all incoming DIS packets for broadcast connections.
+        - Port
+            - The port to send DIS packets on.
+        - Socket Description
+            - Friendly description for the the socket.
+        - Buffer Size
+            - The max buffer size for this socket.
+        - Use Multicast
+            - Whether or not this socket will be receiving Multicast connections.
+        - Receive Data on Game Thread
+            - Whether or not this socket should receive data on the game thread. Will receive on its own thread if set to false.
 
 ![DISGameManagerSettings](Resources/ReadMeImages/DISGameManagerSettings.png)
 
