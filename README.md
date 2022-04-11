@@ -24,19 +24,7 @@
 
 - The DIS Game Manager actor is also required in the level and is built into the GRILL DIS for Unreal plugin.
 	- This actor stores the DIS Enumeration to class mappings and other various DIS information.
-	- **DIS Enumeration Mappings**: Contains desired actor to DIS Enumeration mappings.
-        - _**NOTE:**_ The actors tied to DIS Enumerations have to implement the DIS Interface supplied by the GRILL DIS for Unreal plugin and also should have a DIS Component attached to them. Implement the DIS Interface functions to return the associated DIS component of the actor. Refer to the _**DIS Interface**_ section below.
-    - **Exercise ID**: The exercise ID of the DIS sim this project will be associated with.
-    - **Site ID**: The site ID of this DIS sim.
-    - **Application ID**: The application ID of this DIS sim.
-		
-    - **Auto Connect Send Addresses**: Whether or not the UDP sockets for sending DIS packets should be auto connected.
-    - **Auto Connect Send Sockets**: The send sockets to automatically setup if 'Auto Connect Send Addresses' is enabled.
-    - **Auto Connect Receive Addresses**: Whether or not the UDP socket for receiving DIS packets should be auto connected.
-    - **Auto Connect Receive Sockets**: The receive sockets to automatically setup if 'Auto Connect Receive Addresses' is enabled.
-        - _**NOTE:**_ An IP address of 0.0.0.0 will listen to all incoming DIS packets.
-
-![DISGameManagerSettings](Resources/ReadMeImages/DISGameManagerSettings.png)
+	- More information on the actor itself can be found in the **DIS Game Manager section** below
 
 # Project Settings
 
@@ -84,6 +72,22 @@
 # DIS Game Manager
 
 - The DIS Game Manager is responsible for creating/removing DIS entities as packets are processed by the PDU Processor Subsystem. It also informs the appropriate DIS Entities when DIS packets are received that impact them. This is done through notifying their associated DIS Component.
+
+- Has variables for:
+    - **DIS Enumeration Mappings**: Contains desired actor to DIS Enumeration mappings.
+        - _**NOTE:**_ The actors tied to DIS Enumerations have to implement the DIS Interface supplied by the GRILL DIS for Unreal plugin and also should have a DIS Component attached to them. Implement the DIS Interface functions to return the associated DIS component of the actor. Refer to the _**DIS Interface**_ section below.
+    - **Exercise ID**: The exercise ID of the DIS sim this project will be associated with.
+    - **Site ID**: The site ID of this DIS sim.
+    - **Application ID**: The application ID of this DIS sim.
+		
+    - **Auto Connect Send Addresses**: Whether or not the UDP sockets for sending DIS packets should be auto connected.
+    - **Auto Connect Send Sockets**: The send sockets to automatically setup if 'Auto Connect Send Addresses' is enabled.
+    - **Auto Connect Receive Addresses**: Whether or not the UDP socket for receiving DIS packets should be auto connected.
+    - **Auto Connect Receive Sockets**: The receive sockets to automatically setup if 'Auto Connect Receive Addresses' is enabled.
+        - _**NOTE:**_ An IP address of 0.0.0.0 will listen to all incoming DIS packets.
+
+![DISGameManagerSettings](Resources/ReadMeImages/DISGameManagerSettings.png)
+
 - The DIS Game Manager can be accessed via a static function called 'GetDISGameManager'.
     - _**NOTE**_: This function performs a 'Get All Actors of Class' behind the scenes. Perform this function as little as possible.
     - This function returns the DIS Game Manager in the current level if one is found. If none or multiple are found, null is returned and an appropriate message is logged.
@@ -113,6 +117,9 @@
 - Contains event bindings for:
     - Receiving each type of DIS Entity PDU currently implemented.
     - Dead reckoning update
+	
+![DISComponentEvents](Resources/ReadMeImages/DISComponentEvents.png)
+	
 - Has variables for:
     - Most Recent Entity State PDU
     - Dead Reckoning Entity State PDU
@@ -123,14 +130,19 @@
     - DIS Timeout
 		- How long to wait after an Entity State PDU is received before deleting. Gets refreshed after an Entity State PDU is received.
     - Entity Type
+        - Setting this in the component is mainly used for sending DIS data.
+        - This value get set when an Entity State PDU or Entity State Update PDU is received for the associated entity.
     - Entity ID
+        - Setting this in the component is mainly used for sending DIS data.
+        - This value get set when an Entity State PDU or Entity State Update PDU is received for the associated entity.
 	- DIS Culling Mode
 		- Culls DIS packets based on settings
 			- Options:
 				- None
 				- Cull Dead Reckoning
-					- Cull Dead Reckoning updates
+					- Cull Dead Reckoning updates. Distance updates get culled at is dictated by the 'DIS Culling Distance' variable.
 				- Cull All
+                    - Currently only culls Dead Reckoning updates.
 	- DIS Culling Distance
 		- The distance away from the camera that entities will start to have DIS packets culled.
     - Perform Dead Reckoning
