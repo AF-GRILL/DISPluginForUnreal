@@ -298,3 +298,25 @@ bool UUDPSubsystem::CloseAllSendSockets()
 
 	return allClosedSuccessfully;
 }
+
+TArray<int32> UUDPSubsystem::GetConnectedReceiveSocketIDs()
+{
+	TArray<int32> receiveSocketKeys;
+	AllReceiveSockets.GetKeys(receiveSocketKeys);
+	return receiveSocketKeys;
+}
+
+TArray<int32> UUDPSubsystem::GetConnectedSendSocketIDs()
+{
+	TArray<int32> sendSocketKeys;
+	AllSendSockets.GetKeys(sendSocketKeys);
+	return sendSocketKeys;
+}
+
+bool UUDPSubsystem::AnyConnectedSockets()
+{
+	bool anyReceiveSocketsOpened = GetConnectedReceiveSocketIDs().Num() > 0;
+	bool anySendSocketsOpened = GetConnectedSendSocketIDs().Num() > 0;
+
+	return (anyReceiveSocketsOpened || anySendSocketsOpened);
+}
