@@ -190,6 +190,12 @@ bool UUDPSubsystem::OpenSendSocket(FSendSocketSettings SocketSettings, int32& Se
 		return false;
 	}
 
+	if (SenderSocket == nullptr)
+	{
+		UE_LOG(LogUDPSubsystem, Error, TEXT("Failed to bind to address <%s:%d>! Setup of send socket failed. Verify given IP and Port are in valid ranges and that another socket is not already set up on the given address."), *IpToSendOn, PortToSendOn);
+		return false;
+	}
+
 	//Set Send Buffer Size
 	SenderSocket->SetSendBufferSize(SocketSettings.BufferSize, SocketSettings.BufferSize);
 	SenderSocket->SetReceiveBufferSize(SocketSettings.BufferSize, SocketSettings.BufferSize);
