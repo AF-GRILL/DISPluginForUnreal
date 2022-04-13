@@ -44,6 +44,9 @@
     - Close Send Socket
 	- Close All Send Sockets
 	- Close All Receive Sockets
+	- Get Connected Receive Socket IDs
+	- Get Connected Send Socket IDs
+	- Any Connected Sockets
 
 ![UDPFunctions](Resources/ReadMeImages/UDPFunctions.png)
 
