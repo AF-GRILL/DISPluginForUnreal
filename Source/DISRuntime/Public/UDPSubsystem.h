@@ -219,6 +219,24 @@ public:
 	 */
 	UFUNCTION(BlueprintCallable, Category = "GRILL DIS|UDP Subsystem")
 		bool CloseAllSendSockets();
+	/**
+	 * Gets the IDs of the connected receive sockets, if any.
+	 * Returns an array containing all of the connected receive socket IDs.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "GRILL DIS|UDP Subsystem")
+		TArray<int32> GetConnectedReceiveSocketIDs();
+	/**
+	 * Gets the IDs of the connected send sockets, if any.
+	 * Returns an array containing all of the connected send socket IDs.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "GRILL DIS|UDP Subsystem")
+		TArray<int32> GetConnectedSendSocketIDs();
+	/**
+	 * Checks whether there are any connected receive or send sockets.
+	 * Returns a boolean containing whether or not any sockets are connected.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "GRILL DIS|UDP Subsystem")
+		bool AnyConnectedSockets();
 
 protected:
 	ISocketSubsystem* SocketSubsystem;
