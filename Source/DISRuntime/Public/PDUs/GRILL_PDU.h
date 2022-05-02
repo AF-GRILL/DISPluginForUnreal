@@ -14,7 +14,7 @@ struct FPDU
 	GENERATED_BODY()
 
 	/** The version of the protocol. 5=DIS-1995, 6=DIS-1998. */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY()
 		uint8 ProtocolVersion;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
@@ -24,18 +24,18 @@ struct FPDU
 	EPDUType PduType;
 
 	/** Value that refers to the protocol family, e.g. SimulationManagement, etc. */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY()
 		uint8 ProtocolFamily;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY()
 		uint8 Timestamp;
 
 	/** Length, in bytes, of the PDU */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY()
 		uint8 Length;
 
 	/** Zero-filled array of padding */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY()
 		int32 Padding;
 
 	FPDU()
