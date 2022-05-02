@@ -13,8 +13,10 @@ struct FEntityStatePDU : public FEntityInformationFamilyPDU
 {
 	GENERATED_BODY()
 
+	/** The site, application, and unique identifier for this entity. */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		FEntityID EntityID;
+	/** Enumeration to distinguish different teams or sides in a scenario. */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		EForceID ForceID;
 	/** The location of the entity in ECEF - double (64-bit) precision */
@@ -26,20 +28,28 @@ struct FEntityStatePDU : public FEntityInformationFamilyPDU
 	/** The orientation of the entity in Psi (Yaw), Theta (Pitch), Phi (Roll) - in radians */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		FRotator EntityOrientation;
+	/** String representing the name of the entity (Maximum 11 characters). */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		FString Marking;
+	/** The entity's linear velocity in meters per second. */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		FVector EntityLinearVelocity;
+	/** The dead reckoning algorithm to use for the entity accompanied by the required additional parameters. */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		FDeadReckoningParameters DeadReckoningParameters;
+	/** The type of the entity */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		FEntityType EntityType;
+	/** A series of enumerations used to describe the appearance of the entity according to SISO-REF-010-2015 UIDs 31-43. */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		int32 EntityAppearance;
+	/** A series of enumerations used to describe the capabilities of the entity according to SISO-REF-010-2015 UID 55. */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		int32 Capabilities;
+	/** The type of the entity as it should appear to entities of other forces. */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		FEntityType AlternativeEntityType;
+	/** A set of parameter values for each variable parameter record that is included. */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		TArray<FArticulationParameters> ArticulationParameters;
 

@@ -190,6 +190,12 @@ bool UUDPSubsystem::OpenSendSocket(FSendSocketSettings SocketSettings, int32& Se
 		return false;
 	}
 
+	if (SenderSocket == nullptr)
+	{
+		UE_LOG(LogUDPSubsystem, Error, TEXT("Failed to bind to address <%s:%d>! Setup of send socket failed. Verify given IP and Port are in valid ranges and that another socket is not already set up on the given address."), *IpToSendOn, PortToSendOn);
+		return false;
+	}
+
 	//Set Send Buffer Size
 	SenderSocket->SetSendBufferSize(SocketSettings.BufferSize, SocketSettings.BufferSize);
 	SenderSocket->SetReceiveBufferSize(SocketSettings.BufferSize, SocketSettings.BufferSize);
@@ -218,7 +224,17 @@ bool UUDPSubsystem::CloseSendSocket(int32 SendSocketIdToClose)
 {
 	bool bDidCloseCorrectly = true;
 
-	FSocket* SocketToClose = *AllSendSockets.Find(SendSocketIdToClose);
+	FSocket** mapVar = AllSendSockets.Find(SendSocketIdToClose);
+	FSocket* SocketToClose;
+	//Verify an item was found before dereferencing
+	if (mapVar)
+	{
+		SocketToClose = *mapVar;
+	}
+	else
+	{
+		return true;
+	}
 
 	if (SocketToClose)
 	{
@@ -297,4 +313,26 @@ bool UUDPSubsystem::CloseAllSendSockets()
 	}
 
 	return allClosedSuccessfully;
+}
+
+TArray<int32> UUDPSubsystem::GetConnectedReceiveSocketIDs()
+{
+	TArray<int32> receiveSocketKeys;
+	AllReceiveSockets.GetKeys(receiveSocketKeys);
+	return receiveSocketKeys;
+}
+
+TArray<int32> UUDPSubsystem::GetConnectedSendSocketIDs()
+{
+	TArray<int32> sendSocketKeys;
+	AllSendSockets.GetKeys(sendSocketKeys);
+	return sendSocketKeys;
+}
+
+bool UUDPSubsystem::AnyConnectedSockets()
+{
+	bool anyReceiveSocketsOpened = GetConnectedReceiveSocketIDs().Num() > 0;
+	bool anySendSocketsOpened = GetConnectedSendSocketIDs().Num() > 0;
+
+	return (anyReceiveSocketsOpened || anySendSocketsOpened);
 }

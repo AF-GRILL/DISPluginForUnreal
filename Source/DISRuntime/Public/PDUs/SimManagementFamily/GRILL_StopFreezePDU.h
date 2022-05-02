@@ -13,14 +13,19 @@ struct FStopFreezePDU : public FSimulationManagementFamilyPDU
 {
 	GENERATED_BODY()
 
+	/** The  real-world time at which the entity/exercise is to start/resume in the exercise. */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		FClockTime RealWorldTime;
+	/** The reason that an entity or exercise was stopped/frozen. */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		EReason Reason;
+	/** Specification of the internal behavior of the simulation and its appearance while frozen to other participants of the exercise */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		int32 FrozenBehavior;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	/** Unused padding */
+	UPROPERTY()
 		int32 PaddingOne;
+	/** The specific and unique stop/freeze request being made by the simulation */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		int64 RequestID;
 
