@@ -13,6 +13,7 @@ struct FEntityStateUpdatePDU : public FEntityInformationFamilyPDU
 {
 	GENERATED_BODY()
 
+	/** The site, application, and unique identifier for this entity. */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		FEntityID EntityID;
 	/** The location of the entity in ECEF - double (64-bit) precision */
