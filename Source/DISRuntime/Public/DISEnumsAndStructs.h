@@ -30,37 +30,37 @@ enum class EDISCullingMode : uint8
 UENUM(BlueprintType)
 enum class EForceID : uint8
 {
-	Other    UMETA(DisplayName = "Other"),
-	Friendly     UMETA(DisplayName = "Friendly"),
-	Opposing UMETA(DisplayName = "Opposing"),
-	Neutral UMETA(DisplayName = "Neutral"),
-	Friendly2     UMETA(DisplayName = "Friendly2"),
-	Opposing2 UMETA(DisplayName = "Opposing2"),
-	Neutral2 UMETA(DisplayName = "Neutral2"),
-	Friendly3    UMETA(DisplayName = "Friendly3"),
-	Opposing3 UMETA(DisplayName = "Opposing3"),
-	Neutral3 UMETA(DisplayName = "Neutral3"),
-	Friendly4     UMETA(DisplayName = "Friendly4"),
-	Opposing4 UMETA(DisplayName = "Opposing4"),
-	Neutral4 UMETA(DisplayName = "Neutral4"),
-	Friendly5     UMETA(DisplayName = "Friendly5"),
-	Opposing5 UMETA(DisplayName = "Opposing5"),
-	Neutral5 UMETA(DisplayName = "Neutral5"),
-	Friendly6     UMETA(DisplayName = "Friendly6"),
-	Opposing6 UMETA(DisplayName = "Opposing6"),
-	Neutral6 UMETA(DisplayName = "Neutral6"),
-	Friendly7     UMETA(DisplayName = "Friendly7"),
-	Opposing7 UMETA(DisplayName = "Opposing7"),
-	Neutral7 UMETA(DisplayName = "Neutral7"),
-	Friendly8     UMETA(DisplayName = "Friendly8"),
-	Opposing8 UMETA(DisplayName = "Opposing8"),
-	Neutral8 UMETA(DisplayName = "Neutral8"),
-	Friendly9     UMETA(DisplayName = "Friendly9"),
-	Opposing9 UMETA(DisplayName = "Opposing9"),
-	Neutral9 UMETA(DisplayName = "Neutral9"),
-	Friendly10     UMETA(DisplayName = "Friendly10"),
-	Opposing10 UMETA(DisplayName = "Opposing10"),
-	Neutral10 UMETA(DisplayName = "Neutral10")
+	Other		UMETA(DisplayName = "Other"),
+	Friendly	UMETA(DisplayName = "Friendly"),
+	Opposing	UMETA(DisplayName = "Opposing"),
+	Neutral		UMETA(DisplayName = "Neutral"),
+	Friendly2	UMETA(DisplayName = "Friendly 2"),
+	Opposing2	UMETA(DisplayName = "Opposing 2"),
+	Neutral2	UMETA(DisplayName = "Neutral 2"),
+	Friendly3	UMETA(DisplayName = "Friendly 3"),
+	Opposing3	UMETA(DisplayName = "Opposing 3"),
+	Neutral3	UMETA(DisplayName = "Neutral 3"),
+	Friendly4	UMETA(DisplayName = "Friendly 4"),
+	Opposing4	UMETA(DisplayName = "Opposing 4"),
+	Neutral4	UMETA(DisplayName = "Neutral 4"),
+	Friendly5	UMETA(DisplayName = "Friendly 5"),
+	Opposing5	UMETA(DisplayName = "Opposing 5"),
+	Neutral5	UMETA(DisplayName = "Neutral 5"),
+	Friendly6	UMETA(DisplayName = "Friendly 6"),
+	Opposing6	UMETA(DisplayName = "Opposing 6"),
+	Neutral6	UMETA(DisplayName = "Neutral 6"),
+	Friendly7	UMETA(DisplayName = "Friendly 7"),
+	Opposing7	UMETA(DisplayName = "Opposing 7"),
+	Neutral7	UMETA(DisplayName = "Neutral 7"),
+	Friendly8	UMETA(DisplayName = "Friendly 8"),
+	Opposing8	UMETA(DisplayName = "Opposing 8"),
+	Neutral8	UMETA(DisplayName = "Neutral 8"),
+	Friendly9	UMETA(DisplayName = "Friendly 9"),
+	Opposing9	UMETA(DisplayName = "Opposing 9"),
+	Neutral9	UMETA(DisplayName = "Neutral 9"),
+	Friendly10	UMETA(DisplayName = "Friendly 10"),
+	Opposing10	UMETA(DisplayName = "Opposing 10"),
+	Neutral10	UMETA(DisplayName = "Neutral 10")
 };
 
 UENUM(BlueprintType)
@@ -153,6 +153,45 @@ enum class EReason : uint8
 	StopForReset,
 	StopForRestart,
 	AbortTrainingReturnToTacticalOperations
+};
+
+UENUM(BlueprintType)
+enum class EDetonationResult : uint8
+{
+	Other								UMETA(DisplayName = "Other"),
+	EntityImpact						UMETA(DisplayName = "Entity Impact"),
+	EntityProximateDetonation			UMETA(DisplayName = "Entity Proximate Detonation"),
+	GroundImpact						UMETA(DisplayName = "Ground Impact"),
+	GroundProximateImpact				UMETA(DisplayName = "Ground Proximate Impact"),
+	Detonation							UMETA(DisplayName = "Detonation"),
+	Dud									UMETA(DisplayName = "None or No Detonation (Dud)"),
+	HE_hit_sm							UMETA(DisplayName = "HE hit, small"),
+	HE_hit_md							UMETA(DisplayName = "HE hit, medium"),
+	HE_hit_lg							UMETA(DisplayName = "HE hit, large"),
+	ArmorPiercingHit					UMETA(DisplayName = "Armor-piercing hit"),
+	DirtBlast_sm						UMETA(DisplayName = "Dirt blast, small"),
+	DirtBlast_md						UMETA(DisplayName = "Dirt blast, medium"),
+	DirtBlast_lg						UMETA(DisplayName = "Dirt blast, large"),
+	WaterBlast_sm						UMETA(DisplayName = "Water blast, small"),
+	WaterBlast_md						UMETA(DisplayName = "Water blast, medium"),
+	WaterBlast_lg						UMETA(DisplayName = "Water blast, large"),
+	AirHit								UMETA(DisplayName = "Air hit"),
+	BuildingHit_sm						UMETA(DisplayName = "Building hit, small"),
+	BuildingHit_md						UMETA(DisplayName = "Building hit, medium"),
+	BuildingHit_lg						UMETA(DisplayName = "Building hit, large"),
+	MineClearingLineCharge				UMETA(DisplayName = "Mine-clearing line charge"),
+	EnvironmentObjectImpact				UMETA(DisplayName = "Environment object impact"),
+	EnvironmentObjectProximateImpact	UMETA(DisplayName = "Environment object proximate detonation"),
+	WaterImpact							UMETA(DisplayName = "Water impact"),
+	AirBurst							UMETA(DisplayName = "Air Burst"),
+	KillWithFragmentType1				UMETA(DisplayName = "Kill with fragment type 1"),
+	KillWithFragmentType2				UMETA(DisplayName = "Kill with fragment type 2"),
+	KillWithFragmentType3				UMETA(DisplayName = "Kill with fragment type 3"),
+	KillWithFragmentType1FlyOutFailure	UMETA(DisplayName = "Kill with fragment type 1 after fly-out failure"),
+	KillWithFragmentType2FlyOutFailure	UMETA(DisplayName = "Kill with fragment type 2 after fly-out failure"),
+	MissDueToFlyOutFailure				UMETA(DisplayName = "Miss due to fly-out failure"),
+	MissDueToEndGameFailure				UMETA(DisplayName = "Miss due to end-game failure"),
+	MissDueToFlyOutAndEndGameFailure	UMETA(DisplayName = "Miss due to fly-out and end-game failure")
 };
 
 USTRUCT(BlueprintType)
@@ -269,8 +308,8 @@ struct FClockTime
 	GENERATED_BODY()
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		int Hour;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		int32 Hour;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ClampMin = "0", ClampMax = "4294967295"))
 		int64 TimePastHour;
 
 	FClockTime()
@@ -295,11 +334,11 @@ struct FEntityID
 {
 	GENERATED_BODY()
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ClampMin = "0", ClampMax = "65535"))
 		int32 Site;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ClampMin = "0", ClampMax = "65535"))
 		int32 Application;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ClampMin = "0", ClampMax = "65535"))
 		int32 Entity;
 
 	FEntityID()
@@ -383,11 +422,11 @@ struct FEventID
 {
 	GENERATED_BODY()
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ClampMin = "0", ClampMax = "65535"))
 		int32 Site;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ClampMin = "0", ClampMax = "65535"))
 		int32 Application;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ClampMin = "0", ClampMax = "65535"))
 		int32 EventNumber;
 
 	FEventID()
@@ -420,24 +459,25 @@ struct FEntityType
 	GENERATED_BODY()
 
 	/** Kind of entity */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)		
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ClampMin = "0", ClampMax = "255"))
 		int32 EntityKind;
 	/** Domain of entity (air, surface, subsurface, space, etc) */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ClampMin = "0", ClampMax = "255"))
 		int32 Domain;
 	/** Country to which the design of the entity is attributed */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ClampMin = "0", ClampMax = "65535"))
 		int32 Country;
-	/** Category of entity */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	/** The main category that describes the entity */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ClampMin = "0", ClampMax = "255"))
 		int32 Category;
-	/** Subcategory of entity */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	/** The particular subcategory to which the entity belongs based on the `Category` field */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ClampMin = "0", ClampMax = "255"))
 		int32 Subcategory;
-	/** Specific info based on subcategory field */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	/** Specific information about the entity based on `Subcategory` field */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ClampMin = "0", ClampMax = "255"))
 		int32 Specific;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	/** Extra information required to describe a particular entity */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ClampMin = "0", ClampMax = "255"))
 		int32 Extra;
 
 	FEntityType()
@@ -600,17 +640,22 @@ USTRUCT(BlueprintType)
 struct FArticulationParameters
 {
 	GENERATED_BODY()
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		
+	/**  Identification of whether the Parameter Type Record is for an articulated (0) or attached part (1) shall be designated by this field */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ClampMin = "0", ClampMax = "1"))
 		int32 ParameterTypeDesignator;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	/** Indicates the change of any paramater for any articulated part. Increments by 1 for each change. */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ClampMin = "0", ClampMax = "255"))
 		int32 ChangeIndicator;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	/** The ID of the part to which this part is attached */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ClampMin = "0", ClampMax = "65535"))
 		int32 PartAttachedTo;
+	/** The type class (multiples of 32 in the range 1,024-4,294,967,264) and type metric (0-31) of the articulated part. */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		int32 ParameterType;
+	/** The parameter value as defined by the ParameterType variable */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		int64 ParameterValue;
+		float ParameterValue;
 
 	FArticulationParameters()
 	{
@@ -618,7 +663,7 @@ struct FArticulationParameters
 		ChangeIndicator = 0;
 		PartAttachedTo = 0;
 		ParameterType = 0;
-		ParameterValue = 0;
+		ParameterValue = 0.f;
 	}
 
 	DIS::ArticulationParameter ToOpenDIS() const
@@ -638,15 +683,20 @@ struct FBurstDescriptor
 {
 	GENERATED_BODY()
 
+	/** The type of the entity */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		FEntityType EntityType;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	/** The type of warhead (0-65,535) */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ClampMin = "0", ClampMax = "65535"))
 		int32 Warhead;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	/** The type of fuse (0-65,535) */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ClampMin = "0", ClampMax = "65535"))
 		int32 Fuse;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	/** The number of bursts represented (0-65,535) */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ClampMin = "0", ClampMax = "65535"))
 		int32 Quantity;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	/** The number of rounds per minute for the munition (0-65,535) */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ClampMin = "0", ClampMax = "65535"))
 		int32 Rate;
 
 	FBurstDescriptor()
@@ -674,12 +724,16 @@ struct FDeadReckoningParameters
 {
 	GENERATED_BODY()
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	/** The type of dead reackoning algorithm used by the entity (0-9) */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ClampMin = "0", ClampMax = "9"))
 		uint8 DeadReckoningAlgorithm;
+	/** Field used to specify other dead reckoning parameters which are currently undefined */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		TArray<uint8> OtherParameters;
+	/** The entity's linear acceleration in m/s^2 in either the World Coordinate System or the Entity's Coordinate System depending on the `DeadReckoningAlgorithm` field. */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		FVector EntityLinearAcceleration;
+	/** The entity's angular acceleration in radians per second about each of the entity's own coordinate axes. Positive acceleration is defined by the right hand rule. */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		FVector EntityAngularVelocity;
 

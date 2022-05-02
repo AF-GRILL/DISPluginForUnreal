@@ -13,22 +13,35 @@ struct FDetonationPDU : public FWarfareFamilyPDU
 {
 	GENERATED_BODY()
 
+	/** The ID of the munition or expendable entity. */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		FEntityID MunitionEntityID;
+	/** The event ID from the originating Fire PDU if one exist, otherwise the event number shall be 0. */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		FEventID EventID;
+	/**
+	* The velocity of the munition immediately before detonation/impact, the velocity of a non-munition entity
+	* immediately before exploding, or the velocity of an expendable immediately before a chaff burst or ignition
+	* of a flare. Velocity is represented in world coordinates in meters per second.
+	*/
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		FVector Velocity;
+	/** The location of the detonation in world coordinates */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		FVector EcefLocation;
+	/** Description of the detonation in the form of a munition descriptor, an explosion descriptor, or an expendable descriptor */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		FBurstDescriptor BurstDescriptor;
+	/** The location of the munition detonation, the expendaable detonation, or the non-munition explosion in the entity coordinate system (right-hand system) */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		FVector LocationInEntityCoords;
+	/** The result of the detonation as denoted in SISO-REF-010-2015 UID 62 */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		uint8 DetonationResult;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		EDetonationResult DetonationResult;
+	/** Unused padding */
+	UPROPERTY()
 		int32 Pad;
+	/** A set of parameter values for each variable parameter record that is included. */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		TArray<FArticulationParameters> ArticulationParameters;
 
@@ -39,7 +52,7 @@ struct FDetonationPDU : public FWarfareFamilyPDU
 		Velocity = FVector(0, 0, 0);
 		EcefLocation = FVector(0, 0, 0);
 		LocationInEntityCoords = FVector(0, 0, 0);
-		DetonationResult = 0U;
+		DetonationResult = EDetonationResult::Other;
 		Pad = 0;
 	}
 
@@ -79,7 +92,7 @@ struct FDetonationPDU : public FWarfareFamilyPDU
 		BurstDescriptor.EntityType = DetonationPDUIn->getBurstDescriptor().getMunition();
 
 		//single vars
-		DetonationResult = DetonationPDUIn->getDetonationResult();
+		DetonationResult = static_cast<EDetonationResult>(DetonationPDUIn->getDetonationResult());
 		Pad = DetonationPDUIn->getPad();
 
 		//Articulation Parameters
@@ -127,7 +140,7 @@ struct FDetonationPDU : public FWarfareFamilyPDU
 		OutLocationInEntityCoords.setZ(LocationInEntityCoords.Z);
 		DetonationPDUOut.setLocationInEntityCoordinates(OutLocationInEntityCoords);
 
-		DetonationPDUOut.setDetonationResult(DetonationResult);
+		DetonationPDUOut.setDetonationResult(static_cast<unsigned char>(DetonationResult));
 		DetonationPDUOut.setPad(Pad);
 
 		std::vector<DIS::ArticulationParameter> OutArtParams;

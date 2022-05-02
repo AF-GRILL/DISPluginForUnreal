@@ -224,7 +224,17 @@ bool UUDPSubsystem::CloseSendSocket(int32 SendSocketIdToClose)
 {
 	bool bDidCloseCorrectly = true;
 
-	FSocket* SocketToClose = *AllSendSockets.Find(SendSocketIdToClose);
+	FSocket** mapVar = AllSendSockets.Find(SendSocketIdToClose);
+	FSocket* SocketToClose;
+	//Verify an item was found before dereferencing
+	if (mapVar)
+	{
+		SocketToClose = *mapVar;
+	}
+	else
+	{
+		return true;
+	}
 
 	if (SocketToClose)
 	{

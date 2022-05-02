@@ -13,6 +13,7 @@ struct FEntityStateUpdatePDU : public FEntityInformationFamilyPDU
 {
 	GENERATED_BODY()
 
+	/** The site, application, and unique identifier for this entity. */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		FEntityID EntityID;
 	/** The location of the entity in ECEF - double (64-bit) precision */
@@ -21,12 +22,16 @@ struct FEntityStateUpdatePDU : public FEntityInformationFamilyPDU
 	/** The orientation of the entity in Psi (Yaw), Theta (Pitch), Phi (Roll) - in radians */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		FRotator EntityOrientation;
+	/** The entity's linear velocity in meters per second. */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		FVector EntityLinearVelocity;
+	/** A series of enumerations used to describe the appearance of the entity according to SISO-REF-010-2015 UIDs 31-43. */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		int32 EntityAppearance;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	/** An 8 bit field of unused padding */
+	UPROPERTY()
 		int32 Padding1;
+	/** A set of parameter values for each variable parameter record that is included. */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		TArray<FArticulationParameters> ArticulationParameters;
 

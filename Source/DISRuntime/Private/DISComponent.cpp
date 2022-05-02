@@ -182,6 +182,8 @@ void UDISComponent::HandleEntityStatePDU(FEntityStatePDU NewEntityStatePDU)
 	UpdateCommonEntityStateInfo(NewEntityStatePDU);
 
 	EntityType = NewEntityStatePDU.EntityType;
+	EntityForceID = NewEntityStatePDU.ForceID;
+	EntityMarking = NewEntityStatePDU.Marking;
 
 	OnReceivedEntityStatePDU.Broadcast(NewEntityStatePDU);
 
