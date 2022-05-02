@@ -153,6 +153,17 @@ public:
 	 */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|DIS Component|DIS Info")
 		FEntityID EntityID;
+	/**
+	 * The Force ID of the associated entity. Specifies the team or side the DIS entity is on.
+	 */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|DIS Component|DIS Info")
+		EForceID EntityForceID;
+	/**
+	 * The Entity Marking of the associated entity. Designates a friendly name for the DIS entity. 
+	 * Max of 11 characters should be used. If more than 11 are used, it will be truncated.
+	 */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|DIS Component|DIS Info")
+		FString EntityMarking;
 
 	/**
 	 * Determines what all DIS info should be culled. Allows for updates to happen less frequently for entities that aren't currently important.

@@ -171,7 +171,7 @@ struct FEntityStatePDU : public FEntityInformationFamilyPDU
 
 		DIS::Marking OutMarking;
 		OutMarking.setCharacterSet(1);
-		OutMarking.setByStringCharacters(TCHAR_TO_ANSI(*Marking.Left(11)));
+		OutMarking.setCharacters(TCHAR_TO_ANSI(*Marking.Left(11)));
 		EntityStatePDUOut.setMarking(OutMarking);
 
 		EntityStatePDUOut.setCapabilities(Capabilities);
