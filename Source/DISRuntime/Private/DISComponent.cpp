@@ -82,7 +82,11 @@ glm::dvec3 UDISComponent::CalculateDeadReckonedPosition(const glm::dvec3 Positio
 
 glm::dmat3 UDISComponent::CreateDeadReckoningMatrix(glm::dvec3 AngularVelocityVector, double DeltaTime)
 {
-	const double AngularVelocityMagnitude = glm::length(AngularVelocityVector);
+	double AngularVelocityMagnitude = glm::length(AngularVelocityVector);
+	if (AngularVelocityMagnitude == 0) {
+		AngularVelocityMagnitude = 1e-5;
+		AngularVelocityVector += glm::dvec3(1e-5);
+	}
 
 	const auto AngularVelocityMatrix = glm::dmat3(AngularVelocityVector, glm::dvec3(0), glm::dvec3(0));
 	const auto AngularVelocity = AngularVelocityMatrix * glm::transpose(AngularVelocityMatrix);
