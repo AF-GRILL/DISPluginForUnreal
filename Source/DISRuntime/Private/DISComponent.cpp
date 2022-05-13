@@ -383,8 +383,8 @@ bool UDISComponent::DeadReckoning(FEntityStatePDU EntityPDUToDeadReckon, float D
 				EntityPDUToDeadReckon.DeadReckoningParameters.EntityAngularVelocity.Y, EntityPDUToDeadReckon.DeadReckoningParameters.EntityAngularVelocity.Z);
 			//NOTE: Roll=Phi, Pitch=Theta, Yaw=Psi
 			double PsiRadians, ThetaRadians, PhiRadians;
-			CalculateDeadReckonedOrientation(EntityPDUToDeadReckon.EntityOrientation.Roll,
-				EntityPDUToDeadReckon.EntityOrientation.Pitch, EntityPDUToDeadReckon.EntityOrientation.Yaw, AngularVelocityVector, DeltaTime, PsiRadians, ThetaRadians, PhiRadians);
+			CalculateDeadReckonedOrientation(EntityPDUToDeadReckon.EntityOrientation.Yaw,
+				EntityPDUToDeadReckon.EntityOrientation.Pitch, EntityPDUToDeadReckon.EntityOrientation.Roll, AngularVelocityVector, DeltaTime, PsiRadians, ThetaRadians, PhiRadians);
 
 			DeadReckonedEntityPDU.EntityOrientation = FRotator(ThetaRadians, PsiRadians, PhiRadians);
 		}
