@@ -615,7 +615,7 @@ bool UDISComponent::DeadReckoning(FEntityStatePDU EntityPDUToDeadReckon, float D
 void UDISComponent::GroundClamping_Implementation()
 {
 	//Verify that ground clamping is enabled, the entity is owned by another sim, is of the ground domain, and that it is not a munition
-	if (PerformGroundClamping && SpawnedFromNetwork && EntityType.Domain == 1 && EntityType.EntityKind != 2)
+	if (SpawnedFromNetwork && (PerformGroundClamping == EGroundClampingMode::AlwaysGroundClamp || (PerformGroundClamping == EGroundClampingMode::GroundClampWithDISOptions && EntityType.Domain == 1 && EntityType.EntityKind != 2)))
 	{
 		SCOPE_CYCLE_COUNTER(STAT_GroundClamping);
 
@@ -632,7 +632,7 @@ void UDISComponent::GroundClamping_Implementation()
 
 		//Get the location the object is supposed to be at according to the most recent dead reckoning update.
 		FVector actorLocation;
-		UDIS_BPFL::GetEntityUnrealLocationFromEntityStatePdu(MostRecentDeadReckonedEntityStatePDU, GeoReferencingSystem, actorLocation);
+		UDIS_BPFL::GetUnrealLocationFromEntityStatePdu(MostRecentDeadReckonedEntityStatePDU, GeoReferencingSystem, actorLocation);
 
 		FHitResult lineTraceHitResult;
 		FVector endLocation = (clampDirection * 100000) + actorLocation;
