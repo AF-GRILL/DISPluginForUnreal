@@ -269,47 +269,47 @@ public:
 
 	/**
 	 * Get the Unreal rotation from the given Heading, Pitch, Roll rotation in degrees.
-	 * @param EntityHeadingPitchRollDegrees The Heading, Pitch, Roll rotation in degrees to get the Unreal rotation from.
+	 * @param HeadingPitchRollDegrees The Heading, Pitch, Roll rotation in degrees to get the Unreal rotation from.
 	 * @param LatitudeDegrees The target latitude given in degrees
 	 * @param LongitudeDegrees The target longitude given in degrees
 	 * @param GeoReferencingSystem The GeoReferencing Subsystem reference.
 	 * @param UnrealRotation The Unreal rotation of the given Heading, Pitch, Roll rotation
 	*/
 	UFUNCTION(BlueprintPure, Category = "GRILL DIS|Unit Conversions")
-		static void GetUnrealRotationFromHeadingPitchRollDegreesAtLatLon(const FHeadingPitchRoll EntityHeadingPitchRollDegrees, const float LatitudeDegrees, const float LongitudeDegrees, AGeoReferencingSystem* GeoReferencingSystem, FRotator& UnrealRotation);
+		static void GetUnrealRotationFromHeadingPitchRollDegreesAtLatLon(const FHeadingPitchRoll HeadingPitchRollDegrees, const float LatitudeDegrees, const float LongitudeDegrees, AGeoReferencingSystem* GeoReferencingSystem, FRotator& UnrealRotation);
 
 	/**
 	 * Get the Unreal rotation from the given Heading, Pitch, Roll rotation in radians.
-	 * @param EntityHeadingPitchRollRadians The Heading, Pitch, Roll rotation in radians to get the Unreal rotation from.
+	 * @param HeadingPitchRollRadians The Heading, Pitch, Roll rotation in radians to get the Unreal rotation from.
 	 * @param LatitudeDegrees The target latitude given in degrees
 	 * @param LongitudeDegrees The target longitude given in degrees
 	 * @param GeoReferencingSystem The GeoReferencing Subsystem reference.
 	 * @param UnrealRotation The Unreal rotation of the given Heading, Pitch, Roll rotation
 	*/
 	UFUNCTION(BlueprintPure, Category = "GRILL DIS|Unit Conversions")
-		static void GetUnrealRotationFromHeadingPitchRollRadiansAtLatLon(const FHeadingPitchRoll EntityHeadingPitchRollRadians, const float LatitudeDegrees, const float LongitudeDegrees, AGeoReferencingSystem* GeoReferencingSystem, FRotator& UnrealRotation);
+		static void GetUnrealRotationFromHeadingPitchRollRadiansAtLatLon(const FHeadingPitchRoll HeadingPitchRollRadians, const float LatitudeDegrees, const float LongitudeDegrees, AGeoReferencingSystem* GeoReferencingSystem, FRotator& UnrealRotation);
 
 	/**
 	 * Get the Unreal rotation from the given Psi, Theta, Phi rotation in degrees.
-	 * @param EntityPsiThetaPhiDegrees The Psi, Theta, Phi rotation in degrees to get the Unreal rotation from.
+	 * @param PsiThetaPhiDegrees The Psi, Theta, Phi rotation in degrees to get the Unreal rotation from.
 	 * @param LatitudeDegrees The target latitude given in degrees
 	 * @param LongitudeDegrees The target longitude given in degrees
 	 * @param GeoReferencingSystem The GeoReferencing Subsystem reference.
 	 * @param UnrealRotation The Unreal rotation of the given Psi, Theta, Phi rotation
 	*/
 	UFUNCTION(BlueprintPure, Category = "GRILL DIS|Unit Conversions")
-		static void GetUnrealRotationFromPsiThetaPhiDegreesAtLatLon(const FPsiThetaPhi EntityPsiThetaPhiDegrees, const float LatitudeDegrees, const float LongitudeDegrees, AGeoReferencingSystem* GeoReferencingSystem, FRotator& UnrealRotation);
+		static void GetUnrealRotationFromPsiThetaPhiDegreesAtLatLon(const FPsiThetaPhi PsiThetaPhiDegrees, const float LatitudeDegrees, const float LongitudeDegrees, AGeoReferencingSystem* GeoReferencingSystem, FRotator& UnrealRotation);
 
 	/**
 	 * Get the Unreal rotation from the given Psi, Theta, Phi rotation in radians.
-	 * @param EntityPsiThetaPhiRadians The Psi, Theta, Phi rotation in radians to get the Unreal rotation from.
+	 * @param PsiThetaPhiRadians The Psi, Theta, Phi rotation in radians to get the Unreal rotation from.
 	 * @param LatitudeDegrees The target latitude given in degrees
 	 * @param LongitudeDegrees The target longitude given in degrees
 	 * @param GeoReferencingSystem The GeoReferencing Subsystem reference.
 	 * @param UnrealRotation The Unreal rotation of the given Psi, Theta, Phi rotation
 	*/
 	UFUNCTION(BlueprintPure, Category = "GRILL DIS|Unit Conversions")
-		static void GetUnrealRotationFromPsiThetaPhiRadiansAtLatLon(const FPsiThetaPhi EntityPsiThetaPhiRadians, const float LatitudeDegrees, const float LongitudeDegrees, AGeoReferencingSystem* GeoReferencingSystem, FRotator& UnrealRotation);
+		static void GetUnrealRotationFromPsiThetaPhiRadiansAtLatLon(const FPsiThetaPhi PsiThetaPhiRadians, const float LatitudeDegrees, const float LongitudeDegrees, AGeoReferencingSystem* GeoReferencingSystem, FRotator& UnrealRotation);
 
 	/**
 	 * Get the Unreal location from the given latitude in degrees, longitude in degrees, and height in meters location.
@@ -385,31 +385,31 @@ public:
 
 	/**
 	 * Gets the Heading, Pitch, and Roll in degrees of the given Unreal rotation at the given Unreal location
-	 * @param UnrealRotation The Unreal rotation rotator of the entity
-	 * @param UnrealLocation The Unreal location of the entity relative to the origin
+	 * @param UnrealRotation The Unreal rotation in world space
+	 * @param UnrealLocation The Unreal location in world space
 	 * @param GeoReferencingSystem The GeoReferencing Subsystem reference.
-	 * @param HeadingPitchRollDegrees The entity's heading from North, its pitch, and its roll in degrees
+	 * @param HeadingPitchRollDegrees The heading from North, pitch, and roll in degrees
 	 */
 	UFUNCTION(BlueprintPure, Category = "GRILL DIS|Unit Conversions")
 	static void GetHeadingPitchRollFromUnrealRotation(const FRotator UnrealRotation, const FVector UnrealLocation, AGeoReferencingSystem* GeoReferencingSystem, FHeadingPitchRoll& HeadingPitchRollDegrees);
 
 	/**
 	 * Gets the Psi (Yaw), Theta (Pitch), and Phi (Roll) in degrees of the given Unreal rotation at the given Unreal location
-	 * @param UnrealRotation The Unreal rotation rotator of the entity
-	 * @param UnrealLocation The Unreal location of the entity relative to the origin
+	 * @param UnrealRotation The Unreal rotation in world space
+	 * @param UnrealLocation The Unreal location in world space
 	 * @param GeoReferencingSystem The GeoReferencing Subsystem reference.
-	 * @param PsiThetaPhiDegrees The entity's Psi (Yaw), Theta (Pitch), and Phi (Roll) in degrees
+	 * @param PsiThetaPhiDegrees The Psi (Yaw), Theta (Pitch), and Phi (Roll) in degrees
 	 */
 	UFUNCTION(BlueprintPure, Category = "GRILL DIS|Unit Conversions")
 		static void GetPsiThetaPhiDegreesFromUnrealRotation(const FRotator UnrealRotation, const FVector UnrealLocation, AGeoReferencingSystem* GeoReferencingSystem, FPsiThetaPhi& PsiThetaPhiDegrees);
 
 	/**
 	 * Gets the ECEF location and the Psi (Yaw), Theta (Pitch), and Phi (Roll) in degrees of the given Unreal rotation at the given Unreal location
-	 * @param UnrealRotation The Unreal rotation rotator of the entity
-	 * @param UnrealLocation The Unreal location of the entity relative to the origin
+	 * @param UnrealRotation The Unreal rotation in world space
+	 * @param UnrealLocation The Unreal location in world space
 	 * @param GeoReferencingSystem The GeoReferencing Subsystem reference.
 	 * @param EcefXYZ The ECEF location of the given Unreal location.
-	 * @param PsiThetaPhiDegrees The entity's Psi (Yaw), Theta (Pitch), and Phi (Roll) in degrees
+	 * @param PsiThetaPhiDegrees The Psi (Yaw), Theta (Pitch), and Phi (Roll) in degrees
 	 */
 	UFUNCTION(BlueprintPure, Category = "GRILL DIS|Unit Conversions")
 		static void GetEcefXYZAndPsiThetaPhiDegreesFromUnreal(const FRotator UnrealRotation, const FVector UnrealLocation, AGeoReferencingSystem* GeoReferencingSystem, FEarthCenteredEarthFixedFloat& EcefXYZ, FPsiThetaPhi& PsiThetaPhiDegrees);
