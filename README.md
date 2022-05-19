@@ -135,7 +135,7 @@
     - Automatically handles both of these in C++.
 - Contains various DIS related variables.
 - Notable functions:
-    - Simple Ground Clamping.
+    - Ground Clamping
         - Can be overriden in blueprints for a custom implementation.
 - Contains event bindings for:
     - Receiving each type of DIS Entity PDU currently implemented.

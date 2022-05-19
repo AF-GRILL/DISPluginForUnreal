@@ -28,6 +28,14 @@ enum class EDISCullingMode : uint8
 };
 
 UENUM(BlueprintType)
+enum class EGroundClampingMode : uint8
+{
+	None						UMETA(Tooltip = "Never ground clamp this entity."),
+	GroundClampWithDISOptions	UMETA(Tooltip = "Ground clamp this entity if it is of the ground domain and not a munition."),
+	AlwaysGroundClamp			UMETA(Tooltip = "Always ground clamp this entity.")
+};
+
+UENUM(BlueprintType)
 enum class EForceID : uint8
 {
 	Other		UMETA(DisplayName = "Other"),

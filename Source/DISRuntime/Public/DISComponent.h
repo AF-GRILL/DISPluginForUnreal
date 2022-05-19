@@ -192,14 +192,14 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|DIS Component|DIS Settings", meta = (EditCondition = "PerformDeadReckoning && PerformDeadReckoningSmoothing"))
 		float DeadReckoningSmoothingPeriodSeconds = 0.5f;
 	/**
-	 * Whether or not ground clamping should be performed for this entity.
+	 * Determines how this entity should be ground clamped.
 	 */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|DIS Component|DIS Settings")
-		bool PerformGroundClamping = true;
+		EGroundClampingMode PerformGroundClamping = EGroundClampingMode::GroundClampWithDISOptions;
 	/**
 	 * The collision channel to use for ground clamping.
 	 */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|DIS Component|DIS Settings", meta = (EditCondition = "PerformGroundClamping"))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|DIS Component|DIS Settings")
 		TEnumAsByte<ETraceTypeQuery> GoundClampingCollisionChannel = UEngineTypes::ConvertToTraceType(ECollisionChannel::ECC_Visibility);
 
 protected:
