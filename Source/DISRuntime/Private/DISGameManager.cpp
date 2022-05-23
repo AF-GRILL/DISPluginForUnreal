@@ -48,6 +48,8 @@ void ADISGameManager::BeginPlay()
 	GetGameInstance()->GetSubsystem<UPDUProcessor>()->OnFirePDUProcessed.AddDynamic(this, &ADISGameManager::HandleFirePDU);
 	GetGameInstance()->GetSubsystem<UPDUProcessor>()->OnDetonationPDUProcessed.AddDynamic(this, &ADISGameManager::HandleDetonationPDU);
 	GetGameInstance()->GetSubsystem<UPDUProcessor>()->OnRemoveEntityPDUProcessed.AddDynamic(this, &ADISGameManager::HandleRemoveEntityPDU);
+	GetGameInstance()->GetSubsystem<UPDUProcessor>()->OnStopFreezePDUProcessed.AddDynamic(this, &ADISGameManager::HandleStopFreezePDU);
+	GetGameInstance()->GetSubsystem<UPDUProcessor>()->OnStartResumePDUProcessed.AddDynamic(this, &ADISGameManager::HandleStartResumePDU);
 
 	//Auto connect sockets if needed
 	if (AutoConnectReceiveAddresses) 
@@ -222,6 +224,36 @@ void ADISGameManager::HandleRemoveEntityPDU(FRemoveEntityPDU RemoveEntityPDUIn)
 		if (DISComponent != nullptr)
 		{
 			DISComponent->HandleRemoveEntityPDU(RemoveEntityPDUIn);
+		}
+	}
+}
+
+void ADISGameManager::HandleStopFreezePDU(FStopFreezePDU StopFreezePDUIn)
+{
+	//Verify that we are the appropriate sim to handle the RemoveEntityPDU
+	if (StopFreezePDUIn.ExerciseID == ExerciseID && StopFreezePDUIn.ReceivingEntityID.Site == SiteID && StopFreezePDUIn.ReceivingEntityID.Application == ApplicationID)
+	{
+		//Get associated OpenDISComponent and relay information
+		UDISComponent* DISComponent = GetAssociatedDISComponent(StopFreezePDUIn.ReceivingEntityID);
+
+		if (DISComponent != nullptr)
+		{
+			DISComponent->HandleStopFreezePDU(StopFreezePDUIn);
+		}
+	}
+}
+
+void ADISGameManager::HandleStartResumePDU(FStartResumePDU StartResumePDUIn)
+{
+	//Verify that we are the appropriate sim to handle the RemoveEntityPDU
+	if (StartResumePDUIn.ExerciseID == ExerciseID && StartResumePDUIn.ReceivingEntityID.Site == SiteID && StartResumePDUIn.ReceivingEntityID.Application == ApplicationID)
+	{
+		//Get associated OpenDISComponent and relay information
+		UDISComponent* DISComponent = GetAssociatedDISComponent(StartResumePDUIn.ReceivingEntityID);
+
+		if (DISComponent != nullptr)
+		{
+			DISComponent->HandleStartResumePDU(StartResumePDUIn);
 		}
 	}
 }

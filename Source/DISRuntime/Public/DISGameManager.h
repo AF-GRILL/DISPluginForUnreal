@@ -101,6 +101,18 @@ public:
 	 */
 	UFUNCTION(BlueprintCallable, Category = "GRILL DIS|Game Manager")
 		void HandleRemoveEntityPDU(FRemoveEntityPDU RemoveEntityPDUIn);
+	/**
+	 * Delegates the given Stop/Freeze PDU to the appropriate DIS Entity actor.
+	 * @param StopFreezePDUIn - The Stop/Freeze PDU to pass to the appropriate entity.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "GRILL DIS|Game Manager")
+		void HandleStopFreezePDU(FStopFreezePDU StopFreezePDUIn);
+	/**
+	 * Delegates the given Start/Resume PDU to the appropriate DIS Entity actor.
+	 * @param StartResumePDUIn - The Start/Resume PDU to pass to the appropriate entity.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "GRILL DIS|Game Manager")
+		void HandleStartResumePDU(FStartResumePDU StartResumePDUIn);
 
 	/**
 	 * Adds a new entry to the DIS Entity map.
