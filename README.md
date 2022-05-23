@@ -2,7 +2,7 @@
 
 # Getting Started
 
-- This plugin was made for Unreal Engine 4.27
+- This plugin was made for Unreal Engine 5
 - Clone this repository
 - Put the unpacked plugin folder in the 'Plugins' folder for the desired project.
     - The plugins folder should be located in the root directory of the project. If not, create one.
