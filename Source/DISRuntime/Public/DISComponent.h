@@ -18,6 +18,8 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FReceivedEntityStateUpdatePDU, FEnti
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FReceivedDetonationPDU, FDetonationPDU, DetonationPDU);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FReceivedFirePDU, FFirePDU, FirePDU);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FReceivedRemoveEntityPDU, FRemoveEntityPDU, RemoveEntityPDU);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FReceivedStopFreezePDU, FStopFreezePDU, StopFreezePDU);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FReceivedStartResumePDU, FStartResumePDU, StartResumePDU);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FGroundClampingUpdate, TArray<FTransform>, ClampTransforms);
 
 DECLARE_STATS_GROUP(TEXT("GRILLDIS_Game"), STATGROUP_DISComponent, STATCAT_Advanced);
@@ -59,6 +61,8 @@ public:
 	void HandleFirePDU(FFirePDU FirePDUIn);
 	void HandleDetonationPDU(FDetonationPDU DetonationPDUIn);
 	void HandleRemoveEntityPDU(FRemoveEntityPDU RemoveEntityPDUIn);
+	void HandleStopFreezePDU(FStopFreezePDU StopFreezePDUIn);
+	void HandleStartResumePDU(FStartResumePDU StartResumePDUIn);
 	void DoDeadReckoning(float DeltaTime);
 
 	/**
@@ -97,6 +101,18 @@ public:
 	 */
 	UPROPERTY(BlueprintAssignable, Category = "GRILL DIS|DIS Component|Event")
 		FReceivedRemoveEntityPDU OnReceivedRemoveEntityPDU;
+	/**
+	 * Called after a Stop/Freeze PDU is received by the component.
+	 * Passes the Stop/Freeze PDU that was received as a parameter.
+	 */
+	UPROPERTY(BlueprintAssignable, Category = "GRILL DIS|DIS Component|Event")
+		FReceivedStopFreezePDU OnReceivedStopFreezePDU;
+	/**
+	 * Called after a Start/Resume PDU is received by the component.
+	 * Passes the Start/Resume PDU that was received as a parameter.
+	 */
+	UPROPERTY(BlueprintAssignable, Category = "GRILL DIS|DIS Component|Event")
+		FReceivedStartResumePDU OnReceivedStartResumePDU;
 	/**
 	 * Called after Ground Clamping is performed by the component.
 	 * Passes ground clamp transforms (if clamping multiple points) as a parameter.

@@ -254,6 +254,16 @@ void UDISComponent::HandleRemoveEntityPDU(FRemoveEntityPDU RemoveEntityPDUIn)
 	OnReceivedRemoveEntityPDU.Broadcast(RemoveEntityPDUIn);
 }
 
+void UDISComponent::HandleStopFreezePDU(FStopFreezePDU StopFreezePDUIn)
+{
+	OnReceivedStopFreezePDU.Broadcast(StopFreezePDUIn);
+}
+
+void UDISComponent::HandleStartResumePDU(FStartResumePDU StartResumePDUIn)
+{
+	OnReceivedStartResumePDU.Broadcast(StartResumePDUIn);
+}
+
 void UDISComponent::DoDeadReckoning(float DeltaTime)
 {
 	DeltaTimeSinceLastPDU += DeltaTime;
