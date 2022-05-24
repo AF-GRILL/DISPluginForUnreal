@@ -43,6 +43,6 @@ public class DISRuntime : ModuleRules
         PublicIncludePaths.Add(Path.Combine(ThirdPartyPath, "include"));
 		
 		PublicDelayLoadDLLs.Add("OpenDIS6.dll");
-		RuntimeDependencies.Add(new RuntimeDependency(Path.Combine(WinPath, "OpenDIS6.dll")));
+		RuntimeDependencies.Add(Path.Combine(WinPath, "OpenDIS6.dll"));
 	}
 }

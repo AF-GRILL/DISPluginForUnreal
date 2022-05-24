@@ -14,7 +14,7 @@ struct FRemoveEntityPDU : public FSimulationManagementFamilyPDU
 	GENERATED_BODY()
 
 	/** The specific and unique entity removal request ID. */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (MinClamp="0", MaxClamp="4294967295"))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (MinClamp="0", MaxClamp="4294967295"), Category = "GRILL DIS|Structs|PDUs|RemoveEntity")
 		int64 RequestID;
 
 	FRemoveEntityPDU() : FSimulationManagementFamilyPDU()

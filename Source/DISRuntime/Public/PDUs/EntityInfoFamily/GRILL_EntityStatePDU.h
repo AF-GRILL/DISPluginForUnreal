@@ -14,43 +14,43 @@ struct FEntityStatePDU : public FEntityInformationFamilyPDU
 	GENERATED_BODY()
 
 	/** The site, application, and unique identifier for this entity. */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|Structs|PDUs|EntityState")
 		FEntityID EntityID;
 	/** Enumeration to distinguish different teams or sides in a scenario. */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|Structs|PDUs|EntityState")
 		EForceID ForceID;
 	/** The location of the entity in ECEF - double (64-bit) precision */
 	UPROPERTY()
 		TArray<double> EntityLocationDouble;
 	/** The location of the entity in ECEF - floating point (32-bit) precision */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|Structs|PDUs|EntityState")
 		FVector EntityLocation;
 	/** The orientation of the entity in Psi (Yaw), Theta (Pitch), Phi (Roll) - in radians */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|Structs|PDUs|EntityState")
 		FRotator EntityOrientation;
 	/** String representing the name of the entity (Maximum 11 characters). */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|Structs|PDUs|EntityState")
 		FString Marking;
 	/** The entity's linear velocity in meters per second. */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|Structs|PDUs|EntityState")
 		FVector EntityLinearVelocity;
 	/** The dead reckoning algorithm to use for the entity accompanied by the required additional parameters. */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|Structs|PDUs|EntityState")
 		FDeadReckoningParameters DeadReckoningParameters;
 	/** The type of the entity */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|Structs|PDUs|EntityState")
 		FEntityType EntityType;
 	/** A series of enumerations used to describe the appearance of the entity according to SISO-REF-010-2015 UIDs 31-43. */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|Structs|PDUs|EntityState")
 		int32 EntityAppearance;
 	/** A series of enumerations used to describe the capabilities of the entity according to SISO-REF-010-2015 UID 55. */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|Structs|PDUs|EntityState")
 		int32 Capabilities;
 	/** The type of the entity as it should appear to entities of other forces. */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|Structs|PDUs|EntityState")
 		FEntityType AlternativeEntityType;
 	/** A set of parameter values for each variable parameter record that is included. */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|Structs|PDUs|EntityState")
 		TArray<FArticulationParameters> ArticulationParameters;
 
 	FEntityStatePDU() : FEntityInformationFamilyPDU()

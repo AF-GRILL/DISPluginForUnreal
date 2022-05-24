@@ -14,10 +14,10 @@ struct FWarfareFamilyPDU : public FPDU
 	GENERATED_BODY()
 
 	/** The ID of the firing entity */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|Structs|PDUs|WarfareFamily")
 		FEntityID FiringEntityID;
 	/** The ID of the intended target if known */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|Structs|PDUs|WarfareFamily")
 		FEntityID TargetEntityID; 
 	
 	FWarfareFamilyPDU() : FPDU()

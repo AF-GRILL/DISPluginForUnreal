@@ -27,15 +27,15 @@ struct FSendSocketSettings
 	GENERATED_BODY()
 
 	/** Connection type to use for this send socket. */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|UDP Subsystem|Structs")
 		EConnectionType SendSocketConnectionType;
 
 	/** Friendly description of what this socket is to be used for. */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|UDP Subsystem|Structs")
 		FString SocketDescription;
 
 	/** Byte size the buffer of the socket should have. Defaults to roughly 2MB. */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|UDP Subsystem|Structs")
 		int32 BufferSize;
 
 	FSendSocketSettings()
@@ -54,23 +54,23 @@ struct FReceiveSocketSettings
 	GENERATED_BODY()
 
 	/** Friendly description of what this socket is to be used for. */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|UDP Subsystem|Structs")
 		FString SocketDescription;
 
 	/** Byte size the buffer of the socket should have. Defaults to roughly 2MB. */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|UDP Subsystem|Structs")
 		int32 BufferSize;
 
 	/** Whether or not multicast should be used with this receive socket. */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|UDP Subsystem|Structs")
 		bool bUseMulticast;
 
 	/** Set to true to process packets sent by the local machine. */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|UDP Subsystem|Structs")
 		bool bAllowLoopback;
 
 	/** Whether we should process our data on the gamethread or the udp thread. */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|UDP Subsystem|Structs")
 		bool bReceiveDataOnGameThread;
 
 	FReceiveSocketSettings()

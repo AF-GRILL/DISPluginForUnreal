@@ -1,6 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "UDPSubsystem.h"
+#include "Async/Async.h"
 #include "DISRuntimeSettings.h"
 
 DEFINE_LOG_CATEGORY(LogUDPSubsystem);
