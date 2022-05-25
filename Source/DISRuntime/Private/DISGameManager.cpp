@@ -231,7 +231,7 @@ void ADISGameManager::HandleRemoveEntityPDU(FRemoveEntityPDU RemoveEntityPDUIn)
 
 void ADISGameManager::HandleStopFreezePDU(FStopFreezePDU StopFreezePDUIn)
 {
-	//Verify that we are the appropriate sim to handle the RemoveEntityPDU
+	//Verify that we are the appropriate sim to handle the StopFreezePDU
 	if (StopFreezePDUIn.ExerciseID == ExerciseID && StopFreezePDUIn.ReceivingEntityID.Site == SiteID && StopFreezePDUIn.ReceivingEntityID.Application == ApplicationID)
 	{
 		//Get associated OpenDISComponent and relay information
@@ -246,7 +246,7 @@ void ADISGameManager::HandleStopFreezePDU(FStopFreezePDU StopFreezePDUIn)
 
 void ADISGameManager::HandleStartResumePDU(FStartResumePDU StartResumePDUIn)
 {
-	//Verify that we are the appropriate sim to handle the RemoveEntityPDU
+	//Verify that we are the appropriate sim to handle the StartResumePDU
 	if (StartResumePDUIn.ExerciseID == ExerciseID && StartResumePDUIn.ReceivingEntityID.Site == SiteID && StartResumePDUIn.ReceivingEntityID.Application == ApplicationID)
 	{
 		//Get associated OpenDISComponent and relay information
