@@ -1,4 +1,4 @@
-// Copyright Epic Games, Inc. All Rights Reserved.
+// Copyright 2022 Gaming Research Integration for Learning Lab. All Rights Reserved.
 
 #pragma once
 
