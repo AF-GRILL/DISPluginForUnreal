@@ -1,3 +1,5 @@
+// Copyright 2022 Gaming Research Integration for Learning Lab. All Rights Reserved.
+
 #pragma once
 
 //All low level custom PDUs
