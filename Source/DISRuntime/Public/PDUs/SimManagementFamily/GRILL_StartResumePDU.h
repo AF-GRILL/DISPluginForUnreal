@@ -14,13 +14,13 @@ struct FStartResumePDU : public FSimulationManagementFamilyPDU
 	GENERATED_BODY()
 
 	/** The  real-world time at which the entity/exercise is to start/resume in the exercise. */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|Structs|PDUs|StartResume")
 		FClockTime RealWorldTime;
 	/** The shared time being simulated within a simulation exercise. */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|Structs|PDUs|StartResume")
 		FClockTime SimulationTime;
 	/** The specific and unique start/resume request being made by the simulation. */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|Structs|PDUs|StartResume")
 		int64 RequestID;
 
 	FStartResumePDU() : FSimulationManagementFamilyPDU()

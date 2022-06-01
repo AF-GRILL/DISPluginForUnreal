@@ -3,6 +3,10 @@
 #include "DISComponent.h"
 
 #include "DIS_BPFL.h"
+#include "CollisionQueryParams.h"
+#include "Camera/PlayerCameraManager.h"
+#include "Engine/World.h"
+#include "GameFramework/PlayerController.h"
 #include "Kismet/KismetMathLibrary.h"
 
 DEFINE_LOG_CATEGORY(LogDISComponent);
@@ -19,7 +23,7 @@ void UDISComponent::BeginPlay()
 {
 	Super::BeginPlay();
 
-	GeoReferencingSystem = AGeoReferencingSystem::GetGeoReferencingSystem(GetWorld());
+	GeoReferencingSystem = AGeoReferencingSystem::GetGeoReferencingSystem(Cast<UObject>(GetWorld()));
 }
 
 bool UDISComponent::GetLocalEulerAngles(TArray<uint8> OtherDeadReckoningParameters, FRotator& LocalRotator)

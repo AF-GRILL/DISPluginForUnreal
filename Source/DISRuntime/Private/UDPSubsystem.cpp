@@ -1,6 +1,7 @@
 // Copyright 2022 Gaming Research Integration for Learning Lab. All Rights Reserved.
 
 #include "UDPSubsystem.h"
+#include "Async/Async.h"
 #include "DISRuntimeSettings.h"
 
 DEFINE_LOG_CATEGORY(LogUDPSubsystem);

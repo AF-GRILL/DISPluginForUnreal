@@ -13,13 +13,13 @@ struct FDISClassEnumStruct
 {
 	GENERATED_BODY()
 
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, Category = "GRILL DIS|Structs")
 		FString FriendlyName;
 
-	UPROPERTY(EditAnywhere, meta = (MustImplement = "DISInterface"))
+	UPROPERTY(EditAnywhere, meta = (MustImplement = "DISInterface"), Category = "GRILL DIS|Structs")
 		TSoftClassPtr<AActor> DISEntity;
 
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, Category = "GRILL DIS|Structs")
 		TArray<FEntityType> AssociatedDISEnumerations;
 };
 

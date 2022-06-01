@@ -14,17 +14,19 @@
 	"IsBetaVersion": true,
 	"IsExperimentalVersion": false,
 	"CanContainContent": true,
-	"Installed": false,
+	"Installed": true,
 	"Modules": [
 		{
 			"Name": "DISRuntime",
 			"Type": "Runtime",
-			"LoadingPhase": "Default"
+			"LoadingPhase": "Default",
+			"WhitelistPlatforms": [ "Win64" ]
 		},
 		{
 			"Name": "DISEditor",
 			"Type": "Editor",
-			"LoadingPhase": "PostEngineInit"
+			"LoadingPhase": "PostEngineInit",
+			"WhitelistPlatforms": [ "Win64" ]
 		}
 	],
 	"Plugins": [

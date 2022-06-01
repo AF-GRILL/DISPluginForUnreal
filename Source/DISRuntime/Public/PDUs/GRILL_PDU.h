@@ -17,7 +17,7 @@ struct FPDU
 	UPROPERTY()
 		uint8 ProtocolVersion;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|Structs|PDUs")
 		uint8 ExerciseID;
 
 	/** Type of pdu, unique for each PDU struct */

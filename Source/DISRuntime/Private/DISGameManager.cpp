@@ -3,6 +3,7 @@
 #include "DISGameManager.h"
 #include "Kismet/GameplayStatics.h"
 #include "DISComponent.h"
+#include "Engine/Engine.h"
 #include "PDUProcessor.h"
 
 DEFINE_LOG_CATEGORY(LogDISGameManager);
@@ -19,7 +20,7 @@ ADISGameManager* ADISGameManager::GetDISGameManager(UObject* WorldContextObject)
 	if (UWorld* World = GEngine->GetWorldFromContextObject(WorldContextObject, EGetWorldErrorMode::LogAndReturnNull))
 	{
 		TArray<AActor*> Actors;
-		UGameplayStatics::GetAllActorsOfClass(World, ADISGameManager::StaticClass(), Actors);
+		UGameplayStatics::GetAllActorsOfClass(Cast<UObject>(World), ADISGameManager::StaticClass(), Actors);
 		int NbActors = Actors.Num();
 		if (NbActors == 0)
 		{
