@@ -26,13 +26,6 @@
 	- This actor stores the DIS Enumeration to class mappings and other various DIS information.
 	- More information on the actor itself can be found in the **DIS Game Manager section** below
 
-# Project Settings
-
-- Access the GRILL DIS for Unreal project settings by clicking on the 'GRILL DIS' button in the Level Editor toolbar or go to Project Settings > GRILL DIS.
-- There are currently no settings inside of the DIS project settings.
-
-![DISProjectSettingsButton](Resources/ReadMeImages/DISProjectSettingsButton.png)
-
 # UDP Subsystem
 
 - The UDP Subsystem is what is used to control UDP socket connections.
