@@ -21,12 +21,6 @@
 			"Type": "Runtime",
 			"LoadingPhase": "Default",
 			"WhitelistPlatforms": [ "Win64" ]
-		},
-		{
-			"Name": "DISEditor",
-			"Type": "Editor",
-			"LoadingPhase": "PostEngineInit",
-			"WhitelistPlatforms": [ "Win64" ]
 		}
 	],
 	"Plugins": [
