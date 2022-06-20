@@ -20,6 +20,6 @@ class DISRUNTIME_API IDISInterface
 	GENERATED_BODY()
 
 public:
-	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "DIS Interface")
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "GRILL DIS|DIS Interface")
 		UDISComponent* GetActorDISComponent();
 };

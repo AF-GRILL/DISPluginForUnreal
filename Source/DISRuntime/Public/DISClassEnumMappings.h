@@ -33,6 +33,6 @@ class DISRUNTIME_API UDISClassEnumMappings : public UObject
 
 public:
 
-	UPROPERTY(EditAnywhere, Meta = (DisplayName = "DIS Class Enumeration Mappings", Tooltip = "Mappings between DIS enumerations and associated actors.", TitleProperty = "FriendlyName"), Category = "GRILL_DIS")
+	UPROPERTY(EditAnywhere, Meta = (DisplayName = "DIS Class Enumeration Mappings", Tooltip = "Mappings between DIS enumerations and associated actors.", TitleProperty = "FriendlyName"), Category = "GRILL DIS")
 		TArray<FDISClassEnumStruct> DISClassEnumArray;
 };
