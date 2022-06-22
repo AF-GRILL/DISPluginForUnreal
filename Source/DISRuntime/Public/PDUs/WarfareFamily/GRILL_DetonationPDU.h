@@ -109,13 +109,19 @@ struct FDetonationPDU : public FWarfareFamilyPDU
 		{
 			DIS::ArticulationParameter tempArtParam = DetonationPDUIn->getArticulationParameters()[i];
 			FArticulationParameters newArtParam;
-			newArtParam.ChangeIndicator = tempArtParam.getChangeIndicator();
-			newArtParam.ParameterType = tempArtParam.getParameterType();
 			newArtParam.ParameterTypeDesignator = tempArtParam.getParameterTypeDesignator();
-			newArtParam.ParameterValue = tempArtParam.getParameterValue();
+			newArtParam.ChangeIndicator = tempArtParam.getChangeIndicator();
 			newArtParam.PartAttachedTo = tempArtParam.getPartAttachedTo();
+			newArtParam.ParameterType = tempArtParam.getParameterType();
 
-			ArticulationParameters.Add(newArtParam);
+			if (newArtParam.ParameterTypeDesignator == 0)
+			{
+				newArtParam.ParameterValue = tempArtParam.getParameterValue();
+			}
+			else
+			{
+				newArtParam.AttachedPartType = tempArtParam.getParameterValue();
+			}
 		}
 	}
 
