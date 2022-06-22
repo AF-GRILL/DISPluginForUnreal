@@ -105,6 +105,8 @@ struct FEntityStateUpdatePDU : public FEntityInformationFamilyPDU
 			{
 				newArtParam.AttachedPartType = tempArtParam.getParameterValue();
 			}
+
+			ArticulationParameters.Add(newArtParam);
 		}
 	}
 
