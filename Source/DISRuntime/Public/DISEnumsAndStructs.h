@@ -510,6 +510,34 @@ struct FEntityType
 		this->Extra = EntityType.getExtra();
 	}
 
+	FEntityType(double EntityType)
+	{
+		uint8_t* EntityTypeInBytes = reinterpret_cast<uint8_t*>(&EntityType);
+
+		if (sizeof(EntityTypeInBytes) != 8)
+		{
+			UE_LOG(LogTemp, Error, TEXT("Failed to convert double to Entity Type. Resorting to default values."));
+
+			EntityKind = -1;
+			Domain = -1;
+			Country = -1;
+			Category = -1;
+			Subcategory = -1;
+			Specific = -1;
+			Extra = -1;
+
+			return;
+		}
+
+		EntityKind = EntityTypeInBytes[7];
+		Domain = EntityTypeInBytes[6];
+		Country = ((uint16_t)EntityTypeInBytes[5] << 8) | EntityTypeInBytes[4];
+		Category = EntityTypeInBytes[3];
+		Subcategory = EntityTypeInBytes[2];
+		Specific = EntityTypeInBytes[1];
+		Extra = EntityTypeInBytes[0];
+	}
+
 	FEntityType FillWildcards(const FEntityType Other)
 	{
 		if (EntityKind == -1)
@@ -609,6 +637,23 @@ struct FEntityType
 		return BitString;
 	}
 
+	double ToDouble() const
+	{
+		uint8_t* temp = new uint8[8];
+		temp[0] = Extra;
+		temp[1] = Specific;
+		temp[2] = Subcategory;
+		temp[3] = Category;
+		temp[4] = Country & 0xFF;
+		temp[5] = Country >> 8;
+		temp[6] = Domain;
+		temp[7] = EntityKind;
+
+		double EntityTypeAsDouble = reinterpret_cast<double&>(*temp);
+
+		return EntityTypeAsDouble;
+	}
+
 	FString ToBitString() const
 	{
 		uint64 BitString = ToUInt64();
@@ -658,12 +703,15 @@ struct FArticulationParameters
 	/** The ID of the part to which this part is attached */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ClampMin = "0", ClampMax = "65535"), Category = "GRILL DIS|Structs")
 		int32 PartAttachedTo;
-	/** The type class (multiples of 32 in the range 1,024-4,294,967,264) and type metric (0-31) of the articulated part. */
+	/** The type class (multiples of 32 in the range 1,024 - 4,294,967,264) and type metric (0 - 31) of the articulated part. */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|Structs")
 		int32 ParameterType;
-	/** The parameter value as defined by the ParameterType variable */
+	/** The parameter value as defined by the ParameterType variable. Will only be utilized if the Parameter Type Designator is an articulated part (0). */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|Structs")
 		float ParameterValue;
+	/** The type of the entity. Will only be utilized if the Parameter Type Designator is an attached part (1). */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|Structs")
+		FEntityType AttachedPartType;
 
 	FArticulationParameters()
 	{
@@ -681,7 +729,16 @@ struct FArticulationParameters
 		OutParam.setChangeIndicator(ChangeIndicator);
 		OutParam.setPartAttachedTo(PartAttachedTo);
 		OutParam.setParameterType(ParameterType);
-		OutParam.setParameterValue(ParameterValue);
+
+		if (ParameterTypeDesignator == 0)
+		{
+			OutParam.setParameterValue(ParameterValue);
+		}
+		else
+		{
+			OutParam.setParameterValue(AttachedPartType.ToDouble());
+		}
+
 		return OutParam;
 	}
 };
@@ -694,16 +751,16 @@ struct FBurstDescriptor
 	/** The type of the entity */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|Structs")
 		FEntityType EntityType;
-	/** The type of warhead (0-65,535) */
+	/** The type of warhead (0 - 65,535) */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ClampMin = "0", ClampMax = "65535"), Category = "GRILL DIS|Structs")
 		int32 Warhead;
-	/** The type of fuse (0-65,535) */
+	/** The type of fuse (0 - 65,535) */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ClampMin = "0", ClampMax = "65535"), Category = "GRILL DIS|Structs")
 		int32 Fuse;
-	/** The number of bursts represented (0-65,535) */
+	/** The number of bursts represented (0 - 65,535) */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ClampMin = "0", ClampMax = "65535"), Category = "GRILL DIS|Structs")
 		int32 Quantity;
-	/** The number of rounds per minute for the munition (0-65,535) */
+	/** The number of rounds per minute for the munition (0 - 65,535) */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ClampMin = "0", ClampMax = "65535"), Category = "GRILL DIS|Structs")
 		int32 Rate;
 
@@ -732,7 +789,7 @@ struct FDeadReckoningParameters
 {
 	GENERATED_BODY()
 
-	/** The type of dead reackoning algorithm used by the entity (0-9) */
+	/** The type of dead reackoning algorithm used by the entity (0 - 9) */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ClampMin = "0", ClampMax = "9"), Category = "GRILL DIS|Structs")
 		uint8 DeadReckoningAlgorithm;
 	/** Field used to specify other dead reckoning parameters which are currently undefined */
