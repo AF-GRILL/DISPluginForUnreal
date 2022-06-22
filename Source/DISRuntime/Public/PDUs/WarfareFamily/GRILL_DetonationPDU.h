@@ -122,6 +122,8 @@ struct FDetonationPDU : public FWarfareFamilyPDU
 			{
 				newArtParam.AttachedPartType = tempArtParam.getParameterValue();
 			}
+
+			ArticulationParameters.Add(newArtParam);
 		}
 	}
 
