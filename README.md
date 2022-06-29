@@ -146,11 +146,21 @@
     - DIS Timeout
 		- How long to wait after an Entity State PDU is received before deleting. Gets refreshed after an Entity State PDU is received.
     - Entity Type
+		- This record specifies the kind of entity, the country of design, the domain, the specific identification of the entity, and any extra information necessary for describing the entity.
         - Setting this in the component is mainly used for sending DIS data.
-        - This value get set when an Entity State PDU or Entity State Update PDU is received for the associated entity.
+        - This value gets set when an Entity State PDU or Entity State Update PDU is received for the associated entity.
     - Entity ID
+		- This record specifies the site ID, application ID, and entity ID fields. They combine to form a unique identifier of the entity in the exercise.
         - Setting this in the component is mainly used for sending DIS data.
-        - This value get set when an Entity State PDU or Entity State Update PDU is received for the associated entity.
+        - This value gets set when an Entity State PDU or Entity State Update PDU is received for the associated entity.
+    - Entity Force ID
+		- This field distinguishes the different teams or sides in a DIS exercise.
+        - Setting this in the component is mainly used for sending DIS data.
+        - This value gets set when an Entity State PDU or Entity State Update PDU is received for the associated entity.
+    - Entity Marking
+		- This record is used to specify the friendly name of the entity to be interpreted for display.
+        - Setting this in the component is mainly used for sending DIS data.
+        - This value gets set when an Entity State PDU or Entity State Update PDU is received for the associated entity.
 	- DIS Culling Mode
 		- Culls DIS packets based on settings
 			- Options:
@@ -168,7 +178,13 @@
 	- Dead Reckoning Smoothing Period Seconds
 		- Time in seconds that smoothing should take place.
     - Perform Ground Clamping
-        - Whether or not ground clamping should be perfoemd.
+        - Performs ground clamping based on settings
+			- Options:
+				- None
+				- Ground Clamp with DIS Options
+					- Perform ground clamping. Ignore ground clamping for munitions and non-ground entity types.
+				- Always Ground Clamp
+					- Always perform ground clamping regardless of entity type.
     - Ground Clamping Collision Channel
         - The collision channel that should be used for ground clamping.
 
