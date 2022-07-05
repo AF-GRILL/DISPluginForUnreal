@@ -125,7 +125,6 @@ public:
 
 	/**
 	 * Clamps an entity to the ground. Should call OnGroundClampingUpdate event when finished.
-	 * Returns whether or not ground clamping was successful.
 	 */	
 	UFUNCTION(BlueprintNativeEvent, Category = "GRILL DIS|DIS Component")
 		void GroundClamping();
