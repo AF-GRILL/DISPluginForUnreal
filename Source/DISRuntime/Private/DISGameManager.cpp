@@ -2,15 +2,16 @@
 
 #include "DISGameManager.h"
 #include "Kismet/GameplayStatics.h"
-#include "DISComponent.h"
+#include "DIS_BPFL.h"
 #include "Engine/Engine.h"
 #include "PDUProcessor.h"
 
 DEFINE_LOG_CATEGORY(LogDISGameManager);
+const FName ADISGameManager::SPAWNED_FROM_NETWORK_TAG = FName("SPAWNED_FROM_NETWORK");
 
 ADISGameManager::ADISGameManager() 
 {
-	PrimaryActorTick.bCanEverTick = true;
+	PrimaryActorTick.bCanEverTick = true;	
 }
 
 ADISGameManager* ADISGameManager::GetDISGameManager(UObject* WorldContextObject)
@@ -52,6 +53,8 @@ void ADISGameManager::BeginPlay()
 	GetGameInstance()->GetSubsystem<UPDUProcessor>()->OnStopFreezePDUProcessed.AddDynamic(this, &ADISGameManager::HandleStopFreezePDU);
 	GetGameInstance()->GetSubsystem<UPDUProcessor>()->OnStartResumePDUProcessed.AddDynamic(this, &ADISGameManager::HandleStartResumePDU);
 
+	GeoReferencingSystem = AGeoReferencingSystem::GetGeoReferencingSystem(Cast<UObject>(GetWorld()));
+
 	//Auto connect sockets if needed
 	if (AutoConnectReceiveAddresses) 
 	{
@@ -77,7 +80,7 @@ void ADISGameManager::BeginPlay()
 		{
 			for (FEntityType EntityType : DISMapping.AssociatedDISEnumerations)
 			{
-				//If an actor was not found -- check to see if there is an associated actor for the entity type
+				//Check to see if there is an associated actor for the entity type already
 				TSoftClassPtr<AActor>* associatedSoftClassReference = DISClassMappings.Find(EntityType);
 
 				if (associatedSoftClassReference != nullptr)
@@ -306,22 +309,28 @@ void ADISGameManager::SpawnNewEntityFromEntityState(FEntityStatePDU EntityStateP
 	//If an actor has been found, spawn one and relay information to the associated component
 	if (associatedClass != nullptr)
 	{
-		FActorSpawnParameters spawnParams = FActorSpawnParameters();
-		spawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-		AActor* spawnedActor = GetWorld()->SpawnActor<AActor>(associatedClass, spawnParams);
+		FVector spawnLocation;
+		FRotator spawnRotation;
+		UDIS_BPFL::GetUnrealLocationAndOrientationFromEntityStatePdu(EntityStatePDUIn, GeoReferencingSystem, spawnLocation, spawnRotation);
+
+		FTransform spawnTransform = FTransform(spawnRotation, spawnLocation);
+
+		//Defer spawning of the actor. Allows an uncompleted actor reference to be used to add a tag to prior to finishing spawning of the actor.
+		AActor* spawnedActor = GetWorld()->SpawnActorDeferred<AActor>(associatedClass, spawnTransform, nullptr, nullptr, ESpawnActorCollisionHandlingMethod::AlwaysSpawn);
+		spawnedActor->Tags.Add(SPAWNED_FROM_NETWORK_TAG);
+		UGameplayStatics::FinishSpawningActor(spawnedActor, spawnTransform);
 
 		if (spawnedActor != nullptr)
 		{
+			//Add actor to the map
+			AddDISEntityToMap(EntityStatePDUIn.EntityID, spawnedActor);
 			spawnedActor->OnDestroyed.AddDynamic(this, &ADISGameManager::HandleOnDISEntityDestroyed);
 
 			//Get DIS Component of the newly spawned actor
 			UDISComponent* DISComponent = IDISInterface::Execute_GetActorDISComponent(spawnedActor);
-			//Add actor to the map
-			AddDISEntityToMap(EntityStatePDUIn.EntityID, spawnedActor);
 
 			if (DISComponent != nullptr)
 			{
-				DISComponent->SpawnedFromNetwork = true;
 				DISComponent->HandleEntityStatePDU(EntityStatePDUIn);
 			}
 		}
@@ -349,10 +358,28 @@ UDISComponent* ADISGameManager::GetAssociatedDISComponent(FEntityID EntityIDIn)
 	return DISComponent;
 }
 
-void ADISGameManager::AddDISEntityToMap(FEntityID EntityIDToAdd, AActor* EntityToAdd)
+bool ADISGameManager::AddDISEntityToMap(FEntityID EntityIDToAdd, AActor* EntityToAdd)
 {
+	bool successful = false;
+
+	if (!EntityToAdd)
+	{
+		UE_LOG(LogDISGameManager, Warning, TEXT("Given Game Object to add to DIS Entity ID map was null. Skipping adding it..."));
+		return successful;
+	}
+
+	//Check to see if there is an associated actor for the entity ID already
+	auto associatedActor = RawDISActorMappings.find(EntityIDToAdd);
+	if (associatedActor != RawDISActorMappings.end())
+	{
+		UE_LOG(LogDISGameManager, Warning, TEXT("A DIS Entity ID mapping already exists for %s and is linked to %s. This entity ID will now point to: %s"), *EntityIDToAdd.ToString(), *associatedActor->second->GetActorLabel(), *EntityToAdd->GetActorLabel());
+	}
+
 	DISActorMappings.Add(EntityIDToAdd, EntityToAdd);
 	RawDISActorMappings.insert_or_assign(EntityIDToAdd, EntityToAdd);
+
+	successful = true;
+	return successful;
 }
 
 bool ADISGameManager::RemoveDISEntityFromMap(FEntityID EntityIDToRemove)

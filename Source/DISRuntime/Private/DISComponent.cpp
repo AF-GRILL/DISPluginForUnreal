@@ -3,6 +3,7 @@
 #include "DISComponent.h"
 
 #include "DIS_BPFL.h"
+#include "DISGameManager.h"
 #include "CollisionQueryParams.h"
 #include "Camera/PlayerCameraManager.h"
 #include "Engine/World.h"
@@ -14,8 +15,25 @@ DEFINE_LOG_CATEGORY(LogDISComponent);
 // Sets default values for this component's properties
 UDISComponent::UDISComponent()
 {
+	bWantsInitializeComponent = true;
 	PrimaryComponentTick.bCanEverTick = true;
 	PrimaryComponentTick.bStartWithTickEnabled = false;
+}
+
+void UDISComponent::InitializeComponent()
+{
+	Super::InitializeComponent();
+
+	//Check if the owning actor was tagged as being spawned from the network
+	if (GetOwner()->Tags.Contains(ADISGameManager::SPAWNED_FROM_NETWORK_TAG))
+	{
+		SpawnedFromNetwork = true;
+		GetOwner()->Tags.Remove(ADISGameManager::SPAWNED_FROM_NETWORK_TAG);
+	}
+	else
+	{
+		SpawnedFromNetwork = false;
+	}
 }
 
 // Called when the game starts
@@ -87,7 +105,8 @@ glm::dvec3 UDISComponent::CalculateDeadReckonedPosition(const glm::dvec3 Positio
 glm::dmat3 UDISComponent::CreateDeadReckoningMatrix(glm::dvec3 AngularVelocityVector, double DeltaTime)
 {
 	double AngularVelocityMagnitude = glm::length(AngularVelocityVector);
-	if (AngularVelocityMagnitude == 0) {
+	if (AngularVelocityMagnitude == 0)
+	{
 		AngularVelocityMagnitude = 1e-5;
 		AngularVelocityVector += glm::dvec3(1e-5);
 	}
@@ -634,13 +653,21 @@ void UDISComponent::GroundClamping_Implementation()
 		SCOPE_CYCLE_COUNTER(STAT_GroundClamping);
 
 		//Set clamp direction using the North East Down down vector
-		FVector clampDirection;
+		FVector clampDirection = FVector::DownVector;
 
-		FVector eastVector;
-		FVector northVector;
+		FVector eastVector = FVector::RightVector;
+		FVector northVector = FVector::ForwardVector;
 		FCartesianCoordinates ecefCartCoords = FCartesianCoordinates(MostRecentDeadReckonedEntityStatePDU.EntityLocationDouble[0],
 			MostRecentDeadReckonedEntityStatePDU.EntityLocationDouble[1], MostRecentDeadReckonedEntityStatePDU.EntityLocationDouble[2]);
-		GeoReferencingSystem->GetENUVectorsAtECEFLocation(ecefCartCoords, eastVector, northVector, clampDirection);
+
+		if (IsValid(GeoReferencingSystem))
+		{
+			GeoReferencingSystem->GetENUVectorsAtECEFLocation(ecefCartCoords, eastVector, northVector, clampDirection);
+		}
+		else
+		{
+			UE_LOG(LogDISComponent, Warning, TEXT("Invalid GeoReferencing variable in DISComponent. Error in calculating East, North, Down vectors for Ground Clamp location. Utilizing default East, North, Down vectors for calculation."));
+		}
 
 		clampDirection *= -1;
 

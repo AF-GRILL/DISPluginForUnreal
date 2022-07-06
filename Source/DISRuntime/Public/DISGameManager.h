@@ -63,6 +63,8 @@ class DISRUNTIME_API ADISGameManager : public AInfo
 public:
 	ADISGameManager();
 
+	static const FName SPAWNED_FROM_NETWORK_TAG;
+
 	/**
 	* Gets a reference to the DIS Game Manager actor in the current open level.
 	* Returns the reference to the Game Manager if one is found. Returns null if nothing is found or if multiple exist in the level.
@@ -116,11 +118,12 @@ public:
 
 	/**
 	 * Adds a new entry to the DIS Entity map.
+	 * Returns whether or not the addition to the map was successful.
 	 * @param EntityIDToAdd - The Entity ID to key the given entity under in the map.
 	 * @param EntityToAdd - The entity to add to the entity map.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "GRILL DIS|Game Manager")
-		void AddDISEntityToMap(FEntityID EntityIDToAdd, AActor* EntityToAdd);
+		bool AddDISEntityToMap(FEntityID EntityIDToAdd, AActor* EntityToAdd);
 	/**
 	 * Removes the entry correlating to the given Entity ID from the DIS Entity map.
 	 * Returns whether or not an entry was removed.
@@ -182,4 +185,5 @@ protected:
 private:
 	void SpawnNewEntityFromEntityState(FEntityStatePDU EntityStatePDUIn);
 	UDISComponent* GetAssociatedDISComponent(FEntityID EntityIDIn);
+	AGeoReferencingSystem* GeoReferencingSystem;
 };
