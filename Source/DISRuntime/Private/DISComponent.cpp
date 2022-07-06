@@ -3,6 +3,7 @@
 #include "DISComponent.h"
 
 #include "DIS_BPFL.h"
+#include "DISGameManager.h"
 #include "CollisionQueryParams.h"
 #include "Camera/PlayerCameraManager.h"
 #include "Engine/World.h"
@@ -14,8 +15,25 @@ DEFINE_LOG_CATEGORY(LogDISComponent);
 // Sets default values for this component's properties
 UDISComponent::UDISComponent()
 {
+	bWantsInitializeComponent = true;
 	PrimaryComponentTick.bCanEverTick = true;
 	PrimaryComponentTick.bStartWithTickEnabled = false;
+}
+
+void UDISComponent::InitializeComponent()
+{
+	Super::InitializeComponent();
+
+	//Check if the owning actor was tagged as being spawned from the network
+	if (GetOwner()->Tags.Contains(ADISGameManager::SPAWNED_FROM_NETWORK_TAG))
+	{
+		SpawnedFromNetwork = true;
+		GetOwner()->Tags.Remove(ADISGameManager::SPAWNED_FROM_NETWORK_TAG);
+	}
+	else
+	{
+		SpawnedFromNetwork = false;
+	}
 }
 
 // Called when the game starts
@@ -239,7 +257,7 @@ void UDISComponent::UpdateCommonEntityStateInfo(FEntityStatePDU NewEntityStatePD
 	EntityID = NewEntityStatePDU.EntityID;
 
 	GetOwner()->SetLifeSpan(DISTimeoutSeconds);
-	
+
 	NumberEntityStatePDUsReceived++;
 }
 
@@ -271,7 +289,7 @@ void UDISComponent::HandleStartResumePDU(FStartResumePDU StartResumePDUIn)
 void UDISComponent::DoDeadReckoning(float DeltaTime)
 {
 	DeltaTimeSinceLastPDU += DeltaTime;
-	
+
 	if (PerformDeadReckoning && SpawnedFromNetwork)
 	{
 		SCOPE_CYCLE_COUNTER(STAT_DoDeadReckoning);
@@ -325,7 +343,8 @@ bool UDISComponent::DeadReckoning(FEntityStatePDU EntityPDUToDeadReckon, float D
 	DeadReckonedEntityPDU = EntityPDUToDeadReckon;
 	bool bSupported = true;
 
-	switch (EntityPDUToDeadReckon.DeadReckoningParameters.DeadReckoningAlgorithm) {
+	switch (EntityPDUToDeadReckon.DeadReckoningParameters.DeadReckoningAlgorithm)
+	{
 	case 1: // Static
 	{
 		FRotator LocalRotator;
@@ -458,7 +477,7 @@ bool UDISComponent::DeadReckoning(FEntityStatePDU EntityPDUToDeadReckon, float D
 	{
 		FRotator LocalRotator;
 		bool bUseOtherParams = GetLocalEulerAngles(EntityPDUToDeadReckon.DeadReckoningParameters.OtherParameters, LocalRotator);
-		
+
 		auto InitialPosition = glm::dvec3(EntityPDUToDeadReckon.EcefLocation.X, EntityPDUToDeadReckon.EcefLocation.Y, EntityPDUToDeadReckon.EcefLocation.Z);
 		auto BodyVelocityVector = glm::dvec3(EntityPDUToDeadReckon.EntityLinearVelocity.X, EntityPDUToDeadReckon.EntityLinearVelocity.Y, EntityPDUToDeadReckon.EntityLinearVelocity.Z);
 		auto BodyLinearAccelerationVector = glm::dvec3(EntityPDUToDeadReckon.DeadReckoningParameters.EntityLinearAcceleration.X,
@@ -600,11 +619,19 @@ void UDISComponent::GroundClamping_Implementation()
 		SCOPE_CYCLE_COUNTER(STAT_GroundClamping);
 
 		//Set clamp direction using the North East Down down vector
-		FVector clampDirection;
+		FVector clampDirection = FVector::DownVector;
 
-		FVector eastVector;
-		FVector northVector;
-		GeoReferencingSystem->GetENUVectorsAtECEFLocation(MostRecentDeadReckonedEntityStatePDU.EcefLocation, eastVector, northVector, clampDirection);
+		FVector eastVector = FVector::RightVector;
+		FVector northVector = FVector::ForwardVector;
+
+		if (IsValid(GeoReferencingSystem))
+		{
+			GeoReferencingSystem->GetENUVectorsAtECEFLocation(MostRecentDeadReckonedEntityStatePDU.EcefLocation, eastVector, northVector, clampDirection);
+		}
+		else
+		{
+			UE_LOG(LogDISComponent, Warning, TEXT("Invalid GeoReferencing variable in DISComponent. Error in calculating East, North, Down vectors for Ground Clamp location. Utilizing default East, North, Down vectors for calculation."));
+		}
 
 		clampDirection *= -1;
 
