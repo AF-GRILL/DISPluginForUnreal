@@ -74,7 +74,7 @@
     - **Exercise ID**: The exercise ID of the DIS sim this project will be associated with.
     - **Site ID**: The site ID of this DIS sim.
     - **Application ID**: The application ID of this DIS sim. 
-    - **Auto Connect Send Addresses**: Whether or not the UDP sockets for sending DIS packets should be auto connected.
+    - **Auto Connect Send Addresses**: Whether or not the UDP socket(s) for sending DIS packets should be auto connected.
     - **Auto Connect Send Sockets**: The send sockets to automatically setup if 'Auto Connect Send Addresses' is enabled.
         - IP Address
             - The IP address to send DIS packets on. Should be a Multicast address if the socket connection type is set to Multicast.
@@ -86,19 +86,21 @@
             - Friendly description for the the socket.
         - Buffer Size
             - The max buffer size for this socket.
-    - **Auto Connect Receive Addresses**: Whether or not the UDP socket for receiving DIS packets should be auto connected.
+    - **Auto Connect Receive Addresses**: Whether or not the UDP socket(s) for receiving DIS packets should be auto connected.
     - **Auto Connect Receive Sockets**: The receive sockets to automatically setup if 'Auto Connect Receive Addresses' is enabled.
         - IP Address
-            - The IP address to send DIS packets on. Should be a Multicast address if the socket connection type is set to Multicast.
+            - The IP address to receive DIS packets on. Should be a Multicast address if the socket connection type is set to Multicast.
             - _**NOTE:**_ An IP address of 0.0.0.0 will listen to all incoming DIS packets for broadcast connections.
         - Port
-            - The port to send DIS packets on.
+            - The port to receive DIS packets on.
         - Socket Description
             - Friendly description for the the socket.
         - Buffer Size
             - The max buffer size for this socket.
         - Use Multicast
             - Whether or not this socket will be receiving Multicast connections.
+		- Allow Loopback
+			- Whether or not to receive packets that originate from our local IP.
         - Receive Data on Game Thread
             - Whether or not this socket should receive data on the game thread. Will receive on its own thread if set to false.
 
@@ -144,7 +146,7 @@
     - Spawned From Network
         - Whether or not this entity was spawned from the network.
     - DIS Timeout
-		- How long to wait after an Entity State PDU is received before deleting. Gets refreshed after an Entity State PDU is received.
+		- How long to wait in seconds after an Entity State PDU is received before deleting. Gets refreshed after an Entity State PDU is received.
     - Entity Type
 		- This record specifies the kind of entity, the country of design, the domain, the specific identification of the entity, and any extra information necessary for describing the entity.
         - Setting this in the component is mainly used for sending DIS data.
