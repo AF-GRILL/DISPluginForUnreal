@@ -107,7 +107,7 @@ void ADISGameManager::Tick(float DeltaTime)
 	{
 		if (IsValid(DisEntity.second))
 		{
-			UDISComponent* DISComponent = IDISInterface::Execute_GetActorDISComponent(DisEntity.second);
+			UDISReceiveComponent* DISComponent = IDISInterface::Execute_GetActorDISReceiveComponent(DisEntity.second);
 
 			if (DISComponent)
 			{
@@ -115,7 +115,7 @@ void ADISGameManager::Tick(float DeltaTime)
 			}
 			else 
 			{
-				UE_LOG(LogTemp, Warning, TEXT("Cannot find DISComponent on entity %s"), *DisEntity.second->GetName())
+				UE_LOG(LogDISGameManager, Warning, TEXT("Cannot find DISComponent on entity %s"), *DisEntity.second->GetName())
 			}
 		}
 		else
@@ -130,7 +130,7 @@ void ADISGameManager::HandleOnDISEntityDestroyed(AActor* DestroyedActor)
 	bool anyRemoved = false;
 
 	//Remove the actor from the dis entity mapping
-	UDISComponent* DISComponent = IDISInterface::Execute_GetActorDISComponent(DestroyedActor);
+	UDISReceiveComponent* DISComponent = IDISInterface::Execute_GetActorDISReceiveComponent(DestroyedActor);
 
 	if (DISComponent != nullptr)
 	{
@@ -152,7 +152,7 @@ void ADISGameManager::HandleEntityStatePDU(FEntityStatePDU EntityStatePDUIn)
 		if (associatedActor != RawDISActorMappings.end())
 		{
 			//If an actor was found, relay information to the associated component
-			UDISComponent* DISComponent = IDISInterface::Execute_GetActorDISComponent(associatedActor->second);
+			UDISReceiveComponent* DISComponent = IDISInterface::Execute_GetActorDISReceiveComponent(associatedActor->second);
 
 			if (DISComponent != nullptr)
 			{
@@ -180,7 +180,7 @@ void ADISGameManager::HandleEntityStateUpdatePDU(FEntityStateUpdatePDU EntitySta
 		// NOTE: Entity State Update PDUs do not contain an Entity Type, so we cannot spawn an entity from one
 
 		//Get associated OpenDISComponent and relay information
-		UDISComponent* DISComponent = GetAssociatedDISComponent(EntityStateUpdatePDUIn.EntityID);
+		UDISReceiveComponent* DISComponent = GetAssociatedDISComponent(EntityStateUpdatePDUIn.EntityID);
 
 		if (DISComponent != nullptr)
 		{
@@ -194,7 +194,7 @@ void ADISGameManager::HandleFirePDU(FFirePDU FirePDUIn)
 	if (FirePDUIn.ExerciseID == ExerciseID)
 	{
 		//Get associated OpenDISComponent and relay information
-		UDISComponent* DISComponent = GetAssociatedDISComponent(FirePDUIn.FiringEntityID);
+		UDISReceiveComponent* DISComponent = GetAssociatedDISComponent(FirePDUIn.FiringEntityID);
 
 		if (DISComponent != nullptr)
 		{
@@ -208,7 +208,7 @@ void ADISGameManager::HandleDetonationPDU(FDetonationPDU DetonationPDUIn)
 	if (DetonationPDUIn.ExerciseID == ExerciseID)
 	{
 		//Get associated OpenDISComponent and relay information
-		UDISComponent* DISComponent = GetAssociatedDISComponent(DetonationPDUIn.MunitionEntityID);
+		UDISReceiveComponent* DISComponent = GetAssociatedDISComponent(DetonationPDUIn.MunitionEntityID);
 
 		if (DISComponent != nullptr)
 		{
@@ -223,7 +223,7 @@ void ADISGameManager::HandleRemoveEntityPDU(FRemoveEntityPDU RemoveEntityPDUIn)
 	if (RemoveEntityPDUIn.ExerciseID == ExerciseID && RemoveEntityPDUIn.ReceivingEntityID.Site == SiteID && RemoveEntityPDUIn.ReceivingEntityID.Application == ApplicationID)
 	{
 		//Get associated OpenDISComponent and relay information
-		UDISComponent* DISComponent = GetAssociatedDISComponent(RemoveEntityPDUIn.ReceivingEntityID);
+		UDISReceiveComponent* DISComponent = GetAssociatedDISComponent(RemoveEntityPDUIn.ReceivingEntityID);
 
 		if (DISComponent != nullptr)
 		{
@@ -238,7 +238,7 @@ void ADISGameManager::HandleStopFreezePDU(FStopFreezePDU StopFreezePDUIn)
 	if (StopFreezePDUIn.ExerciseID == ExerciseID && StopFreezePDUIn.ReceivingEntityID.Site == SiteID && StopFreezePDUIn.ReceivingEntityID.Application == ApplicationID)
 	{
 		//Get associated OpenDISComponent and relay information
-		UDISComponent* DISComponent = GetAssociatedDISComponent(StopFreezePDUIn.ReceivingEntityID);
+		UDISReceiveComponent* DISComponent = GetAssociatedDISComponent(StopFreezePDUIn.ReceivingEntityID);
 
 		if (DISComponent != nullptr)
 		{
@@ -253,7 +253,7 @@ void ADISGameManager::HandleStartResumePDU(FStartResumePDU StartResumePDUIn)
 	if (StartResumePDUIn.ExerciseID == ExerciseID && StartResumePDUIn.ReceivingEntityID.Site == SiteID && StartResumePDUIn.ReceivingEntityID.Application == ApplicationID)
 	{
 		//Get associated OpenDISComponent and relay information
-		UDISComponent* DISComponent = GetAssociatedDISComponent(StartResumePDUIn.ReceivingEntityID);
+		UDISReceiveComponent* DISComponent = GetAssociatedDISComponent(StartResumePDUIn.ReceivingEntityID);
 
 		if (DISComponent != nullptr)
 		{
@@ -327,7 +327,7 @@ void ADISGameManager::SpawnNewEntityFromEntityState(FEntityStatePDU EntityStateP
 			spawnedActor->OnDestroyed.AddDynamic(this, &ADISGameManager::HandleOnDISEntityDestroyed);
 
 			//Get DIS Component of the newly spawned actor
-			UDISComponent* DISComponent = IDISInterface::Execute_GetActorDISComponent(spawnedActor);
+			UDISReceiveComponent* DISComponent = IDISInterface::Execute_GetActorDISReceiveComponent(spawnedActor);
 
 			if (DISComponent != nullptr)
 			{
@@ -342,17 +342,17 @@ void ADISGameManager::SpawnNewEntityFromEntityState(FEntityStatePDU EntityStateP
 	}
 }
 
-UDISComponent* ADISGameManager::GetAssociatedDISComponent(FEntityID EntityIDIn)
+UDISReceiveComponent* ADISGameManager::GetAssociatedDISComponent(FEntityID EntityIDIn)
 {
 	SCOPE_CYCLE_COUNTER(STAT_GetAssociatedDISComponent);
-	UDISComponent* DISComponent = nullptr;
+	UDISReceiveComponent* DISComponent = nullptr;
 
 	//Find associated actor in the DISActorMappings map
 	auto associatedActor = RawDISActorMappings.find(EntityIDIn);
 	if (associatedActor != RawDISActorMappings.end())
 	{
 		//If an actor was found, relay information to the associated component
-		DISComponent = IDISInterface::Execute_GetActorDISComponent(associatedActor->second);
+		DISComponent = IDISInterface::Execute_GetActorDISReceiveComponent(associatedActor->second);
 	}
 
 	return DISComponent;
@@ -372,7 +372,7 @@ bool ADISGameManager::AddDISEntityToMap(FEntityID EntityIDToAdd, AActor* EntityT
 	auto associatedActor = RawDISActorMappings.find(EntityIDToAdd);
 	if (associatedActor != RawDISActorMappings.end())
 	{
-		UE_LOG(LogDISGameManager, Warning, TEXT("A DIS Entity ID mapping already exists for %s and is linked to %s. This entity ID will now point to: %s"), *EntityIDToAdd.ToString(), *associatedActor->second->GetActorLabel(), *EntityToAdd->GetActorLabel());
+		UE_LOG(LogDISGameManager, Warning, TEXT("A DIS Entity ID mapping already exists for %s and is linked to %s. This entity ID will now point to: %s"), *EntityIDToAdd.ToString(), *associatedActor->second->GetFName().ToString(), *EntityToAdd->GetFName().ToString());
 	}
 
 	DISActorMappings.Add(EntityIDToAdd, EntityToAdd);

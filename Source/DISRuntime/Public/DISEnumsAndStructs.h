@@ -20,6 +20,14 @@
 #include "DISEnumsAndStructs.generated.h"
 
 UENUM(BlueprintType)
+enum class EEntityStateSendingMode : uint8
+{
+	None,
+	EntityStatePDU,
+	EntityStateUpdatePDU
+};
+
+UENUM(BlueprintType)
 enum class EDISCullingMode : uint8
 {
 	None,

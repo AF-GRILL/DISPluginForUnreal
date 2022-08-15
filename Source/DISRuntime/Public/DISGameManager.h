@@ -13,7 +13,7 @@
 #include "DISGameManager.generated.h"
 
 //Forward declarations
-class UDISComponent;
+class UDISReceiveComponent;
 
 DECLARE_LOG_CATEGORY_EXTERN(LogDISGameManager, Log, All);
 
@@ -136,6 +136,16 @@ public:
 		Meta = (DisplayName = "DIS Enumeration Mapping", Tooltip = "The DIS Enumeration Mapping to use for this manager. This dictates the entity enumerations that will be recognized and managed by this DIS Game Manager."))
 		UDISClassEnumMappings* DISClassEnum;
 
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "GRILL DIS|Game Manager",
+		Meta = (DisplayName = "Exercise ID", Tooltip = "The Exercise ID of the DIS sim. Valid Exercise IDs range from 0 to 255.", UIMin = 0, UIMax = 255, ClampMin = 0, ClampMax = 255))
+		int32 ExerciseID = 0;
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "GRILL DIS|Game Manager",
+		Meta = (DisplayName = "Site ID", Tooltip = "The Site ID of this application instance. Valid Site IDs range from 0 to 65535.", UIMin = 0, UIMax = 65535, ClampMin = 0, ClampMax = 65535))
+		int32 SiteID = 0;
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "GRILL DIS|Game Manager",
+		Meta = (DisplayName = "Application ID", Tooltip = "The Application ID of this application instance. Valid Application IDs range from 0 to 65535.", UIMin = 0, UIMax = 65535, ClampMin = 0, ClampMax = 65535))
+		int32 ApplicationID = 0;
+
 protected:
 	virtual void BeginPlay() override;
 	virtual void Tick(float DeltaTime) override;
@@ -156,16 +166,6 @@ protected:
 		TMap<FEntityID, AActor*> DISActorMappings;
 	std::map<FEntityID, AActor*> RawDISActorMappings;
 
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "GRILL DIS|Game Manager",
-		Meta = (DisplayName = "Exercise ID", Tooltip = "The Exercise ID of the DIS sim. Valid Exercise IDs range from 0 to 255.", UIMin = 0, UIMax = 255, ClampMin = 0, ClampMax = 255))
-		int32 ExerciseID = 0;
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "GRILL DIS|Game Manager",
-		Meta = (DisplayName = "Site ID", Tooltip = "The Site ID of this application instance. Valid Site IDs range from 0 to 65535.", UIMin = 0, UIMax = 65535, ClampMin = 0, ClampMax = 65535))
-		int32 SiteID = 0;
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "GRILL DIS|Game Manager",
-		Meta = (DisplayName = "Application ID", Tooltip = "The Application ID of this application instance. Valid Application IDs range from 0 to 65535.", UIMin = 0, UIMax = 65535, ClampMin = 0, ClampMax = 65535))
-		int32 ApplicationID = 0;
-
 	//Whether or not to auto connect receive sockets
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "GRILL DIS|Game Manager|Networking")
 		bool AutoConnectReceiveAddresses;
@@ -184,6 +184,6 @@ protected:
 
 private:
 	void SpawnNewEntityFromEntityState(FEntityStatePDU EntityStatePDUIn);
-	UDISComponent* GetAssociatedDISComponent(FEntityID EntityIDIn);
+	UDISReceiveComponent* GetAssociatedDISComponent(FEntityID EntityIDIn);
 	AGeoReferencingSystem* GeoReferencingSystem;
 };
