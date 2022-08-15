@@ -22,17 +22,17 @@
 UENUM(BlueprintType)
 enum class EEntityStateSendingMode : uint8
 {
-	None,
-	EntityStatePDU,
-	EntityStateUpdatePDU
+	None						UMETA(Tooltip = "Don't send out any automatic Entity State PDU updates."),
+	EntityStatePDU				UMETA(Tooltip = "Send out automatic Entity State PDU updates."),
+	EntityStateUpdatePDU		UMETA(Tooltip = "Send out automatic Entity State Update PDU updates.")
 };
 
 UENUM(BlueprintType)
 enum class EDISCullingMode : uint8
 {
-	None,
-	CullDeadReckoning,
-	CullAll
+	None						UMETA(Tooltip = "Don't cull any DIS updates."),
+	CullDeadReckoning			UMETA(Tooltip = "Cull only dead reckoning updates."),
+	CullAll						UMETA(Tooltip = "Cull all DIS updates. Currently only performs dead reckoning culling.")
 };
 
 UENUM(BlueprintType)

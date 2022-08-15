@@ -373,6 +373,7 @@ bool UDeadReckoning_BPFL::DeadReckoning(FEntityStatePDU EntityPDUToDeadReckon, f
 
 		DeadReckonedEntityPDU.EntityLocation.X = CalculatedPositionVector[0];
 		DeadReckonedEntityPDU.EntityLocation.Y = CalculatedPositionVector[1];
+		DeadReckonedEntityPDU.EntityLocation.Z = CalculatedPositionVector[2];
 
 		if (bUseOtherParams)
 		{
