@@ -3,7 +3,8 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "DISComponent.h"
+#include "DISReceiveComponent.h"
+#include "DISSendComponent.h"
 #include "DISInterface.generated.h"
 
 /**
@@ -21,5 +22,8 @@ class DISRUNTIME_API IDISInterface
 
 public:
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "GRILL DIS|DIS Interface")
-		UDISComponent* GetActorDISComponent();
+		UDISReceiveComponent* GetActorDISReceiveComponent();
+
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "GRILL DIS|DIS Interface")
+		UDISSendComponent* GetActorDISSendComponent();
 };

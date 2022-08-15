@@ -33,7 +33,7 @@ bool UUDPSubsystem::OpenReceiveSocket(FReceiveSocketSettings SocketSettings, int
 	FSocket* ReceiverSocket;
 	FUdpSocketBuilder SocketBuilder = FUdpSocketBuilder(SocketSettings.SocketDescription)
 		.AsNonBlocking()
-		//.AsReusable()
+		.AsReusable()
 		.WithReceiveBufferSize(SocketSettings.BufferSize);
 		
 	//Handle setting up of socket based on multicast or not

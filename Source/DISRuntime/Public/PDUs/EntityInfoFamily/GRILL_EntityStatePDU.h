@@ -194,6 +194,29 @@ struct FEntityStatePDU : public FEntityInformationFamilyPDU
 		return FPDU::DISDataStreamToBytes(buffer);
 	}
 
+	FEntityStateUpdatePDU ToEntityStateUpdatePDU()
+	{
+		FEntityStateUpdatePDU newESUPDU = FEntityStateUpdatePDU();
+
+		//pdu common parameters
+		newESUPDU.ProtocolVersion = ProtocolVersion;
+		newESUPDU.ExerciseID = ExerciseID;
+		newESUPDU.ProtocolFamily = ProtocolFamily;
+		newESUPDU.Timestamp = Timestamp;
+		newESUPDU.Length = Length;
+		newESUPDU.Padding = Padding;
+
+		//Entity State Update common parameters
+		newESUPDU.EntityID = EntityID;
+		newESUPDU.EcefLocation = EcefLocation;
+		newESUPDU.EntityOrientation = EntityOrientation;
+		newESUPDU.EntityLinearVelocity = EntityLinearVelocity;
+		newESUPDU.EntityAppearance = EntityAppearance;
+		newESUPDU.ArticulationParameters = ArticulationParameters;
+
+		return newESUPDU;
+	}
+
 	FEntityStatePDU& operator = (FEntityStateUpdatePDU EntityStateUpdatePDUIn)
 	{
 		//pdu common parameters
@@ -203,8 +226,6 @@ struct FEntityStatePDU : public FEntityInformationFamilyPDU
 		Timestamp = EntityStateUpdatePDUIn.Timestamp;
 		Length = EntityStateUpdatePDUIn.Length;
 		Padding = EntityStateUpdatePDUIn.Padding;
-
-		PduType = EPDUType::EntityState;
 
 		//Entity State Update common parameters
 		EntityID = EntityStateUpdatePDUIn.EntityID;
