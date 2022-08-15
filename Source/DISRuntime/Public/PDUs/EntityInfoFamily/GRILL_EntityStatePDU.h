@@ -103,6 +103,7 @@ struct FEntityStatePDU : public FEntityInformationFamilyPDU
 		//single vars
 		ForceID = static_cast<EForceID>(EntityStatePDUIn->getForceId());
 		Marking = FString(EntityStatePDUIn->getMarking().getCharacters());
+		Marking.LeftInline(11);
 		EntityAppearance = EntityStatePDUIn->getEntityAppearance();
 		Capabilities = EntityStatePDUIn->getCapabilities();
 
