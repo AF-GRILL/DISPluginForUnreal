@@ -93,7 +93,7 @@ void UDISSendComponent::EndPlay(const EEndPlayReason::Type EndPlayReason)
 void UDISSendComponent::SetDeadReckoningAlgorithm(int32 NewDeadReckoningAlgorithm)
 {
 	//If the dead reckoning algorithm differs, send out a new ESPDU
-	if (NewDeadReckoningAlgorithm != DeadReckoningAlgorithm)
+	if (EntityStatePDUSendingMode == EEntityStateSendingMode::EntityStatePDU && NewDeadReckoningAlgorithm != DeadReckoningAlgorithm)
 	{
 		DeadReckoningAlgorithm = NewDeadReckoningAlgorithm;
 
@@ -101,7 +101,7 @@ void UDISSendComponent::SetDeadReckoningAlgorithm(int32 NewDeadReckoningAlgorith
 		MostRecentDeadReckonedEntityStatePDU = MostRecentEntityStatePDU;
 		PreviousEntityStatePDU = MostRecentEntityStatePDU;
 
-		if (IsValid(UDPSubsystem) && EntityStatePDUSendingMode == EEntityStateSendingMode::EntityStatePDU)
+		if (IsValid(UDPSubsystem))
 		{
 			UDPSubsystem->EmitBytes(UPDUConversions_BPFL::ConvertEntityStatePDUToBytes(MostRecentEntityStatePDU));
 		}
