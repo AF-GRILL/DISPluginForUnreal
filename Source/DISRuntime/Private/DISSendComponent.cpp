@@ -174,8 +174,8 @@ FEntityStatePDU UDISSendComponent::FormEntityStatePDU()
 		else
 		{
 			//Convert linear velocity vectors to be in body space
-			newEntityStatePDU.EntityLinearVelocity = UKismetMathLibrary::GreaterGreater_VectorRotator(curUnrealLinearVelocity, GetOwner()->GetActorRotation().GetInverse());
-			FVector prevVelBodySpace = UKismetMathLibrary::GreaterGreater_VectorRotator(PreviousUnrealLinearVelocity, GetOwner()->GetActorRotation().GetInverse());
+			newEntityStatePDU.EntityLinearVelocity = UKismetMathLibrary::GreaterGreater_VectorRotator(curUnrealLinearVelocity, GetOwner()->GetActorRotation().GetInverse()) * FVector(1, 1, -1);
+			FVector prevVelBodySpace = UKismetMathLibrary::GreaterGreater_VectorRotator(PreviousUnrealLinearVelocity, GetOwner()->GetActorRotation().GetInverse()) * FVector(1, 1, -1);
 			linearAcceleration = (newEntityStatePDU.EntityLinearVelocity - prevVelBodySpace) / deltaTime;
 		}
 

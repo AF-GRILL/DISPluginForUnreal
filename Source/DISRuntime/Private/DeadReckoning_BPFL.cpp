@@ -309,6 +309,11 @@ glm::dvec3 UDeadReckoning_BPFL::GetEntityBodyDeadReckonedPosition(const glm::dve
 	// Calculate R1
 	const auto OmegaMatrix = glm::dmat3x3(BodyAngularVelocityVector, glm::dvec3(0), glm::dvec3(0)) * glm::transpose(glm::dmat3x3(BodyAngularVelocityVector, glm::dvec3(0), glm::dvec3(0)));
 	double AngularVelocityMagnitude = glm::length(BodyAngularVelocityVector);
+	if (AngularVelocityMagnitude == 0)
+	{
+		AngularVelocityMagnitude = 1e-5;
+	}
+
 	const auto R1 = (((AngularVelocityMagnitude * DeltaTime - glm::sin(AngularVelocityMagnitude * DeltaTime)) / glm::pow(AngularVelocityMagnitude, 3)) * OmegaMatrix) +
 		(static_cast<double>(glm::sin(AngularVelocityMagnitude * DeltaTime) / AngularVelocityMagnitude) * glm::dmat3(1)) +
 		(((1 - glm::cos(AngularVelocityMagnitude * DeltaTime)) / glm::pow(AngularVelocityMagnitude, 2)) * SkewMatrix);
