@@ -121,11 +121,11 @@
 
 ![DISGameManagerFunctions](Resources/ReadMeImages/DISGameManagerFunctions.png)
 
-# DIS Actor Component
+# DIS Receive Actor Component
 
-![DISComponent](Resources/ReadMeImages/DISComponent.png)
+![DISReceiveComponent](Resources/ReadMeImages/DISReceiveComponent.png)
 
-- The DIS Component is responsible for handling all DIS functionality and DIS PDU updates for its associated DIS Entity.
+- The DIS Receive Component is responsible for handling all receive DIS functionality and DIS PDU updates for its associated DIS Entity.
 - Handles dead reckoning and ground clamping updates.
     - Automatically handles both of these in C++.
 - Contains various DIS related variables.
@@ -136,7 +136,7 @@
     - Receiving each type of DIS Entity PDU currently implemented.
     - Dead reckoning update
 	
-![DISComponentEvents](Resources/ReadMeImages/DISComponentEvents.png)
+![DISReceiveComponentEvents](Resources/ReadMeImages/DISReceiveComponentEvents.png)
 	
 - Has variables for:
     - Most Recent Entity State PDU
@@ -145,24 +145,20 @@
     - Latest Entity State PDU Timestamp
     - Spawned From Network
         - Whether or not this entity was spawned from the network.
+    - Entity Type _(Read Only)_
+		- This record specifies the kind of entity, the country of design, the domain, the specific identification of the entity, and any extra information necessary for describing the entity.
+        - This value gets set when an Entity State PDU or Entity State Update PDU is received for the associated entity.
+    - Entity ID _(Read Only)_
+		- This record specifies the site ID, application ID, and entity ID fields. They combine to form a unique identifier of the entity in the exercise.
+        - This value gets set when an Entity State PDU or Entity State Update PDU is received for the associated entity.
+    - Entity Force ID _(Read Only)_
+		- This field distinguishes the different teams or sides in a DIS exercise.
+        - This value gets set when an Entity State PDU or Entity State Update PDU is received for the associated entity.
+    - Entity Marking _(Read Only)_
+		- This record is used to specify the friendly name of the entity to be interpreted for display.
+        - This value gets set when an Entity State PDU or Entity State Update PDU is received for the associated entity.
     - DIS Timeout
 		- How long to wait in seconds after an Entity State PDU is received before deleting. Gets refreshed after an Entity State PDU is received.
-    - Entity Type
-		- This record specifies the kind of entity, the country of design, the domain, the specific identification of the entity, and any extra information necessary for describing the entity.
-        - Setting this in the component is mainly used for sending DIS data.
-        - This value gets set when an Entity State PDU or Entity State Update PDU is received for the associated entity.
-    - Entity ID
-		- This record specifies the site ID, application ID, and entity ID fields. They combine to form a unique identifier of the entity in the exercise.
-        - Setting this in the component is mainly used for sending DIS data.
-        - This value gets set when an Entity State PDU or Entity State Update PDU is received for the associated entity.
-    - Entity Force ID
-		- This field distinguishes the different teams or sides in a DIS exercise.
-        - Setting this in the component is mainly used for sending DIS data.
-        - This value gets set when an Entity State PDU or Entity State Update PDU is received for the associated entity.
-    - Entity Marking
-		- This record is used to specify the friendly name of the entity to be interpreted for display.
-        - Setting this in the component is mainly used for sending DIS data.
-        - This value gets set when an Entity State PDU or Entity State Update PDU is received for the associated entity.
 	- DIS Culling Mode
 		- Culls DIS packets based on settings
 			- Options:
@@ -190,13 +186,68 @@
     - Ground Clamping Collision Channel
         - The collision channel that should be used for ground clamping.
 
-![DISComponentSettings](Resources/ReadMeImages/DISComponentSettings.png)
+![DISReceiveComponentSettings](Resources/ReadMeImages/DISReceiveComponentSettings.png)
+
+# DIS Send Actor Component
+
+![DISSendComponent](Resources/ReadMeImages/DISSendComponent.png)
+
+- The DIS Send Component handles basic sending DIS functionality its associated DIS Entity.
+- Contains various DIS related variables.
+- Notable functions:
+	- Form Entity State PDU
+		- Uses all known information to form an ESPDU for the associated DIS Entity.
+    - Send Entity State PDU
+        - Can be overriden in blueprints for a custom implementation.
+	- Set Dead Reckoning Algorithm
+		- Used to update the dead reckoning algorithm during runtime.
+	
+- Has variables for:
+    - Most Recent Entity State PDU
+    - Dead Reckoning Entity State PDU
+        - This is an Entity State PDU whose information has been updated with the most recent Dead Reckoning information.
+    - Entity Type
+		- This record specifies the kind of entity, the country of design, the domain, the specific identification of the entity, and any extra information necessary for describing the entity.
+        - This value should be set on the component and will be used when sending automatic PDU updates.
+    - Entity ID
+		- This record specifies the site ID, application ID, and entity ID fields. They combine to form a unique identifier of the entity in the exercise.
+        - This value should be set on the component and will be used when sending automatic PDU updates.
+    - Entity Force ID
+		- This field distinguishes the different teams or sides in a DIS exercise.
+        - This value should be set on the component and will be used when sending automatic PDU updates.
+    - Entity Marking
+		- This record is used to specify the friendly name of the entity to be interpreted for display.
+        - This value should be set on the component and will be used when sending automatic PDU updates.
+    - DIS Heartbeat Seconds
+		- How often a new PDU update should be sent out.
+		- Utilized if Dead Reckoning Thresholds are not clipped.
+	- Entity State PDU Sending Mode
+		- Mode that the send component should be in.
+			- Options:
+				- None
+					- Don't send any automatic Entity State or Entity State Update PDU updates.
+				- Entity State PDU
+					- Automatically send out Entity State PDU updates.
+					- Will send out a new PDU when a Dead Reckoning Threshold is clipped, the DIS heartbeat expires, when the Dead Reckoning algoritm is changed, or when the entity expires in the world.
+				- Entity State Update PDU
+					- Automatically send out Entity State Update PDU updates.
+					- Will send out a new PDU when a Dead Reckoning Threshold is clipped, the DIS heartbeat expires, or when the entity expires in the world.
+	- Dead Reckoning Algorithm
+		- The dead reckoning algorithm to use.
+    - Dead Reckoning Position Threshold Meters
+        - The position threshold in meters to use for dead reckoning. If the dead reckoning position deviates more than this value away from the actual position in any axis, a new Entity State PDU will be sent.
+    - Dead Reckoning Orientation Threshold Degrees
+        - The orientation threshold in degrees to use for dead reckoning. If the dead reckoning orientation deviates more than this value away from the actual orientation, a new Entity State PDU will be sent.
+
+![DISSendComponentSettings](Resources/ReadMeImages/DISSendComponentSettings.png)
 
 # DIS Interface
 
 - The DIS Interface is required to implement for any actor that is desired to be a DIS entity.
 - The DIS Interface allows for actors to appear in the Entity section of the DIS Enumeration Mappings UAsset described below.
-- After adding the DIS Interface, make sure to implement its 'GetActorDISComponent' function and pass the DIS Component of the actor as the return value.
+- After adding the DIS Interface, make sure to implement the below functions as needed:
+	- Its 'GetActorDISReceiveComponent' function and pass the DIS Receive Component of the actor as the return value.
+	- Its 'GetActorDISSendComponent' function and pass the DIS Send Component of the actor as the return value
 
 ![DISInterface](Resources/ReadMeImages/DISInterface.png)
 
@@ -239,3 +290,9 @@
 	- This allows for sending of the PDUs for example.
 
 ![PDUConversions](Resources/ReadMeImages/PDUConversions.png)
+
+# Dead Reckoning Blueprint Function Library
+
+- Contains functions for performing Dead Reckoning
+
+![DeadReckoningBPFL](Resources/ReadMeImages/DeadReckoningBPFL.png)

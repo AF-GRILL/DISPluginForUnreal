@@ -142,7 +142,7 @@ public:
 		EEntityStateSendingMode EntityStatePDUSendingMode;
 
 	/**
-	* The dead reckoning algorithm to use. Gets set when sending out new Entity State PDUs.
+	* The dead reckoning algorithm to use.
 	*/
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "GRILL DIS|DIS Send Component|DIS Settings", Meta = (UIMin = 1, ClampMin = 1, UIMax = 9, ClampMax = 9))
 		int32 DeadReckoningAlgorithm = 1;
