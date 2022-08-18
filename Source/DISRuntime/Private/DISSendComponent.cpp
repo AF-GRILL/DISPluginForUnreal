@@ -158,7 +158,7 @@ FEntityStatePDU UDISSendComponent::FormEntityStatePDU()
 		//Calculate the velocities and acceleration of the entity in m/s
 		FVector curUnrealLinearVelocity = (GetOwner()->GetActorLocation() - PreviousUnrealLocation) / (deltaTime * 100);
 
-		FRotator rotDiff = CalculateDirectionalRotationDifference(PreviousUnrealRotation, GetOwner()->GetActorRotation());
+		FRotator rotDiff = UDeadReckoning_BPFL::CalculateDirectionalRotationDifference(PreviousUnrealRotation, GetOwner()->GetActorRotation());
 
 		FVector angularVelocity = FMath::DegreesToRadians(rotDiff.Euler()) / deltaTime;
 		newEntityStatePDU.DeadReckoningParameters.EntityAngularVelocity = angularVelocity;
@@ -302,20 +302,6 @@ bool UDISSendComponent::CheckOrientationMatrixThreshold()
 	outsideThreshold = (3 - rotDiffTrace) > OrientationMatrixThresholdDelta;
 
 	return outsideThreshold;
-}
-
-FRotator UDISSendComponent::CalculateDirectionalRotationDifference(FRotator OldRotation, FRotator NewRotation)
-{
-	//Convert the rotators to quaternions
-	FQuat oldQuat = OldRotation.Quaternion();
-	FQuat newQuat = NewRotation.Quaternion();
-	oldQuat.Normalize();
-	newQuat.Normalize();
-
-	//Get the rotational difference between the quaternions -- Gives back direction of rotation too
-	FQuat rotDiff = UDeadReckoning_BPFL::MultiplyQuaternions(newQuat, oldQuat.Inverse());
-
-	return rotDiff.Rotator();
 }
 
 FVector UDISSendComponent::CalculateECEFLinearVelocity(FVector UnrealLinearVelocity, FVector CurrentLocation)

@@ -47,6 +47,13 @@ public:
 	static FQuat MultiplyQuaternions(FQuat q1, FQuat q2);
 
 	/**
+	* Get the rotation difference between the two given rotators. Done using quaternion math. Signs of the axes are updated to indicate direction of rotation.
+	* @param OldRotation The old Unreal Engine rotation that the entity had. Should be given in degrees.
+	* @param NewRotation The new Unreal Engine rotation that the entity has. Should be given in degrees.
+	*/
+	static FRotator CalculateDirectionalRotationDifference(FRotator OldRotation, FRotator NewRotation);
+
+	/**
 	 * Calculates and returns the dead reckoning matrix used for calculating entity rotation
 	 * @param AngularVelocityVector The angular velocity vector in body coordinates
 	 * @param DeltaTime The time increment for dead reckoning calculations
