@@ -71,14 +71,6 @@ public:
 		bool CheckOrientationMatrixThreshold();
 
 	/**
-	* Get the rotation difference between the two given rotators. Done using quaternion math. Signs of the axes are updated to indicate direction of rotation.
-	* @param OldRotation The old Unreal Engine rotation that the entity had
-	* @param NewRotation The new Unreal Engine rotation that the entity has
-	*/
-	UFUNCTION(BlueprintCallable, Category = "GRILL DIS|DIS Send Component")
-		FRotator CalculateDirectionalRotationDifference(FRotator OldRotation, FRotator NewRotation);
-
-	/**
 	* Calculates the linear velocity of the given locations using the given delta time. The FVector returned is in terms of ECEF.
 	* @param UnrealLinearVelocity The linear velocity to be converted to ECEF coordinates
 	* @param CurrentLocation The Unreal Engine location that the entity is at

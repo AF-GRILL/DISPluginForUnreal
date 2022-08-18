@@ -38,6 +38,20 @@ FRotator UDeadReckoning_BPFL::CalculateDeadReckonedEulerAnglesFromQuaternion(FEn
 	return FRotator(theta, psi, phi);
 }
 
+FRotator UDeadReckoning_BPFL::CalculateDirectionalRotationDifference(FRotator OldRotation, FRotator NewRotation)
+{
+	//Convert the rotators to quaternions
+	FQuat oldQuat = OldRotation.Quaternion();
+	FQuat newQuat = NewRotation.Quaternion();
+	oldQuat.Normalize();
+	newQuat.Normalize();
+
+	//Get the rotational difference between the quaternions -- Gives back direction of rotation too
+	FQuat rotDiff = UDeadReckoning_BPFL::MultiplyQuaternions(newQuat, oldQuat.Inverse());
+
+	return rotDiff.Rotator();
+}
+
 TArray<uint8> UDeadReckoning_BPFL::FormOtherParameters(uint8 DeadReckoningAlorithm, FRotator EntityPsiThetaPhiRadians, FVector EntityECEFLocation)
 {
 	TArray<uint8> otherParameters;

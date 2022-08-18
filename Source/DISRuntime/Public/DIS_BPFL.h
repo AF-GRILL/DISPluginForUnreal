@@ -404,6 +404,16 @@ public:
 		static void GetPsiThetaPhiDegreesFromUnrealRotation(const FRotator UnrealRotation, const FVector UnrealLocation, AGeoReferencingSystem* GeoReferencingSystem, FPsiThetaPhi& PsiThetaPhiDegrees);
 
 	/**
+	 * Gets the Psi (Yaw), Theta (Pitch), and Phi (Roll) in radians of the given Unreal rotation at the given Unreal location
+	 * @param UnrealRotation The Unreal rotation in world space
+	 * @param UnrealLocation The Unreal location in world space
+	 * @param GeoReferencingSystem The GeoReferencing Subsystem reference.
+	 * @param PsiThetaPhiDegrees The Psi (Yaw), Theta (Pitch), and Phi (Roll) in radians
+	 */
+	UFUNCTION(BlueprintPure, Category = "GRILL DIS|Unit Conversions")
+		static void GetPsiThetaPhiRadiansFromUnrealRotation(const FRotator UnrealRotation, const FVector UnrealLocation, AGeoReferencingSystem* GeoReferencingSystem, FPsiThetaPhi& PsiThetaPhiRadians);
+
+	/**
 	 * Gets the ECEF location and the Psi (Yaw), Theta (Pitch), and Phi (Roll) in degrees of the given Unreal rotation at the given Unreal location
 	 * @param UnrealRotation The Unreal rotation in world space
 	 * @param UnrealLocation The Unreal location in world space
@@ -413,6 +423,17 @@ public:
 	 */
 	UFUNCTION(BlueprintPure, Category = "GRILL DIS|Unit Conversions")
 		static void GetEcefXYZAndPsiThetaPhiDegreesFromUnreal(const FRotator UnrealRotation, const FVector UnrealLocation, AGeoReferencingSystem* GeoReferencingSystem, FEarthCenteredEarthFixedFloat& EcefXYZ, FPsiThetaPhi& PsiThetaPhiDegrees);
+
+	/**
+	 * Gets the ECEF location and the Psi (Yaw), Theta (Pitch), and Phi (Roll) in radians of the given Unreal rotation at the given Unreal location
+	 * @param UnrealRotation The Unreal rotation in world space
+	 * @param UnrealLocation The Unreal location in world space
+	 * @param GeoReferencingSystem The GeoReferencing Subsystem reference.
+	 * @param EcefXYZ The ECEF location of the given Unreal location.
+	 * @param PsiThetaPhiRadians The Psi (Yaw), Theta (Pitch), and Phi (Roll) in radians
+	 */
+	UFUNCTION(BlueprintPure, Category = "GRILL DIS|Unit Conversions")
+		static void GetEcefXYZAndPsiThetaPhiRadiansFromUnreal(const FRotator UnrealRotation, const FVector UnrealLocation, AGeoReferencingSystem* GeoReferencingSystem, FEarthCenteredEarthFixedFloat& EcefXYZ, FPsiThetaPhi& PsiThetaPhiRadians);
 
 	/**
 	 * Get the East, North, and Up vectors from the North, East, and Down vector struct
