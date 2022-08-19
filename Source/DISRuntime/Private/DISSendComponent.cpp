@@ -225,7 +225,7 @@ bool UDISSendComponent::CheckOrientationQuaternionThreshold()
 	//Get the entity dead reckoning quaternion
 	FQuat deadReckoningQuaternion = UDeadReckoning_BPFL::CreateDeadReckoningQuaternion(AngularVelocityVector, DeltaTimeSinceLastPDU);
 	//Calculate the new orientation quaternion
-	FQuat DR_OrientationQuaternion = UDeadReckoning_BPFL::MultiplyQuaternions(entityOrientationQuaternion, deadReckoningQuaternion);
+	FQuat DR_OrientationQuaternion = entityOrientationQuaternion * deadReckoningQuaternion;
 
 	FQuat actualOrientationQuaternion;
 

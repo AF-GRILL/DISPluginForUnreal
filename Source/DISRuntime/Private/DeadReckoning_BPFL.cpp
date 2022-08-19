@@ -3,25 +3,13 @@
 
 #include "DeadReckoning_BPFL.h"
 
-FQuat UDeadReckoning_BPFL::MultiplyQuaternions(FQuat q1, FQuat q2)
-{
-	FQuat result;
-
-	result.W = q1.W * q2.W - q1.X * q2.X - q1.Y * q2.Y - q1.Z * q2.Z;
-	result.X = q1.W * q2.X + q1.X * q2.W + q1.Y * q2.Z - q1.Z * q2.Y;
-	result.Y = q1.W * q2.Y - q1.X * q2.Z + q1.Y * q2.W + q1.Z * q2.X;
-	result.Z = q1.W * q2.Z + q1.X * q2.Y - q1.Y * q2.X + q1.Z * q2.W;
-
-	return result;
-}
-
 FRotator UDeadReckoning_BPFL::CalculateDeadReckonedEulerAnglesFromQuaternion(FEntityStatePDU EntityPDUToDeadReckon, FQuat EntityRotationQuaternion, float DeltaTime)
 {
 	//Calculate dead reckoning orienation quaternion
 	glm::dvec3 AngularVelocityVector = glm::dvec3(EntityPDUToDeadReckon.DeadReckoningParameters.EntityAngularVelocity.X,
 		EntityPDUToDeadReckon.DeadReckoningParameters.EntityAngularVelocity.Y, EntityPDUToDeadReckon.DeadReckoningParameters.EntityAngularVelocity.Z);
 	FQuat deadReckonedQuaternion = CreateDeadReckoningQuaternion(AngularVelocityVector, DeltaTime);
-	FQuat finalDeadReckonedQuat = MultiplyQuaternions(EntityRotationQuaternion, deadReckonedQuaternion);
+	FQuat finalDeadReckonedQuat = EntityRotationQuaternion * deadReckonedQuaternion;
 
 	//Convert quaternion to Psi, Thet, Phi
 	float psi = FMath::Atan2(2 * (finalDeadReckonedQuat.X * finalDeadReckonedQuat.Y + finalDeadReckonedQuat.W * finalDeadReckonedQuat.Z),
@@ -47,7 +35,7 @@ FRotator UDeadReckoning_BPFL::CalculateDirectionalRotationDifference(FRotator Ol
 	newQuat.Normalize();
 
 	//Get the rotational difference between the quaternions -- Gives back direction of rotation too
-	FQuat rotDiff = UDeadReckoning_BPFL::MultiplyQuaternions(newQuat, oldQuat.Inverse());
+	FQuat rotDiff = newQuat * oldQuat.Inverse();
 
 	return rotDiff.Rotator();
 }
