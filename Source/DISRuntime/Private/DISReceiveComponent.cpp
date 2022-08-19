@@ -107,7 +107,9 @@ void UDISReceiveComponent::UpdateCommonEntityStateInfo(FEntityStatePDU NewEntity
 	EntityECEFLocationDifference = MostRecentEntityStatePDU.EcefLocation - PreviousDeadReckonedPDU.EcefLocation;
 
 	//Get the rotation difference between the last known dead reckoning rotation and the current rotation. This will be used for internal smoothing.
-	EntityRotationDifference = FMath::DegreesToRadians(UDeadReckoning_BPFL::CalculateDirectionalRotationDifference(FMath::DegreesToRadians(PreviousDeadReckonedPDU.EntityOrientation), FMath::DegreesToRadians(MostRecentEntityStatePDU.EntityOrientation)));
+	FRotator prevRotDegrees = FMath::RadiansToDegrees(PreviousDeadReckonedPDU.EntityOrientation);
+	FRotator curRotDegrees = FMath::RadiansToDegrees(MostRecentEntityStatePDU.EntityOrientation);
+	EntityRotationDifference = FMath::DegreesToRadians((curRotDegrees - prevRotDegrees).GetNormalized());
 
 	EntityID = NewEntityStatePDU.EntityID;
 

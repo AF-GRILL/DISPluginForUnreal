@@ -40,13 +40,6 @@ public:
 		static TArray<uint8> FormOtherParameters(uint8 DeadReckoningAlorithm, FRotator EntityPsiThetaPhiRadians, FVector EntityECEFLocation);
 
 	/**
-	* Multiplies two quaternions together. Uses Quaternion multiplication as defined in the IEEE dead reckoning standard (section E.7.4.1.3).
-	* @param q1 The quaternion to multiply by q2.
-	* @param q2 The quaternion to multiply q1 by.
-	*/
-	static FQuat MultiplyQuaternions(FQuat q1, FQuat q2);
-
-	/**
 	* Get the rotation difference between the two given rotators. Done using quaternion math. Signs of the axes are updated to indicate direction of rotation.
 	* @param OldRotation The old Unreal Engine rotation that the entity had. Should be given in degrees.
 	* @param NewRotation The new Unreal Engine rotation that the entity has. Should be given in degrees.
