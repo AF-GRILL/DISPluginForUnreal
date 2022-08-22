@@ -131,6 +131,8 @@
 - Contains various DIS related variables.
 - Notable functions:
     - Ground Clamping
+		- Default implemented behavior line traces toward the earth using NED vectors. Returns a single hit point for ground clamping location.
+		- Returns an array of transforms in case custom implementation want multiple points.
         - Can be overriden in blueprints for a custom implementation.
 - Contains event bindings for:
     - Receiving each type of DIS Entity PDU currently implemented.
@@ -198,6 +200,8 @@
 	- Form Entity State PDU
 		- Uses all known information to form an ESPDU for the associated DIS Entity.
     - Send Entity State PDU
+		- Default implemented behavior tries to send out an Entity State or Entity State Update PDU based on Entity State PDU Sending Mode variable.
+		- Called on tick as thresholds need consistently checked.
         - Can be overriden in blueprints for a custom implementation.
     - Set Entity Appearance
 		- Used to update the entity appearance during runtime.
@@ -206,6 +210,8 @@
 	- Set Dead Reckoning Algorithm
 		- Used to update the dead reckoning algorithm during runtime.
 	
+![DISSendComponentFunctions](Resources/ReadMeImages/DISSendComponentFunctions.png)
+
 - Has variables for:
     - Most Recent Entity State PDU
     - Dead Reckoning Entity State PDU
