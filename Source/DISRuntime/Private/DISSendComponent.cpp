@@ -83,7 +83,7 @@ void UDISSendComponent::EndPlay(const EEndPlayReason::Type EndPlayReason)
 		UE_LOG(LogDISSendComponent, Warning, TEXT("Invalid DISGameManager. Please make sure one is in the world."));
 	}
 
-	EmitAppropriatePDU(MostRecentEntityStatePDU);
+	EmitAppropriatePDU(finalESPDU);
 
 	Super::EndPlay(EndPlayReason);
 }
