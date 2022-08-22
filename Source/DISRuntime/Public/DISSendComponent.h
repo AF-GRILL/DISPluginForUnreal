@@ -38,6 +38,20 @@ public:
 	UDISSendComponent();
 
 	/**
+	* Updates the Capabilities that the entity has.
+	* @param NewEntityCapabilities The new DIS capabilities that the entity has.
+	*/
+	UFUNCTION(BlueprintCallable, Category = "GRILL DIS|DIS Send Component")
+		void SetEntityCapabilities(int32 NewEntityCapabilities);
+
+	/**
+	* Updates the appearance of the entity.
+	* @param NewEntityAppearance The new appearance that the entity has.
+	*/
+	UFUNCTION(BlueprintCallable, Category = "GRILL DIS|DIS Send Component")
+		void SetEntityAppearance(int32 NewEntityAppearance);
+
+	/**
 	* Updates the Dead Reckoning algorithm being used by the Send Component.
 	* @param NewDeadReckoningAlgorithm The new dead reckoning algorithm to use.
 	*/
@@ -134,6 +148,18 @@ public:
 		EEntityStateSendingMode EntityStatePDUSendingMode;
 
 	/**
+	* The dead reckoning algorithm to use. Specifies the dynamic changes to the entities appearance attributes.
+	*/
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "GRILL DIS|DIS Send Component|DIS Settings", Meta = (UIMin = 0, ClampMin = 0))
+		int32 EntityAppearance = 1;
+
+	/**
+	* The DIS Capabilities that the entity should have. Int representation of a collection of boolean fields which describe the capabilities of the entity.
+	*/
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "GRILL DIS|DIS Send Component|DIS Settings", Meta = (UIMin = 0, ClampMin = 0))
+		int32 EntityCapabilities = 1;
+
+	/**
 	* The dead reckoning algorithm to use.
 	*/
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "GRILL DIS|DIS Send Component|DIS Settings", Meta = (UIMin = 1, ClampMin = 1, UIMax = 9, ClampMax = 9))
@@ -158,6 +184,11 @@ protected:
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 
+	/**
+	* Takes in an Entity State PDU and emits it as an Entity State or Entity State Update PDU. Decides based on what EntityStatePDUSendingMode is set to.
+	* @param pduToSend The Entity State PDU to emit.
+	*/
+	bool EmitAppropriatePDU(FEntityStatePDU pduToSend);
 
 private:
 	float DeltaTimeSinceLastPDU = 0;
