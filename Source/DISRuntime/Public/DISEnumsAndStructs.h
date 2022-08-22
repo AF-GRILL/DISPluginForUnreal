@@ -129,7 +129,7 @@ enum class EPDUType : uint8
 	LinearObjectState,
 	ArealObjectState,
 	TimeSpacePositionInformation,
-	Appearance,
+	EntityAppearance,
 	ArticulatedParts,
 	LEFire,
 	LEDetonate,

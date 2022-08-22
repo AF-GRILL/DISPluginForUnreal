@@ -38,6 +38,7 @@ void UDISSendComponent::BeginPlay()
 	MostRecentDeadReckonedEntityStatePDU = MostRecentEntityStatePDU;
 	PreviousEntityStatePDU = MostRecentEntityStatePDU;
 
+	//Begin play with Entity State PDU
 	if (IsValid(UDPSubsystem) && EntityStatePDUSendingMode != EEntityStateSendingMode::None)
 	{
 		UDPSubsystem->EmitBytes(UPDUConversions_BPFL::ConvertEntityStatePDUToBytes(MostRecentEntityStatePDU));
@@ -82,18 +83,48 @@ void UDISSendComponent::EndPlay(const EEndPlayReason::Type EndPlayReason)
 		UE_LOG(LogDISSendComponent, Warning, TEXT("Invalid DISGameManager. Please make sure one is in the world."));
 	}
 
-	if (IsValid(UDPSubsystem) && EntityStatePDUSendingMode != EEntityStateSendingMode::None)
-	{
-		UDPSubsystem->EmitBytes(UPDUConversions_BPFL::ConvertEntityStatePDUToBytes(finalESPDU));
-	}
+	EmitAppropriatePDU(finalESPDU);
 
 	Super::EndPlay(EndPlayReason);
 }
 
+void UDISSendComponent::SetEntityCapabilities(int32 NewEntityCapabilities)
+{
+	//If the new entity capabilities differ, send out a new ESPDU
+	if (EntityStatePDUSendingMode == EEntityStateSendingMode::EntityStatePDU && NewEntityCapabilities != EntityCapabilities && NewEntityCapabilities >= 0)
+	{
+		EntityCapabilities = NewEntityCapabilities;
+
+		MostRecentEntityStatePDU = FormEntityStatePDU();
+		MostRecentDeadReckonedEntityStatePDU = MostRecentEntityStatePDU;
+		PreviousEntityStatePDU = MostRecentEntityStatePDU;
+
+		if (IsValid(UDPSubsystem))
+		{
+			UDPSubsystem->EmitBytes(UPDUConversions_BPFL::ConvertEntityStatePDUToBytes(MostRecentEntityStatePDU));
+		}
+	}
+}
+
+void UDISSendComponent::SetEntityAppearance(int32 NewEntityAppearance)
+{
+	//If the new appearance differs, send out a new ESPDU
+	if (NewEntityAppearance != EntityAppearance && NewEntityAppearance >= 0)
+	{
+		EntityAppearance = NewEntityAppearance;
+
+		MostRecentEntityStatePDU = FormEntityStatePDU();
+		MostRecentDeadReckonedEntityStatePDU = MostRecentEntityStatePDU;
+		PreviousEntityStatePDU = MostRecentEntityStatePDU;
+
+		EmitAppropriatePDU(MostRecentEntityStatePDU);
+	}
+}
+
 void UDISSendComponent::SetDeadReckoningAlgorithm(int32 NewDeadReckoningAlgorithm)
 {
-	//If the dead reckoning algorithm differs, send out a new ESPDU
-	if (EntityStatePDUSendingMode == EEntityStateSendingMode::EntityStatePDU && NewDeadReckoningAlgorithm != DeadReckoningAlgorithm)
+	//If the dead reckoning algorithm differs and is in the appropriate range, send out a new ESPDU
+	if (EntityStatePDUSendingMode == EEntityStateSendingMode::EntityStatePDU && NewDeadReckoningAlgorithm != DeadReckoningAlgorithm && NewDeadReckoningAlgorithm >= 1 && NewDeadReckoningAlgorithm <= 9)
 	{
 		DeadReckoningAlgorithm = NewDeadReckoningAlgorithm;
 
@@ -116,6 +147,11 @@ FEntityStatePDU UDISSendComponent::FormEntityStatePDU()
 	newEntityStatePDU.EntityType = EntityType;
 	newEntityStatePDU.ForceID = EntityForceID;
 	newEntityStatePDU.Marking = EntityMarking;
+	newEntityStatePDU.Capabilities = EntityCapabilities;
+	newEntityStatePDU.EntityAppearance = EntityAppearance;
+
+	newEntityStatePDU.DeadReckoningParameters.DeadReckoningAlgorithm = DeadReckoningAlgorithm;
+	float deltaTime = GetWorld()->DeltaTimeSeconds;
 
 	if (IsValid(DISGameManager))
 	{
@@ -126,6 +162,7 @@ FEntityStatePDU UDISSendComponent::FormEntityStatePDU()
 		UE_LOG(LogDISSendComponent, Warning, TEXT("Invalid DISGameManager. Please make sure one is in the world."));
 	}
 
+	//Set all geospatial values
 	if (IsValid(GeoReferencingSystem))
 	{
 		//Calculate the position of the entity in ECEF
@@ -150,10 +187,7 @@ FEntityStatePDU UDISSendComponent::FormEntityStatePDU()
 		UE_LOG(LogDISSendComponent, Warning, TEXT("Invalid GeoReference. Please make sure one is in the world."));
 	}
 
-	newEntityStatePDU.DeadReckoningParameters.DeadReckoningAlgorithm = DeadReckoningAlgorithm;
-
-	float deltaTime = GetWorld()->DeltaTimeSeconds;
-
+	//Set all Dead Reckoning Parameters
 	if (deltaTime > 0)
 	{
 		//Calculate the velocities and acceleration of the entity in m/s
@@ -328,25 +362,33 @@ bool UDISSendComponent::SendEntityStatePDU_Implementation()
 	bool sentUpdate = false;
 
 	//Verify a new Entity State or Entity State Update PDU should be sent
-	if ((EntityStatePDUSendingMode == EEntityStateSendingMode::EntityStatePDU || EntityStatePDUSendingMode == EEntityStateSendingMode::EntityStateUpdatePDU) && (CheckDeadReckoningThreshold() || DeltaTimeSinceLastPDU > DISHeartbeatSeconds))
+	if ((EntityStatePDUSendingMode == EEntityStateSendingMode::EntityStatePDU || EntityStatePDUSendingMode == EEntityStateSendingMode::EntityStateUpdatePDU) && (DeltaTimeSinceLastPDU > DISHeartbeatSeconds || CheckDeadReckoningThreshold()))
 	{
 		MostRecentEntityStatePDU = FormEntityStatePDU();
 		MostRecentDeadReckonedEntityStatePDU = MostRecentEntityStatePDU;
 		PreviousEntityStatePDU = MostRecentEntityStatePDU;
 
-		//Send out the appropriate PDU
-		if (IsValid(UDPSubsystem) && EntityStatePDUSendingMode == EEntityStateSendingMode::EntityStatePDU)
-		{
-			UDPSubsystem->EmitBytes(UPDUConversions_BPFL::ConvertEntityStatePDUToBytes(MostRecentEntityStatePDU));
-		}
-		else if (IsValid(UDPSubsystem) && EntityStatePDUSendingMode == EEntityStateSendingMode::EntityStateUpdatePDU)
-		{
-			UDPSubsystem->EmitBytes(UPDUConversions_BPFL::ConvertEntityStateUpdatePDUToBytes(MostRecentEntityStatePDU.ToEntityStateUpdatePDU()));
-		}
+		EmitAppropriatePDU(MostRecentEntityStatePDU);
 
 		sentUpdate = true;
 		DeltaTimeSinceLastPDU = 0;
 	}
 
 	return sentUpdate;
+}
+
+bool UDISSendComponent::EmitAppropriatePDU(FEntityStatePDU pduToSend)
+{
+	bool successful = false;
+	//Send out the appropriate PDU
+	if (IsValid(UDPSubsystem) && EntityStatePDUSendingMode == EEntityStateSendingMode::EntityStatePDU)
+	{
+		successful = UDPSubsystem->EmitBytes(UPDUConversions_BPFL::ConvertEntityStatePDUToBytes(pduToSend));
+	}
+	else if (IsValid(UDPSubsystem) && EntityStatePDUSendingMode == EEntityStateSendingMode::EntityStateUpdatePDU)
+	{
+		successful = UDPSubsystem->EmitBytes(UPDUConversions_BPFL::ConvertEntityStateUpdatePDUToBytes(pduToSend.ToEntityStateUpdatePDU()));
+	}
+
+	return successful;
 }
