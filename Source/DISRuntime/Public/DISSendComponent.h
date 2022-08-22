@@ -151,13 +151,13 @@ public:
 	* The dead reckoning algorithm to use. Specifies the dynamic changes to the entities appearance attributes.
 	*/
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "GRILL DIS|DIS Send Component|DIS Settings", Meta = (UIMin = 0, ClampMin = 0))
-		int32 EntityAppearance = 1;
+		int32 EntityAppearance = 0;
 
 	/**
 	* The DIS Capabilities that the entity should have. Int representation of a collection of boolean fields which describe the capabilities of the entity.
 	*/
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "GRILL DIS|DIS Send Component|DIS Settings", Meta = (UIMin = 0, ClampMin = 0))
-		int32 EntityCapabilities = 1;
+		int32 EntityCapabilities = 0;
 
 	/**
 	* The dead reckoning algorithm to use.
