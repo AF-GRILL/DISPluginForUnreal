@@ -199,6 +199,10 @@
 		- Uses all known information to form an ESPDU for the associated DIS Entity.
     - Send Entity State PDU
         - Can be overriden in blueprints for a custom implementation.
+    - Set Entity Appearance
+		- Used to update the entity appearance during runtime.
+    - Set Entity Capabilities
+		- Used to update the entity capabilities during runtime.
 	- Set Dead Reckoning Algorithm
 		- Used to update the dead reckoning algorithm during runtime.
 	
@@ -228,10 +232,16 @@
 					- Don't send any automatic Entity State or Entity State Update PDU updates.
 				- Entity State PDU
 					- Automatically send out Entity State PDU updates.
-					- Will send out a new PDU when a Dead Reckoning Threshold is clipped, the DIS heartbeat expires, when the Dead Reckoning algoritm is changed, or when the entity expires in the world.
+					- Will send out a new PDU when a Dead Reckoning Threshold is clipped, the DIS heartbeat expires, when the Dead Reckoning algoritm is changed, when the entity Capabilities are changed, when the entity Appearance is changed, or when the entity expires in the world.
 				- Entity State Update PDU
 					- Automatically send out Entity State Update PDU updates.
-					- Will send out a new PDU when a Dead Reckoning Threshold is clipped, the DIS heartbeat expires, or when the entity expires in the world.
+					- Will send out a new PDU when a Dead Reckoning Threshold is clipped, the DIS heartbeat expires, when the entity Appearance is changed, or when the entity expires in the world.
+    - Entity Appearance
+        - Represented as an int-32 field. Specifies the dynamic changes to the entities appearance attributes.
+        - Refer to DIS Standard IEEE 1278.1 document for a breakdown.
+    - Entity Capabilities
+        - Represented as an int-32 field. A collection of fields which describe the capabilities of the Entity.
+        - Refer to DIS Standard IEEE 1278.1 document for a breakdown.
 	- Dead Reckoning Algorithm
 		- The dead reckoning algorithm to use.
     - Dead Reckoning Position Threshold Meters
