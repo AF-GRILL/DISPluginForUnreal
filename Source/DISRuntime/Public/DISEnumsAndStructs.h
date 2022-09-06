@@ -44,6 +44,21 @@ enum class EGroundClampingMode : uint8
 };
 
 UENUM(BlueprintType)
+enum class EDeadReckoningAlgorithm : uint8
+{
+	Other		UMETA(Tooltip = "Using a custom DR algorithm."),
+	Static		UMETA(Tooltip = "Static. Entity does not move."),
+	FPW			UMETA(Tooltip = "Fixed Position World"),
+	RPW			UMETA(Tooltip = "Rotation Position World"),
+	RVW			UMETA(Tooltip = "Rotation Velocity World"),
+	FVW			UMETA(Tooltip = "Fixed Velocity World"),
+	FPB			UMETA(Tooltip = "Fixed Position Body"),
+	RPB			UMETA(Tooltip = "Rotation Position Body"),
+	RVB			UMETA(Tooltip = "Rotation Velocity Body"),
+	FVB			UMETA(Tooltip = "Fixed Velocity Body")
+};
+
+UENUM(BlueprintType)
 enum class EForceID : uint8
 {
 	Other		UMETA(DisplayName = "Other"),
@@ -423,6 +438,13 @@ struct FPsiThetaPhi
 		this->Psi = Psi;
 		this->Theta = Theta;
 		this->Phi = Phi;
+	}
+
+	FPsiThetaPhi(FRotator UnrealRotation)
+	{
+		this->Psi = UnrealRotation.Yaw;
+		this->Theta = UnrealRotation.Pitch;
+		this->Phi = UnrealRotation.Roll;
 	}
 };
 
@@ -917,8 +939,8 @@ struct FDeadReckoningParameters
 	GENERATED_BODY()
 
 	/** The type of dead reackoning algorithm used by the entity (0 - 9) */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ClampMin = "0", ClampMax = "9"), Category="GRILL DIS|Structs")
-		uint8 DeadReckoningAlgorithm;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="GRILL DIS|Structs")
+		EDeadReckoningAlgorithm DeadReckoningAlgorithm;
 	/** Field used to specify other dead reckoning parameters which are currently undefined */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="GRILL DIS|Structs")
 		TArray<uint8> OtherParameters;
@@ -931,7 +953,7 @@ struct FDeadReckoningParameters
 
 	FDeadReckoningParameters()
 	{
-		DeadReckoningAlgorithm = 0U;
+		DeadReckoningAlgorithm = EDeadReckoningAlgorithm::Static;
 		OtherParameters.Init(0, 15);
 		EntityLinearAcceleration = FVector(0, 0, 0);
 		EntityAngularVelocity = FVector(0, 0, 0);
@@ -940,7 +962,7 @@ struct FDeadReckoningParameters
 	DIS::DeadReckoningParameter ToOpenDIS() const
 	{
 		DIS::DeadReckoningParameter OutParam;
-		OutParam.setDeadReckoningAlgorithm(DeadReckoningAlgorithm);
+		OutParam.setDeadReckoningAlgorithm((uint8)DeadReckoningAlgorithm);
 		OutParam.setOtherParameters(reinterpret_cast<const char*>(OtherParameters.GetData()));
 		DIS::Vector3Float OutLinearAcceleration;
 		OutLinearAcceleration.setX(EntityLinearAcceleration.X);

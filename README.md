@@ -147,16 +147,16 @@
     - Latest Entity State PDU Timestamp
     - Spawned From Network
         - Whether or not this entity was spawned from the network.
-    - Entity Type _(Read Only)_
+    - Entity Type _(Blueprint Read Only)_
 		- This record specifies the kind of entity, the country of design, the domain, the specific identification of the entity, and any extra information necessary for describing the entity.
         - This value gets set when an Entity State PDU or Entity State Update PDU is received for the associated entity.
-    - Entity ID _(Read Only)_
+    - Entity ID _(Blueprint Read Only)_
 		- This record specifies the site ID, application ID, and entity ID fields. They combine to form a unique identifier of the entity in the exercise.
         - This value gets set when an Entity State PDU or Entity State Update PDU is received for the associated entity.
-    - Entity Force ID _(Read Only)_
+    - Entity Force ID _(Blueprint Read Only)_
 		- This field distinguishes the different teams or sides in a DIS exercise.
         - This value gets set when an Entity State PDU or Entity State Update PDU is received for the associated entity.
-    - Entity Marking _(Read Only)_
+    - Entity Marking _(Blueprint Read Only)_
 		- This record is used to specify the friendly name of the entity to be interpreted for display.
         - This value gets set when an Entity State PDU or Entity State Update PDU is received for the associated entity.
     - DIS Timeout

@@ -101,7 +101,7 @@ struct FEntityStatePDU : public FEntityInformationFamilyPDU
 		EntityLinearVelocity[2] = EntityStatePDUIn->getEntityLinearVelocity().getZ();
 
 		//Dead reckoning
-		DeadReckoningParameters.DeadReckoningAlgorithm = EntityStatePDUIn->getDeadReckoningParameters().getDeadReckoningAlgorithm();
+		DeadReckoningParameters.DeadReckoningAlgorithm = static_cast<EDeadReckoningAlgorithm>(EntityStatePDUIn->getDeadReckoningParameters().getDeadReckoningAlgorithm());
 		DeadReckoningParameters.OtherParameters = TArray<uint8>(reinterpret_cast<uint8*>(EntityStatePDUIn->getDeadReckoningParameters().getOtherParameters()), 15);
 		DeadReckoningParameters.EntityLinearAcceleration[0] = EntityStatePDUIn->getDeadReckoningParameters().getEntityLinearAcceleration().getX();
 		DeadReckoningParameters.EntityLinearAcceleration[1] = EntityStatePDUIn->getDeadReckoningParameters().getEntityLinearAcceleration().getY();
