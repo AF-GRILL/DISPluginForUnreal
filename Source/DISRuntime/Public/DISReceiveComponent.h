@@ -126,13 +126,13 @@ public:
 		void GroundClamping();
 
 	/**
-	* The most recent Entity State PDU that has been received.
+	 * The most recent Entity State PDU that has been received.
 	*/
 	UPROPERTY(BlueprintReadWrite, Category = "GRILL DIS|DIS Receive Component|DIS Info")
 		FEntityStatePDU MostRecentEntityStatePDU;
 
 	/**
-	* The most recent Dead Reckoned Entity State PDU that has been calculated.
+	 * The most recent Dead Reckoned Entity State PDU that has been calculated.
 	*/
 	UPROPERTY(BlueprintReadWrite, Category = "GRILL DIS|DIS Receive Component|DIS Info")
 		FEntityStatePDU MostRecentDeadReckonedEntityStatePDU;
@@ -197,7 +197,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|DIS Receive Component|DIS Settings", meta = (EditCondition = "PerformDeadReckoning"))
 		bool PerformDeadReckoningSmoothing = true;
 	/**
-	* Number of seconds to smooth between dead reckoned information and packet information if dead reckoning is enabled
+	 * Number of seconds to smooth between dead reckoned information and packet information if dead reckoning is enabled
 	*/
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|DIS Receive Component|DIS Settings", meta = (EditCondition = "PerformDeadReckoning && PerformDeadReckoningSmoothing"))
 		float DeadReckoningSmoothingPeriodSeconds = 0.5f;

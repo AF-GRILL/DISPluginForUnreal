@@ -22,27 +22,27 @@ class DISRUNTIME_API UDeadReckoning_BPFL : public UBlueprintFunctionLibrary
 
 public:
 	/**
-	* Performs dead reckoning on the given Entity PDU.
-	* @param EntityPDUToDeadReckon The Entity State PDU to perform dead reckoning on.
-	* @param DeltaTime The time elapsed in seconds that dead reckoning should be calculated for.
-	* @param DeadReckonedEntityPDU The resulting dead reckoned EntityStatePDU that contains all of the dead reckoning information.
+	 * Performs dead reckoning on the given Entity PDU.
+	 * @param EntityPDUToDeadReckon The Entity State PDU to perform dead reckoning on.
+	 * @param DeltaTime The time elapsed in seconds that dead reckoning should be calculated for.
+	 * @param DeadReckonedEntityPDU The resulting dead reckoned EntityStatePDU that contains all of the dead reckoning information.
 	*/
 	UFUNCTION(BlueprintPure, Category = "GRILL DIS|Dead Reckoning")
 		static bool DeadReckoning(FEntityStatePDU EntityPDUToDeadReckon, float DeltaTime, FEntityStatePDU& DeadReckonedEntityPDU);
 
 	/**
-	* Forms the Other Parameters section utilized in Dead Reckoning Parameters.
-	* @param DeadReckoningAlgorithm The dead reckoning algorithm being used.
-	* @param EntityPsiThetaPhiRadians The Psi, Theta, Phi orientation of the entity.
-	* @param EntityECEFLocation The ECEF location of the entity.
+	 * Forms the Other Parameters section utilized in Dead Reckoning Parameters.
+	 * @param DeadReckoningAlgorithm The dead reckoning algorithm being used.
+	 * @param EntityPsiThetaPhiRadians The Psi, Theta, Phi orientation of the entity.
+	 * @param EntityECEFLocation The ECEF location of the entity.
 	*/
 	UFUNCTION(BlueprintPure, Category = "GRILL DIS|Dead Reckoning")
-		static TArray<uint8> FormOtherParameters(uint8 DeadReckoningAlorithm, FRotator EntityPsiThetaPhiRadians, FVector EntityECEFLocation);
+		static TArray<uint8> FormOtherParameters(EDeadReckoningAlgorithm DeadReckoningAlgorithm, FRotator EntityPsiThetaPhiRadians, FVector EntityECEFLocation);
 
 	/**
-	* Get the rotation difference between the two given rotators. Done using quaternion math. Signs of the axes are updated to indicate direction of rotation.
-	* @param OldRotation The old Unreal Engine rotation that the entity had. Should be given in degrees.
-	* @param NewRotation The new Unreal Engine rotation that the entity has. Should be given in degrees.
+	 * Get the rotation difference between the two given rotators. Done using quaternion math. Signs of the axes are updated to indicate direction of rotation.
+	 * @param OldRotation The old Unreal Engine rotation that the entity had. Should be given in degrees.
+	 * @param NewRotation The new Unreal Engine rotation that the entity has. Should be given in degrees.
 	*/
 	static FRotator CalculateDirectionalRotationDifference(FRotator OldRotation, FRotator NewRotation);
 
@@ -77,13 +77,21 @@ public:
 	static FQuat GetEntityOrientationQuaternion(double PsiRadians, double ThetaRadians, double PhiRadians);
 
 private:
+
+	static const double MIN_ROTATION_RATE;
+
 	/**
-	* Calculates the Psi, Theta, Phi orientation for the entity from the given orientation quaternion. Utilized as a final step in converting quaternion OtherParameters to an orientation.
-	* @param EntityPDUToDeadReckon The Entity PDU being dead reckoned
-	* @param EntityRotationQuaternion The orientation quaternion to use to calculate the Psi, Theta, Phi orientation
-	* @param DeltaTime The time increment for dead reckoning calculation
+	 *Checks if the machine is in Little Endian.Returns true if Little Endian or false if Big Endian.
 	*/
-	static FRotator CalculateDeadReckonedEulerAnglesFromQuaternion(FEntityStatePDU EntityPDUToDeadReckon, FQuat EntityRotationQuaternion, float DeltaTime);
+	static bool IsMachineLittleEndian();
+
+	/**
+	 * Calculates the Psi, Theta, Phi orientation for the entity from the given orientation quaternion. Utilized as a final step in converting quaternion OtherParameters to an orientation.
+	 * @param AngularVelocityVector The angular velocity of the entity
+	 * @param EntityRotationQuaternion The orientation quaternion to use to calculate the Psi, Theta, Phi orientation
+	 * @param DeltaTime The time increment for dead reckoning calculation
+	*/
+	static FRotator CalculateDeadReckonedEulerAnglesFromQuaternion(glm::dvec3 AngularVelocityVector, FQuat EntityRotationQuaternion, float DeltaTime);
 
 	/**
 	 * Gets the local yaw, pitch, and roll from the other parameters structure. The yaw, pitch, and roll act on the entity's local North, East, Down vectors.
@@ -113,7 +121,7 @@ private:
 	 * @param InitialPositionVector The initial position of the entity in body coordinates
 	 * @param BodyVelocityVector The initial velocity in body coordinates
 	 * @param BodyLinearAccelerationVector The initial linear acceleration in body coordinates
-	 * @param BodyAngularVelocityVector The initial angular acceleration in body coordinates
+	 * @param BodyAngularVelocityVector The initial angular velocity in body coordinates
 	 * @param EntityOrientation The orientation of the entity (Psi[Yaw]/Theta[Pitch]/Phi[Roll]) in radians
 	 * @param DeltaTime The time increment for dead reckoning calculation
 	 */
@@ -131,4 +139,12 @@ private:
 	 * @param OutPhiRadians The rotation about the X axis in radians after time step DeltaTime
 	 */
 	static void CalculateDeadReckonedOrientation(double PsiRadians, double ThetaRadians, double PhiRadians, glm::dvec3 AngularVelocityVector, float DeltaTime, double& OutPsiRadians, double& OutThetaRadians, double& OutPhiRadians);
+
+	/**
+	 * Converts the given local heading, pitch, roll rotator in radians into world space psi, theta, phi rotator in radians.
+	 * @param ECEFLocation The ECEF location of the entity.
+	 * @param LocalRotatorRadians The local heading, pitch, roll rotator in radians
+	 * @param PsiThetaPhiRadians The world space psi, theta, phi rotator in radians
+	*/
+	static void ConvertLocalRotatorToPsiThetaPhiRadians(FVector ECEFLocation, FRotator LocalRotatorRadians, FPsiThetaPhi& PsiThetaPhiRadians);
 };

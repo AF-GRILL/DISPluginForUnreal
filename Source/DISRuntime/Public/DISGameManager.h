@@ -66,9 +66,9 @@ public:
 	static const FName SPAWNED_FROM_NETWORK_TAG;
 
 	/**
-	* Gets a reference to the DIS Game Manager actor in the current open level.
-	* Returns the reference to the Game Manager if one is found. Returns null if nothing is found or if multiple exist in the level.
-	* @param WorldContextObject Object to get a world object pointer from.
+	 * Gets a reference to the DIS Game Manager actor in the current open level.
+	 * Returns the reference to the Game Manager if one is found. Returns null if nothing is found or if multiple exist in the level.
+	 * @param WorldContextObject Object to get a world object pointer from.
 	*/
 	UFUNCTION(BlueprintPure, Category = "GRILL DIS|Game Manager", meta = (WorldContext = "WorldContextObject"))
 		static ADISGameManager* GetDISGameManager(UObject* WorldContextObject);

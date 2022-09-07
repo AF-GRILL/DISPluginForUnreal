@@ -242,7 +242,7 @@ public:
 	 * @param ECEF The ECEF location of the given Unreal location.
 	*/
 	UFUNCTION(BlueprintPure, Category = "GRILL DIS|Unit Conversions")
-		static void CalculateEcefXYZFromUnrealLocation(const FVector UnrealLocation, AGeoReferencingSystem* GeoReferencingSystem, FVector& ECEF);
+		static void GetEcefXYZFromUnrealLocation(const FVector UnrealLocation, AGeoReferencingSystem* GeoReferencingSystem, FVector& ECEF);
 
 	/**
 	 * Calculate the latitude in degrees, longitude in degrees, and height in meters of the given Unreal location
@@ -251,7 +251,7 @@ public:
 	 * @param LatLonHeightDegreesMeters The latitude (x) in degrees, longitude (y) in degrees, and height (z) in meters of the given Unreal location.
 	*/
 	UFUNCTION(BlueprintPure, Category = "GRILL DIS|Unit Conversions")
-		static void CalculateLatLonHeightFromUnrealLocation(const FVector UnrealLocation, AGeoReferencingSystem* GeoReferencingSystem, FVector& LatLonHeightDegreesMeters);
+		static void GetLatLonHeightFromUnrealLocation(const FVector UnrealLocation, AGeoReferencingSystem* GeoReferencingSystem, FVector& LatLonHeightDegreesMeters);
 
 	/**
 	 * Get the Unreal rotation from the given Heading, Pitch, Roll rotation in degrees.
@@ -369,7 +369,7 @@ public:
 	 * @param HeadingPitchRollDegrees The heading from North, its pitch, and roll in degrees
 	 */
 	UFUNCTION(BlueprintPure, Category = "GRILL DIS|Unit Conversions")
-	static void GetHeadingPitchRollFromUnrealRotation(const FRotator UnrealRotation, const FVector UnrealLocation, AGeoReferencingSystem* GeoReferencingSystem, FHeadingPitchRoll& HeadingPitchRollDegrees);
+		static void GetHeadingPitchRollFromUnrealRotation(const FRotator UnrealRotation, const FVector UnrealLocation, AGeoReferencingSystem* GeoReferencingSystem, FHeadingPitchRoll& HeadingPitchRollDegrees);
 
 	/**
 	 * Gets the Psi (Yaw), Theta (Pitch), and Phi (Roll) in degrees of the given Unreal rotation at the given Unreal location
@@ -419,7 +419,7 @@ public:
 	 * @param EastNorthUpVectors The resulting East, North, and Up vectors representing the current orientation
 	 */
 	UFUNCTION(BlueprintPure, Category = "GRILL DIS|Unit Conversions")
-	static void GetEastNorthUpVectorsFromNorthEastDownVectors(FNorthEastDown NorthEastDownVectors, FEastNorthUp& EastNorthUpVectors);
+		static void GetEastNorthUpVectorsFromNorthEastDownVectors(FNorthEastDown NorthEastDownVectors, FEastNorthUp& EastNorthUpVectors);
 
 	/**
 	 * Get the North, East, and Down vectors from the East, North, and Up vector struct
@@ -427,7 +427,16 @@ public:
 	 * @param NorthEastDownVectors The resulting North, East, and Down vectors representing the current orientation
 	 */
 	UFUNCTION(BlueprintPure, Category = "GRILL DIS|Unit Conversions")
-	static void GetNorthEastDownVectorsFromEastNorthUpVectors(FEastNorthUp EastNorthUpVectors, FNorthEastDown& NorthEastDownVectors);
+		static void GetNorthEastDownVectorsFromEastNorthUpVectors(FEastNorthUp EastNorthUpVectors, FNorthEastDown& NorthEastDownVectors);
+
+	/**
+	 * Converts the given Unreal Engine vector to be in terms of ECEF. Resulting vector will be same magnitude, but in direction of ECEF NED vectors of the given location.
+	 * @param UnrealVector The Unreal vector to be converted to ECEF coordinates
+	 * @param CurrentLocation The Unreal Engine location that the entity is at
+	 * @param GeoReferencingSystem The GeoReferencing Subsystem reference.
+	*/
+	UFUNCTION(BlueprintPure, Category = "GRILL DIS|Unit Conversions")
+		static FVector ConvertUnrealVectorToECEFVector(FVector UnrealVector, FVector CurrentLocation, AGeoReferencingSystem* GeoReferencingSystem);
 
 	/**
 	 * Convert between North, East, Down and East, North, Up orientation representation using double values
