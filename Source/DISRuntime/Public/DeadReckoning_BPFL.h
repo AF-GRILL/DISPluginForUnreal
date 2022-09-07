@@ -87,11 +87,11 @@ private:
 
 	/**
 	 * Calculates the Psi, Theta, Phi orientation for the entity from the given orientation quaternion. Utilized as a final step in converting quaternion OtherParameters to an orientation.
-	 * @param EntityPDUToDeadReckon The Entity PDU being dead reckoned
+	 * @param AngularVelocityVector The angular velocity of the entity
 	 * @param EntityRotationQuaternion The orientation quaternion to use to calculate the Psi, Theta, Phi orientation
 	 * @param DeltaTime The time increment for dead reckoning calculation
 	*/
-	static FRotator CalculateDeadReckonedEulerAnglesFromQuaternion(FEntityStatePDU EntityPDUToDeadReckon, FQuat EntityRotationQuaternion, float DeltaTime);
+	static FRotator CalculateDeadReckonedEulerAnglesFromQuaternion(glm::dvec3 AngularVelocityVector, FQuat EntityRotationQuaternion, float DeltaTime);
 
 	/**
 	 * Gets the local yaw, pitch, and roll from the other parameters structure. The yaw, pitch, and roll act on the entity's local North, East, Down vectors.

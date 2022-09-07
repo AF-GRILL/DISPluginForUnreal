@@ -15,11 +15,9 @@ bool UDeadReckoning_BPFL::IsMachineLittleEndian()
 	return (e == (char)1);
 }
 
-FRotator UDeadReckoning_BPFL::CalculateDeadReckonedEulerAnglesFromQuaternion(FEntityStatePDU EntityPDUToDeadReckon, FQuat EntityRotationQuaternion, float DeltaTime)
+FRotator UDeadReckoning_BPFL::CalculateDeadReckonedEulerAnglesFromQuaternion(glm::dvec3 AngularVelocityVector, FQuat EntityRotationQuaternion, float DeltaTime)
 {
 	//Calculate dead reckoning orienation quaternion
-	glm::dvec3 AngularVelocityVector = glm::dvec3(EntityPDUToDeadReckon.DeadReckoningParameters.EntityAngularVelocity.X,
-		EntityPDUToDeadReckon.DeadReckoningParameters.EntityAngularVelocity.Y, EntityPDUToDeadReckon.DeadReckoningParameters.EntityAngularVelocity.Z);
 	FQuat deadReckonedQuaternion = CreateDeadReckoningQuaternion(AngularVelocityVector, DeltaTime);
 	FQuat finalDeadReckonedQuat = EntityRotationQuaternion * deadReckonedQuaternion;
 
@@ -465,7 +463,10 @@ bool UDeadReckoning_BPFL::DeadReckoning(FEntityStatePDU EntityPDUToDeadReckon, f
 
 		if (bUseOtherParams)
 		{
-			DeadReckonedEntityPDU.EntityOrientation = CalculateDeadReckonedEulerAnglesFromQuaternion(EntityPDUToDeadReckon, EntityRotationQuaternion, DeltaTime);
+			auto AngularVelocityVector = glm::dvec3(EntityPDUToDeadReckon.DeadReckoningParameters.EntityAngularVelocity.X,
+				EntityPDUToDeadReckon.DeadReckoningParameters.EntityAngularVelocity.Y, EntityPDUToDeadReckon.DeadReckoningParameters.EntityAngularVelocity.Z);
+
+			DeadReckonedEntityPDU.EntityOrientation = CalculateDeadReckonedEulerAnglesFromQuaternion(AngularVelocityVector, EntityRotationQuaternion, DeltaTime);
 		}
 		else
 		{
@@ -504,7 +505,10 @@ bool UDeadReckoning_BPFL::DeadReckoning(FEntityStatePDU EntityPDUToDeadReckon, f
 
 		if (bUseOtherParams)
 		{
-			DeadReckonedEntityPDU.EntityOrientation = CalculateDeadReckonedEulerAnglesFromQuaternion(EntityPDUToDeadReckon, EntityRotationQuaternion, DeltaTime);
+			auto AngularVelocityVector = glm::dvec3(EntityPDUToDeadReckon.DeadReckoningParameters.EntityAngularVelocity.X,
+				EntityPDUToDeadReckon.DeadReckoningParameters.EntityAngularVelocity.Y, EntityPDUToDeadReckon.DeadReckoningParameters.EntityAngularVelocity.Z);
+
+			DeadReckonedEntityPDU.EntityOrientation = CalculateDeadReckonedEulerAnglesFromQuaternion(AngularVelocityVector, EntityRotationQuaternion, DeltaTime);
 		}
 		else
 		{
@@ -608,7 +612,10 @@ bool UDeadReckoning_BPFL::DeadReckoning(FEntityStatePDU EntityPDUToDeadReckon, f
 
 		if (bUseOtherParams)
 		{
-			DeadReckonedEntityPDU.EntityOrientation = CalculateDeadReckonedEulerAnglesFromQuaternion(EntityPDUToDeadReckon, EntityRotationQuaternion, DeltaTime);
+			auto AngularVelocityVector = glm::dvec3(EntityPDUToDeadReckon.DeadReckoningParameters.EntityAngularVelocity.X,
+				EntityPDUToDeadReckon.DeadReckoningParameters.EntityAngularVelocity.Y, EntityPDUToDeadReckon.DeadReckoningParameters.EntityAngularVelocity.Z);
+
+			DeadReckonedEntityPDU.EntityOrientation = CalculateDeadReckonedEulerAnglesFromQuaternion(AngularVelocityVector, EntityRotationQuaternion, DeltaTime);
 		}
 		else
 		{
@@ -649,7 +656,7 @@ bool UDeadReckoning_BPFL::DeadReckoning(FEntityStatePDU EntityPDUToDeadReckon, f
 
 		if (bUseOtherParams)
 		{
-			DeadReckonedEntityPDU.EntityOrientation = CalculateDeadReckonedEulerAnglesFromQuaternion(EntityPDUToDeadReckon, EntityRotationQuaternion, DeltaTime);
+			DeadReckonedEntityPDU.EntityOrientation = CalculateDeadReckonedEulerAnglesFromQuaternion(BodyAngularVelocityVector, EntityRotationQuaternion, DeltaTime);
 		}
 		else
 		{
