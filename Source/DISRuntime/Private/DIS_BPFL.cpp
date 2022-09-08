@@ -646,7 +646,7 @@ void UDIS_BPFL::GetNorthEastDownVectorsFromEastNorthUpVectors(const FEastNorthUp
 
 FVector UDIS_BPFL::ConvertUnrealVectorToECEFVector(FVector UnrealVector, FVector CurrentLocation, AGeoReferencingSystem* GeoReferencingSystem)
 {
-	FVector unrealVector = UnrealVector;
+	FVector ecefVector = FVector();
 
 	if (IsValid(GeoReferencingSystem))
 	{
@@ -655,11 +655,11 @@ FVector UDIS_BPFL::ConvertUnrealVectorToECEFVector(FVector UnrealVector, FVector
 		UDIS_BPFL::GetLatLonHeightFromUnrealLocation(CurrentLocation, GeoReferencingSystem, llh);
 		UDIS_BPFL::CalculateNorthEastDownVectorsFromLatLon(llh.Latitude, llh.Longitude, nedVectors);
 
-		//Convert the Unreal Engine linear velocity to be in terms of ECEF
-		unrealVector = nedVectors.NorthVector * -unrealVector.Y + nedVectors.EastVector * unrealVector.X - nedVectors.DownVector * unrealVector.Z;
+		//Convert the Unreal Engine vector to be in terms of ECEF
+		ecefVector = nedVectors.NorthVector * -UnrealVector.Y + nedVectors.EastVector * UnrealVector.X - nedVectors.DownVector * UnrealVector.Z;
 	}
 
-	return unrealVector;
+	return ecefVector;
 }
 
 glm::dmat3 UDIS_BPFL::ConvertNedAndEnu(const glm::dmat3 StartingVectors)
