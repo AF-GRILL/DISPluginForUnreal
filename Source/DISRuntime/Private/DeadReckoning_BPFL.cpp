@@ -77,6 +77,13 @@ TArray<uint8> UDeadReckoning_BPFL::FormOtherParameters(EDeadReckoningAlgorithm D
 		memcpy(charHeading, &hprRadians.Heading, sizeof(hprRadians.Heading));
 		memcpy(charPitch, &hprRadians.Pitch, sizeof(hprRadians.Pitch));
 		memcpy(charRoll, &hprRadians.Roll, sizeof(hprRadians.Roll));
+
+		if (IsMachineLittleEndian())
+		{
+			Algo::Reverse(charHeading);
+			Algo::Reverse(charPitch);
+			Algo::Reverse(charRoll);
+		}
 	}
 	else if (DeadReckoningAlgorithm == EDeadReckoningAlgorithm::RPW || DeadReckoningAlgorithm == EDeadReckoningAlgorithm::RVW || DeadReckoningAlgorithm == EDeadReckoningAlgorithm::RPB || DeadReckoningAlgorithm == EDeadReckoningAlgorithm::RVB)
 	{
