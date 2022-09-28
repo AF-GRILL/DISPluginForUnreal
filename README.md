@@ -201,7 +201,7 @@
 		- Uses all known information to form an ESPDU for the associated DIS Entity.
     - Send Entity State PDU
 		- Default implemented behavior tries to send out an Entity State or Entity State Update PDU based on Entity State PDU Sending Mode variable.
-		- Called on a timer as thresholds need consistently checked. Timer frequency set using the Entity State Calculation Rate variable.
+		- Called on tick as thresholds need consistently checked.
     - Set Entity Appearance
 		- Used to update the entity appearance during runtime.
     - Set Entity Capabilities
