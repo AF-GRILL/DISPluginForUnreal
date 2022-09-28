@@ -201,14 +201,19 @@
 		- Uses all known information to form an ESPDU for the associated DIS Entity.
     - Send Entity State PDU
 		- Default implemented behavior tries to send out an Entity State or Entity State Update PDU based on Entity State PDU Sending Mode variable.
-		- Called on tick as thresholds need consistently checked.
-        - Can be overriden in blueprints for a custom implementation.
+		- Called on a timer as thresholds need consistently checked. Timer frequency set using the Entity State Calculation Rate variable.
     - Set Entity Appearance
 		- Used to update the entity appearance during runtime.
     - Set Entity Capabilities
 		- Used to update the entity capabilities during runtime.
 	- Set Dead Reckoning Algorithm
 		- Used to update the dead reckoning algorithm during runtime.
+	- CalculateECEFLinearVelocityAndAcceleration
+		- Calculates the Linear Velocity and Linear Acceleration of the entity that this component is attached to. Calculates them in terms of ECEF world coordinates.
+	- CalculateBodyLinearVelocityAndAcceleration
+		- Calculates the Linear Velocity and Linear Acceleration of the entity that this component is attached to. Calculates them in terms of entity body coordinates.
+	- CalculateAngularVelocity
+		- Calculates the angular velocity for the entity that the component is attached to. Angular velocity is in terms of radians per second.
 	
 ![DISSendComponentFunctions](Resources/ReadMeImages/DISSendComponentFunctions.png)
 
@@ -242,6 +247,8 @@
 				- Entity State Update PDU
 					- Automatically send out Entity State Update PDU updates.
 					- Will send out a new PDU when a Dead Reckoning Threshold is clipped, the DIS heartbeat expires, when the entity Appearance is changed, or when the entity expires in the world.
+	- Entity State Calculation Rate
+		- The rate at which the Entity State parameters (angular velocity, linear velocity, linear acceleration) should be calculated. The more often, the more accurate sent Entity State PDUs will be.
     - Entity Appearance
         - Represented as an int-32 field. Specifies the dynamic changes to the entities appearance attributes.
         - Refer to DIS Standard IEEE 1278.1 document for a breakdown.

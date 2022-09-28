@@ -30,19 +30,44 @@ void UDISSendComponent::BeginPlay()
 	UDPSubsystem = UGameplayStatics::GetGameInstance(GetWorld())->GetSubsystem<UUDPSubsystem>();
 
 	//Setup Previous/Current Location and Rotation variables.
-	PreviousUnrealLocation = GetOwner()->GetActorLocation();
-	PreviousUnrealRotation = GetOwner()->GetActorRotation();
+	LastCalculatedUnrealLocation = GetOwner()->GetActorLocation();
+	LastCalculatedUnrealRotation = GetOwner()->GetActorRotation();
+
+	TimeOfLastParametersCalculation = FDateTime::Now();
 
 	//Form Entity State PDU packets
 	MostRecentEntityStatePDU = FormEntityStatePDU();
 	MostRecentDeadReckonedEntityStatePDU = MostRecentEntityStatePDU;
-	PreviousEntityStatePDU = MostRecentEntityStatePDU;
 
 	//Begin play with Entity State PDU
 	if (IsValid(UDPSubsystem) && EntityStatePDUSendingMode != EEntityStateSendingMode::None)
 	{
 		UDPSubsystem->EmitBytes(UPDUConversions_BPFL::ConvertEntityStatePDUToBytes(MostRecentEntityStatePDU));
 	}
+
+	GetWorld()->GetTimerManager().SetTimer(UpdateEntityStateCalculationsHandle, this, &UDISSendComponent::UpdateEntityStateCalculations, EntityStateCalculationRate, true);
+}
+
+void UDISSendComponent::UpdateEntityStateCalculations()
+{
+	double deltaTime = (FDateTime::Now() - TimeOfLastParametersCalculation).GetTotalSeconds();
+
+	//Update previous velocity, rotation, and location regardless of if an Entity State PDU was sent out.		
+	LastCalculatedAngularVelocity = CalculateAngularVelocity();
+
+	CalculateECEFLinearVelocityAndAcceleration(LastCalculatedECEFLinearVelocity, LastCalculatedECEFLinearAcceleration);
+	CalculateBodyLinearVelocityAndAcceleration(LastCalculatedAngularVelocity, LastCalculatedBodyLinearVelocity, LastCalculatedBodyLinearAcceleration);
+
+	if (deltaTime > 0)
+	{
+		//Divide location offset by 100 to convert to meters
+		LastCalculatedUnrealLinearVelocity = (GetOwner()->GetActorLocation() - LastCalculatedUnrealLocation) / (deltaTime * 100);
+	}
+
+	LastCalculatedUnrealLocation = GetOwner()->GetActorLocation();
+	LastCalculatedUnrealRotation = GetOwner()->GetActorRotation();
+
+	TimeOfLastParametersCalculation = FDateTime::Now();
 }
 
 // Called every frame
@@ -56,13 +81,6 @@ void UDISSendComponent::TickComponent(float DeltaTime, ELevelTick TickType, FAct
 	{
 		SendEntityStatePDU();
 	}
-
-	//Update previous velocity, rotation, and location regardless of if an Entity State PDU was sent out.
-	//Multiply by 100 to convert velocity to m/s
-	PreviousUnrealLinearVelocity = (GetOwner()->GetActorLocation() - PreviousUnrealLocation) / (DeltaTime * 100);
-	PreviousUnrealLocation = GetOwner()->GetActorLocation();
-	PreviousUnrealRotation = GetOwner()->GetActorRotation();
-	TimeOfLastVelocityCalculation = GetOwner()->GetGameTimeSinceCreation();
 }
 
 void UDISSendComponent::EndPlay(const EEndPlayReason::Type EndPlayReason)
@@ -87,6 +105,9 @@ void UDISSendComponent::EndPlay(const EEndPlayReason::Type EndPlayReason)
 
 	EmitAppropriatePDU(finalESPDU);
 
+	//Ensure the Update Send Entity State Calculations timer is cleared by using the timer handle
+	GetWorld()->GetTimerManager().ClearTimer(UpdateEntityStateCalculationsHandle);
+
 	Super::EndPlay(EndPlayReason);
 }
 
@@ -99,7 +120,6 @@ void UDISSendComponent::SetEntityCapabilities(int32 NewEntityCapabilities)
 
 		MostRecentEntityStatePDU = FormEntityStatePDU();
 		MostRecentDeadReckonedEntityStatePDU = MostRecentEntityStatePDU;
-		PreviousEntityStatePDU = MostRecentEntityStatePDU;
 
 		if (IsValid(UDPSubsystem))
 		{
@@ -117,7 +137,6 @@ void UDISSendComponent::SetEntityAppearance(int32 NewEntityAppearance)
 
 		MostRecentEntityStatePDU = FormEntityStatePDU();
 		MostRecentDeadReckonedEntityStatePDU = MostRecentEntityStatePDU;
-		PreviousEntityStatePDU = MostRecentEntityStatePDU;
 
 		EmitAppropriatePDU(MostRecentEntityStatePDU);
 	}
@@ -132,7 +151,6 @@ void UDISSendComponent::SetDeadReckoningAlgorithm(EDeadReckoningAlgorithm NewDea
 
 		MostRecentEntityStatePDU = FormEntityStatePDU();
 		MostRecentDeadReckonedEntityStatePDU = MostRecentEntityStatePDU;
-		PreviousEntityStatePDU = MostRecentEntityStatePDU;
 
 		if (IsValid(UDPSubsystem))
 		{
@@ -153,7 +171,6 @@ FEntityStatePDU UDISSendComponent::FormEntityStatePDU()
 	newEntityStatePDU.EntityAppearance = EntityAppearance;
 
 	newEntityStatePDU.DeadReckoningParameters.DeadReckoningAlgorithm = DeadReckoningAlgorithm;
-	float timeSinceLastCalc = GetOwner()->GetGameTimeSinceCreation() - TimeOfLastVelocityCalculation;
 
 	if (IsValid(DISGameManager))
 	{
@@ -188,46 +205,19 @@ FEntityStatePDU UDISSendComponent::FormEntityStatePDU()
 		UE_LOG(LogDISSendComponent, Warning, TEXT("Invalid GeoReference. Please make sure one is in the world."));
 	}
 
-	//Set all Dead Reckoning Parameters
-	if (timeSinceLastCalc > 0)
+	//Calculate the angular velocity of the entity
+	newEntityStatePDU.DeadReckoningParameters.EntityAngularVelocity = CalculateAngularVelocity();
+
+	//Apply the appropriate linear velocity and acceleration based on Dead Reckoning algorithm being used
+	if (DeadReckoningAlgorithm == EDeadReckoningAlgorithm::Static || DeadReckoningAlgorithm == EDeadReckoningAlgorithm::FPW || DeadReckoningAlgorithm == EDeadReckoningAlgorithm::RPW
+		|| DeadReckoningAlgorithm == EDeadReckoningAlgorithm::RVW || DeadReckoningAlgorithm == EDeadReckoningAlgorithm::FVW)
 	{
-		//Calculate the velocities and acceleration of the entity in m/s
-		FVector curLoc = GetOwner()->GetActorLocation();
-		FVector curUnrealLinearVelocity = (curLoc - PreviousUnrealLocation) / (timeSinceLastCalc * 100);
-
-		FRotator curRot = GetOwner()->GetActorRotation();
-		FRotator rotDiff = UDeadReckoning_BPFL::CalculateDirectionalRotationDifference(PreviousUnrealRotation, curRot);
-
-		FVector angularVelocity = FMath::DegreesToRadians(rotDiff.Euler()) / timeSinceLastCalc;
-		newEntityStatePDU.DeadReckoningParameters.EntityAngularVelocity = angularVelocity;
-
-		FVector linearAcceleration = FVector::ZeroVector;
-		//Apply the appropriate acceleration based on Dead Reckoning algorithm being used
-		if ((uint8)DeadReckoningAlgorithm < 6)
-		{
-			//Convert linear velocity vectors to be in ECEF coordinates --- UE origin may not be Earth center and may lie rotated on Earth
-			newEntityStatePDU.EntityLinearVelocity = UDIS_BPFL::ConvertUnrealVectorToECEFVector(curUnrealLinearVelocity, curLoc, GeoReferencingSystem);
-			FVector prevECEFLinearVelocity = UDIS_BPFL::ConvertUnrealVectorToECEFVector(PreviousUnrealLinearVelocity, PreviousUnrealLocation, GeoReferencingSystem);
-			linearAcceleration = (newEntityStatePDU.EntityLinearVelocity - prevECEFLinearVelocity) / timeSinceLastCalc;
-		}
-		else
-		{
-			//Convert linear velocity vectors to be in body space --- Use inverse UE rotations to convert vectors into appropriate DIS body space
-			newEntityStatePDU.EntityLinearVelocity = UKismetMathLibrary::GreaterGreater_VectorRotator(curUnrealLinearVelocity, curRot.GetInverse()) * FVector(1, 1, -1);
-			FVector prevVelBodySpace = UKismetMathLibrary::GreaterGreater_VectorRotator(PreviousUnrealLinearVelocity, PreviousUnrealRotation.GetInverse()) * FVector(1, 1, -1);
-			linearAcceleration = (newEntityStatePDU.EntityLinearVelocity - prevVelBodySpace) / timeSinceLastCalc;
-
-			//Calculate the centripetal acceleration in body space
-			glm::dvec3 dvecAngularVelocity = glm::dvec3(angularVelocity.X, angularVelocity.Y, angularVelocity.Z);
-			glm::dmat3x3 SkewMatrix = UDIS_BPFL::CreateNCrossXMatrix(dvecAngularVelocity);
-			glm::dvec3 dvecBodyVelocityVector = glm::dvec3(newEntityStatePDU.EntityLinearVelocity.X, newEntityStatePDU.EntityLinearVelocity.Y, newEntityStatePDU.EntityLinearVelocity.Z);
-			glm::dvec3 dvecCentripetalAcceleration = (SkewMatrix * dvecBodyVelocityVector);
-
-			//Add in body centripetal acceleration. Will get removed by the body dead reckoning algorithm
-			linearAcceleration += FVector(dvecCentripetalAcceleration.x, dvecCentripetalAcceleration.y, dvecCentripetalAcceleration.z);
-		}
-
-		newEntityStatePDU.DeadReckoningParameters.EntityLinearAcceleration = linearAcceleration;
+		CalculateECEFLinearVelocityAndAcceleration(newEntityStatePDU.EntityLinearVelocity, newEntityStatePDU.DeadReckoningParameters.EntityLinearAcceleration);
+	}
+	else if (DeadReckoningAlgorithm == EDeadReckoningAlgorithm::FPB || DeadReckoningAlgorithm == EDeadReckoningAlgorithm::RPB || DeadReckoningAlgorithm == EDeadReckoningAlgorithm::RVB
+		|| DeadReckoningAlgorithm == EDeadReckoningAlgorithm::FVB)
+	{
+		CalculateBodyLinearVelocityAndAcceleration(newEntityStatePDU.DeadReckoningParameters.EntityAngularVelocity, newEntityStatePDU.EntityLinearVelocity, newEntityStatePDU.DeadReckoningParameters.EntityLinearAcceleration);
 	}
 
 	newEntityStatePDU.DeadReckoningParameters.OtherParameters = UDeadReckoning_BPFL::FormOtherParameters(DeadReckoningAlgorithm, newEntityStatePDU.EntityOrientation, newEntityStatePDU.EcefLocation);
@@ -264,11 +254,11 @@ bool UDISSendComponent::CheckOrientationQuaternionThreshold()
 {
 	bool outsideThreshold = false;
 
-	glm::dvec3 AngularVelocityVector = glm::dvec3(PreviousEntityStatePDU.DeadReckoningParameters.EntityAngularVelocity.X,
-		PreviousEntityStatePDU.DeadReckoningParameters.EntityAngularVelocity.Y, PreviousEntityStatePDU.DeadReckoningParameters.EntityAngularVelocity.Z);
+	glm::dvec3 AngularVelocityVector = glm::dvec3(MostRecentEntityStatePDU.DeadReckoningParameters.EntityAngularVelocity.X,
+		MostRecentEntityStatePDU.DeadReckoningParameters.EntityAngularVelocity.Y, MostRecentEntityStatePDU.DeadReckoningParameters.EntityAngularVelocity.Z);
 
 	//Get the entity orientation quaternion
-	FQuat entityOrientationQuaternion = UDeadReckoning_BPFL::GetEntityOrientationQuaternion(PreviousEntityStatePDU.EntityOrientation.Yaw, PreviousEntityStatePDU.EntityOrientation.Pitch, PreviousEntityStatePDU.EntityOrientation.Roll);
+	FQuat entityOrientationQuaternion = UDeadReckoning_BPFL::GetEntityOrientationQuaternion(MostRecentEntityStatePDU.EntityOrientation.Yaw, MostRecentEntityStatePDU.EntityOrientation.Pitch, MostRecentEntityStatePDU.EntityOrientation.Roll);
 	//Get the entity dead reckoning quaternion
 	FQuat deadReckoningQuaternion = UDeadReckoning_BPFL::CreateDeadReckoningQuaternion(AngularVelocityVector, DeltaTimeSinceLastPDU);
 	//Calculate the new orientation quaternion
@@ -309,11 +299,11 @@ bool UDISSendComponent::CheckOrientationMatrixThreshold()
 {
 	bool outsideThreshold = false;
 
-	glm::dvec3 AngularVelocityVector = glm::dvec3(PreviousEntityStatePDU.DeadReckoningParameters.EntityAngularVelocity.X,
-		PreviousEntityStatePDU.DeadReckoningParameters.EntityAngularVelocity.Y, PreviousEntityStatePDU.DeadReckoningParameters.EntityAngularVelocity.Z);
+	glm::dvec3 AngularVelocityVector = glm::dvec3(MostRecentEntityStatePDU.DeadReckoningParameters.EntityAngularVelocity.X,
+		MostRecentEntityStatePDU.DeadReckoningParameters.EntityAngularVelocity.Y, MostRecentEntityStatePDU.DeadReckoningParameters.EntityAngularVelocity.Z);
 
 	// Get the entity's current orientation matrix
-	auto OrientationMatrix = UDeadReckoning_BPFL::GetEntityOrientationMatrix(PreviousEntityStatePDU.EntityOrientation.Yaw, PreviousEntityStatePDU.EntityOrientation.Pitch, PreviousEntityStatePDU.EntityOrientation.Roll);
+	auto OrientationMatrix = UDeadReckoning_BPFL::GetEntityOrientationMatrix(MostRecentEntityStatePDU.EntityOrientation.Yaw, MostRecentEntityStatePDU.EntityOrientation.Pitch, MostRecentEntityStatePDU.EntityOrientation.Roll);
 	// Get the change in rotation for this time step
 	const auto DeadReckoningMatrix = UDeadReckoning_BPFL::CreateDeadReckoningMatrix(AngularVelocityVector, DeltaTimeSinceLastPDU);
 	// Calculate the new orientation matrix
@@ -352,7 +342,7 @@ bool UDISSendComponent::CheckOrientationMatrixThreshold()
 	return outsideThreshold;
 }
 
-bool UDISSendComponent::SendEntityStatePDU_Implementation()
+bool UDISSendComponent::SendEntityStatePDU()
 {
 	bool sentUpdate = false;
 
@@ -361,7 +351,6 @@ bool UDISSendComponent::SendEntityStatePDU_Implementation()
 	{
 		MostRecentEntityStatePDU = FormEntityStatePDU();
 		MostRecentDeadReckonedEntityStatePDU = MostRecentEntityStatePDU;
-		PreviousEntityStatePDU = MostRecentEntityStatePDU;
 
 		EmitAppropriatePDU(MostRecentEntityStatePDU);
 
@@ -370,6 +359,91 @@ bool UDISSendComponent::SendEntityStatePDU_Implementation()
 	}
 
 	return sentUpdate;
+}
+
+void UDISSendComponent::CalculateECEFLinearVelocityAndAcceleration(FVector& ECEFLinearVelocity, FVector& ECEFLinearAcceleration)
+{
+	double timeSinceLastCalc = (FDateTime::Now() - TimeOfLastParametersCalculation).GetTotalSeconds();
+
+	//If delta time is greater than zero, calculate new values. Otherwise use previous calculations
+	if (timeSinceLastCalc > 0)
+	{
+		FVector curLoc = GetOwner()->GetActorLocation();
+		//Divide location offset by 100 to convert to meters
+		FVector curUnrealLinearVelocity = (curLoc - LastCalculatedUnrealLocation) / (timeSinceLastCalc * 100);
+
+		//Convert linear velocity vectors to be in ECEF coordinates --- UE origin may not be Earth center and may lie rotated on Earth
+		ECEFLinearVelocity = UDIS_BPFL::ConvertUnrealVectorToECEFVector(curUnrealLinearVelocity, curLoc, GeoReferencingSystem);
+		FVector prevECEFLinearVelocity = UDIS_BPFL::ConvertUnrealVectorToECEFVector(LastCalculatedUnrealLinearVelocity, LastCalculatedUnrealLocation, GeoReferencingSystem);
+		ECEFLinearAcceleration = (ECEFLinearVelocity - prevECEFLinearVelocity) / timeSinceLastCalc;
+	}
+	else
+	{
+		//Convert linear velocity vectors to be in ECEF coordinates --- UE origin may not be Earth center and may lie rotated on Earth
+		ECEFLinearVelocity = LastCalculatedECEFLinearVelocity;
+		ECEFLinearAcceleration = LastCalculatedECEFLinearAcceleration;
+	}
+}
+
+void UDISSendComponent::CalculateBodyLinearVelocityAndAcceleration(FVector AngularVelocity, FVector& BodyLinearVelocity, FVector& BodyLinearAcceleration)
+{
+	double timeSinceLastCalc = (FDateTime::Now() - TimeOfLastParametersCalculation).GetTotalSeconds();
+
+	//If delta time greater than zero, calculate new values. Otherwise use previous calculations
+	if (timeSinceLastCalc > 0)
+	{
+		FVector curLoc = GetOwner()->GetActorLocation();
+		//Divide location offset by 100 to convert to meters
+		FVector curUnrealLinearVelocity = (curLoc - LastCalculatedUnrealLocation) / (timeSinceLastCalc * 100);
+
+		//Convert linear velocity vectors to be in body space --- Use inverse UE rotations to convert vectors into appropriate DIS body space
+		BodyLinearVelocity = UKismetMathLibrary::GreaterGreater_VectorRotator(curUnrealLinearVelocity, GetOwner()->GetActorRotation().GetInverse()) * FVector(1, 1, -1);
+		FVector prevVelBodySpace = UKismetMathLibrary::GreaterGreater_VectorRotator(LastCalculatedUnrealLinearVelocity, LastCalculatedUnrealRotation.GetInverse()) * FVector(1, 1, -1);
+		BodyLinearAcceleration = (BodyLinearVelocity - prevVelBodySpace) / timeSinceLastCalc;
+
+		//Calculate the centripetal acceleration in body space
+		glm::dvec3 dvecAngularVelocity = glm::dvec3(AngularVelocity.X, AngularVelocity.Y, AngularVelocity.Z);
+		glm::dmat3x3 SkewMatrix = UDIS_BPFL::CreateNCrossXMatrix(dvecAngularVelocity);
+		glm::dvec3 dvecBodyVelocityVector = glm::dvec3(BodyLinearVelocity.X, BodyLinearVelocity.Y, BodyLinearVelocity.Z);
+		glm::dvec3 dvecCentripetalAcceleration = (SkewMatrix * dvecBodyVelocityVector);
+
+		//Add in body centripetal acceleration. Will get removed by the body dead reckoning algorithm
+		BodyLinearAcceleration += FVector(dvecCentripetalAcceleration.x, dvecCentripetalAcceleration.y, dvecCentripetalAcceleration.z);
+	}
+	else
+	{
+		//Convert linear velocity vectors to be in body space --- Use inverse UE rotations to convert vectors into appropriate DIS body space
+		BodyLinearVelocity = LastCalculatedBodyLinearVelocity;
+		BodyLinearAcceleration = LastCalculatedBodyLinearAcceleration;
+	}
+}
+
+FVector UDISSendComponent::CalculateAngularVelocity()
+{
+	FVector angularVelocity = LastCalculatedAngularVelocity;
+	double timeSinceLastCalc = (FDateTime::Now() - TimeOfLastParametersCalculation).GetTotalSeconds();
+
+	if (timeSinceLastCalc)
+	{
+		//Convert the rotators to quaternions
+		FQuat oldQuat = LastCalculatedUnrealRotation.Quaternion();
+		FQuat newQuat = GetOwner()->GetActorRotation().Quaternion();
+		oldQuat.Normalize();
+		newQuat.Normalize();
+
+		//Get the rotational difference between the quaternions -- Gives back direction of rotation too
+		FQuat rotDiff = oldQuat.Inverse() * newQuat;
+
+		FVector rotationAxis;
+		double rotationAngle;
+		rotDiff.ToAxisAndAngle(rotationAxis, rotationAngle);
+
+		angularVelocity = (rotationAngle * rotationAxis) / timeSinceLastCalc;
+		//Invert X and Y axis
+		angularVelocity *= FVector(-1, -1, 1);
+	}
+
+	return angularVelocity;
 }
 
 bool UDISSendComponent::EmitAppropriatePDU(FEntityStatePDU pduToSend)
