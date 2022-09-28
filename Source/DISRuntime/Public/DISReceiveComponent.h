@@ -221,7 +221,6 @@ private:
 	FRotator EntityRotationDifference;
 	AGeoReferencingSystem* GeoReferencingSystem;
 
-	FEntityStatePDU PreviousDeadReckonedPDU;
 	float DeltaTimeSinceLastPDU = 0;
 	int NumberEntityStatePDUsReceived = 0;
 

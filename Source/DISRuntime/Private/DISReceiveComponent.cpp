@@ -99,20 +99,20 @@ void UDISReceiveComponent::HandleEntityStateUpdatePDU(FEntityStateUpdatePDU NewE
 void UDISReceiveComponent::UpdateCommonEntityStateInfo(FEntityStatePDU NewEntityStatePDU)
 {
 	LatestEntityStatePDUTimestamp = FDateTime::Now();
-	MostRecentEntityStatePDU = NewEntityStatePDU;
-	PreviousDeadReckonedPDU = MostRecentDeadReckonedEntityStatePDU;
-	MostRecentDeadReckonedEntityStatePDU = MostRecentEntityStatePDU;
 	DeltaTimeSinceLastPDU = 0;
 
 	//Get difference in ECEF between most recent dead reckoning location and last known Dead Reckoning location
-	EntityECEFLocationDifference[0] = MostRecentEntityStatePDU.EntityLocationDouble[0] - PreviousDeadReckonedPDU.EntityLocationDouble[0];
-	EntityECEFLocationDifference[1] = MostRecentEntityStatePDU.EntityLocationDouble[1] - PreviousDeadReckonedPDU.EntityLocationDouble[1];
-	EntityECEFLocationDifference[2] = MostRecentEntityStatePDU.EntityLocationDouble[2] - PreviousDeadReckonedPDU.EntityLocationDouble[2];
+	EntityECEFLocationDifference[0] = NewEntityStatePDU.EntityLocationDouble[0] - MostRecentDeadReckonedEntityStatePDU.EntityLocationDouble[0];
+	EntityECEFLocationDifference[1] = NewEntityStatePDU.EntityLocationDouble[1] - MostRecentDeadReckonedEntityStatePDU.EntityLocationDouble[1];
+	EntityECEFLocationDifference[2] = NewEntityStatePDU.EntityLocationDouble[2] - MostRecentDeadReckonedEntityStatePDU.EntityLocationDouble[2];
 
 	//Get the rotation difference between the last known dead reckoning rotation and the current rotation. This will be used for internal smoothing.
-	FRotator prevRotDegrees = FMath::RadiansToDegrees(PreviousDeadReckonedPDU.EntityOrientation);
-	FRotator curRotDegrees = FMath::RadiansToDegrees(MostRecentEntityStatePDU.EntityOrientation);
+	FRotator prevRotDegrees = FMath::RadiansToDegrees(MostRecentDeadReckonedEntityStatePDU.EntityOrientation);
+	FRotator curRotDegrees = FMath::RadiansToDegrees(NewEntityStatePDU.EntityOrientation);
 	EntityRotationDifference = FMath::DegreesToRadians((curRotDegrees - prevRotDegrees).GetNormalized());
+
+	MostRecentEntityStatePDU = NewEntityStatePDU;
+	MostRecentDeadReckonedEntityStatePDU = MostRecentEntityStatePDU;
 
 	EntityID = NewEntityStatePDU.EntityID;
 

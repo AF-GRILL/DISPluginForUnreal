@@ -27,12 +27,6 @@ class DISRUNTIME_API UDISSendComponent : public UActorComponent
 {
 	GENERATED_BODY()
 
-	/**
-	 * Attempts to send an updated Entity State or Entity State Update PDU. Verifies if the entity is outside of the Dead Reckoning thresholds first.
-	 * Returns whether or not an updated PDU was sent.
-	*/
-	virtual bool SendEntityStatePDU_Implementation();
-
 public:
 	// Sets default values for this component's properties
 	UDISSendComponent();
@@ -85,11 +79,37 @@ public:
 		bool CheckOrientationMatrixThreshold();
 
 	/**
-	 * Attempts to send an updated Entity State or Entity State Update PDU. Should check Dead Reckoning threshold prior to sending.
+	 * Attempts to send an updated Entity State or Entity State Update PDU. Checks Dead Reckoning threshold prior to sending.
 	 * Returns whether or not an update was sent.
 	*/
-	UFUNCTION(BlueprintNativeEvent, Category = "GRILL DIS|DIS Send Component")
+	UFUNCTION(BlueprintCallable, Category = "GRILL DIS|DIS Send Component")
 		bool SendEntityStatePDU();
+
+	/**
+	 * Calculates the Linear Velocity and Linear Acceleration of the entity that this component is attached to. Calculates them in terms of ECEF coordinates.
+	 * @param DeltaTime The time that has passed since the last calculation.
+	 * @param ECEFLinearVelocity The linear velocity of the entity in ECEF coordinates.
+	 * @param ECEFLinearAcceleration The linear acceleration of the entity in ECEF coordinates
+	*/
+	UFUNCTION(BlueprintCallable, Category = "GRILL DIS|DIS Send Component")
+		void CalculateECEFLinearVelocityAndAcceleration(FVector& ECEFLinearVelocity, FVector& ECEFLinearAcceleration);
+
+	/**
+	 * Calculates the Linear Velocity and Linear Acceleration of the entity that this component is attached to. Calculates them in terms of entity body coordinates.
+	 * @param DeltaTime The time that has passed since the last calculation.
+	 * @param AngularVelocity The current angular velocity of the entity.
+	 * @param BodyLinearVelocity The linear velocity of the entity in Body coordinates.
+	 * @param BodyLinearAcceleration The linear acceleration of the entity in Body coordinates
+	*/
+	UFUNCTION(BlueprintCallable, Category = "GRILL DIS|DIS Send Component")
+		void CalculateBodyLinearVelocityAndAcceleration(FVector AngularVelocity, FVector& BodyLinearVelocity, FVector& BodyLinearAcceleration);
+
+	/**
+	 * Calculates the Angular Velocity of the entity that this component is attached to.
+	 * Returns an FVector containing the angular velocity in radians per second.
+	*/
+	UFUNCTION(BlueprintCallable, Category = "GRILL DIS|DIS Send Component")
+		FVector CalculateAngularVelocity();
 
 	/**
 	 * The most recent Entity State PDU that has been received.
@@ -127,7 +147,8 @@ public:
 		FString EntityMarking;
 
 	/**
-	 * The time to live for the entity. Gets reset every time a new Entity State PDU is received by the sim.
+	 * How often an Entity State PDU should be sent out for this entity.
+	 * Timer gets reset if an Entity State PDU gets sent out by this component by another means (ex: threshold clipping).
 	 */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|DIS Send Component|DIS Settings", Meta = (UIMin = 0, ClampMin = 0))
 		float DISHeartbeatSeconds = 5.0f;
@@ -138,6 +159,12 @@ public:
 	*/
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|DIS Send Component|DIS Settings")
 		EEntityStateSendingMode EntityStatePDUSendingMode;
+	/**
+	 * The rate at which the timer that calculates the current linear velocity, linear acceleration, and angular acceleration of the entity gets executed.
+	 * The values calculated by this timer get utilized when forming an Entity State PDU.
+	*/
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "GRILL DIS|DIS Send Component|DIS Settings", Meta = (UIMin = 0.01, ClampMin = 0.01))
+		float EntityStateCalculationRate = 0.1f;
 
 	/**
 	 * The dead reckoning algorithm to use. Specifies the dynamic changes to the entities appearance attributes.
@@ -177,6 +204,12 @@ protected:
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 
 	/**
+	 * Tries to send out a new Entity State PDU.
+	 * Updates last calculated linear velocity, linear acceleration, and angular velocity whether a PDU was emitted or not.
+	*/
+	void UpdateEntityStateCalculations();
+
+	/**
 	 * Takes in an Entity State PDU and emits it as an Entity State or Entity State Update PDU. Decides based on what EntityStatePDUSendingMode is set to.
 	 * @param pduToSend The Entity State PDU to emit.
 	*/
@@ -184,12 +217,18 @@ protected:
 
 private:
 	float DeltaTimeSinceLastPDU = 0;
-	FEntityStatePDU PreviousEntityStatePDU;
 
-	float TimeOfLastVelocityCalculation;
-	FVector PreviousUnrealLocation;
-	FRotator PreviousUnrealRotation;
-	FVector PreviousUnrealLinearVelocity;
+	FTimerHandle UpdateEntityStateCalculationsHandle;
+	FDateTime TimeOfLastParametersCalculation;
+
+	FVector LastCalculatedUnrealLocation;
+	FRotator LastCalculatedUnrealRotation;
+	FVector LastCalculatedUnrealLinearVelocity;
+	FVector LastCalculatedECEFLinearVelocity;
+	FVector LastCalculatedECEFLinearAcceleration;
+	FVector LastCalculatedBodyLinearVelocity;
+	FVector LastCalculatedBodyLinearAcceleration;
+	FVector LastCalculatedAngularVelocity;
 
 	AGeoReferencingSystem* GeoReferencingSystem;
 	ADISGameManager* DISGameManager;

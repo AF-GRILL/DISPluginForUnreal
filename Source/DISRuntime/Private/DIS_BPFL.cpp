@@ -548,14 +548,8 @@ void UDIS_BPFL::GetNorthEastDownVectorsFromUnrealLocation(const FVector UnrealLo
 		return;
 	}
 
-	FCartesianCoordinates EcefLocation;
-	GeoReferencingSystem->EngineToECEF(UnrealLocation, EcefLocation);
-
-	const FEarthCenteredEarthFixedDouble EcefDouble(EcefLocation.X, EcefLocation.Y, EcefLocation.Z);
-	FLatLonHeightDouble LatLonHeightDouble;
-	CalculateLatLonHeightFromEcefXYZ(EcefDouble, LatLonHeightDouble);
-
-	CalculateNorthEastDownVectorsFromLatLon(LatLonHeightDouble.Latitude, LatLonHeightDouble.Longitude, NorthEastDownVectors);
+	GeoReferencingSystem->GetENUVectorsAtEngineLocation(UnrealLocation, NorthEastDownVectors.EastVector, NorthEastDownVectors.NorthVector, NorthEastDownVectors.DownVector);
+	NorthEastDownVectors.DownVector *= -1;
 }
 
 void UDIS_BPFL::GetEastNorthUpVectorsFromUnrealLocation(const FVector UnrealLocation, AGeoReferencingSystem* GeoReferencingSystem, FEastNorthUp& EastNorthUpVectors)
@@ -583,10 +577,9 @@ void UDIS_BPFL::GetHeadingPitchRollFromUnrealRotation(const FRotator UnrealRotat
 	OriginNorthEastDown.DownVector *= -1;
 
 	// Get the rotational difference between calculated NED and Unreal origin NED
-	const auto XAxisRotationAngle = FVector::DotProduct(NorthEastDownVectors.EastVector, OriginNorthEastDown.EastVector);
-	const auto YAxisRotationAngle = FVector::DotProduct(NorthEastDownVectors.DownVector, OriginNorthEastDown.DownVector);
-	const auto ZAxisRotationAngle = FVector::DotProduct(NorthEastDownVectors.NorthVector, OriginNorthEastDown.NorthVector);
-
+	const auto XAxisRotationAngle = FMath::Acos(FVector::DotProduct(NorthEastDownVectors.EastVector, OriginNorthEastDown.EastVector));
+	const auto YAxisRotationAngle = FMath::Acos(FVector::DotProduct(NorthEastDownVectors.DownVector, OriginNorthEastDown.DownVector));
+	const auto ZAxisRotationAngle = FMath::Acos(FVector::DotProduct(NorthEastDownVectors.NorthVector, OriginNorthEastDown.NorthVector));
 
 	HeadingPitchRollDegrees.Roll = UnrealRotation.Roll - XAxisRotationAngle;
 	HeadingPitchRollDegrees.Pitch = UnrealRotation.Pitch - YAxisRotationAngle;
