@@ -93,11 +93,8 @@ void UDIS_BPFL::CreateRotationMatrix(const glm::dvec3 AxisVector, const double T
 	const double CosTheta = glm::cos(ThetaRadians);
 	const double SinTheta = glm::sin(ThetaRadians);
 
-	const auto N = AxisVector;
-	const auto NMat = glm::dmat3(N, glm::dvec3(0), glm::dvec3(0));
-
-	const auto NTransposeN = NMat * glm::transpose(NMat);
-	const auto NCrossN = CreateNCrossXMatrix(N);
+	const auto NTransposeN = glm::outerProduct(AxisVector, AxisVector);
+	const auto NCrossN = CreateNCrossXMatrix(AxisVector);
 
 	OutRotationMatrix = ((1 - CosTheta) * NTransposeN) + (CosTheta * glm::identity<glm::dmat3x3>()) + (SinTheta * NCrossN);
 }
@@ -565,8 +562,8 @@ FVector UDIS_BPFL::ConvertUnrealVectorToECEFVector(FVector UnrealVector, FVector
 	{
 		FVector llh;
 		FNorthEastDown nedVectors;
-		UDIS_BPFL::GetLatLonHeightFromUnrealLocation(CurrentLocation, GeoReferencingSystem, llh);
-		UDIS_BPFL::CalculateNorthEastDownVectorsFromLatLon(llh.X, llh.Y, nedVectors);
+		GetLatLonHeightFromUnrealLocation(CurrentLocation, GeoReferencingSystem, llh);
+		CalculateNorthEastDownVectorsFromLatLon(llh.X, llh.Y, nedVectors);
 
 		//Convert the Unreal Engine vector to be in terms of ECEF
 		ecefVector = nedVectors.NorthVector * -UnrealVector.Y + nedVectors.EastVector * UnrealVector.X - nedVectors.DownVector * UnrealVector.Z;

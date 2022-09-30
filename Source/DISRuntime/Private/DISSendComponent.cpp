@@ -33,7 +33,7 @@ void UDISSendComponent::BeginPlay()
 	LastCalculatedUnrealLocation = GetOwner()->GetActorLocation();
 	LastCalculatedUnrealRotation = GetOwner()->GetActorRotation();
 
-	TimeOfLastParametersCalculation = FDateTime::Now();
+	TimeOfLastParametersCalculation = GetOwner()->GetGameTimeSinceCreation();
 
 	//Form Entity State PDU packets
 	MostRecentEntityStatePDU = FormEntityStatePDU();
@@ -50,7 +50,7 @@ void UDISSendComponent::BeginPlay()
 
 void UDISSendComponent::UpdateEntityStateCalculations()
 {
-	double deltaTime = (FDateTime::Now() - TimeOfLastParametersCalculation).GetTotalSeconds();
+	double deltaTime = GetOwner()->GetGameTimeSinceCreation() - TimeOfLastParametersCalculation;
 
 	//Update previous velocity, rotation, and location regardless of if an Entity State PDU was sent out.		
 	LastCalculatedAngularVelocity = CalculateAngularVelocity();
@@ -67,7 +67,7 @@ void UDISSendComponent::UpdateEntityStateCalculations()
 	LastCalculatedUnrealLocation = GetOwner()->GetActorLocation();
 	LastCalculatedUnrealRotation = GetOwner()->GetActorRotation();
 
-	TimeOfLastParametersCalculation = FDateTime::Now();
+	TimeOfLastParametersCalculation = GetOwner()->GetGameTimeSinceCreation();
 }
 
 // Called every frame
@@ -205,19 +205,28 @@ FEntityStatePDU UDISSendComponent::FormEntityStatePDU()
 		UE_LOG(LogDISSendComponent, Warning, TEXT("Invalid GeoReference. Please make sure one is in the world."));
 	}
 
+	//Verify close to enough time has passed to need values calculated again
+	double deltaTime = GetOwner()->GetGameTimeSinceCreation() - TimeOfLastParametersCalculation;
+	if ((deltaTime - EntityStateCalculationRate) > 0)
+	{
+		UpdateEntityStateCalculations();
+	}
+
 	//Calculate the angular velocity of the entity
-	newEntityStatePDU.DeadReckoningParameters.EntityAngularVelocity = CalculateAngularVelocity();
+	newEntityStatePDU.DeadReckoningParameters.EntityAngularVelocity = LastCalculatedAngularVelocity;
 
 	//Apply the appropriate linear velocity and acceleration based on Dead Reckoning algorithm being used
 	if (DeadReckoningAlgorithm == EDeadReckoningAlgorithm::Static || DeadReckoningAlgorithm == EDeadReckoningAlgorithm::FPW || DeadReckoningAlgorithm == EDeadReckoningAlgorithm::RPW
 		|| DeadReckoningAlgorithm == EDeadReckoningAlgorithm::RVW || DeadReckoningAlgorithm == EDeadReckoningAlgorithm::FVW)
 	{
-		CalculateECEFLinearVelocityAndAcceleration(newEntityStatePDU.EntityLinearVelocity, newEntityStatePDU.DeadReckoningParameters.EntityLinearAcceleration);
+		newEntityStatePDU.EntityLinearVelocity = LastCalculatedECEFLinearVelocity;
+		newEntityStatePDU.DeadReckoningParameters.EntityLinearAcceleration = LastCalculatedECEFLinearAcceleration;
 	}
 	else if (DeadReckoningAlgorithm == EDeadReckoningAlgorithm::FPB || DeadReckoningAlgorithm == EDeadReckoningAlgorithm::RPB || DeadReckoningAlgorithm == EDeadReckoningAlgorithm::RVB
 		|| DeadReckoningAlgorithm == EDeadReckoningAlgorithm::FVB)
 	{
-		CalculateBodyLinearVelocityAndAcceleration(newEntityStatePDU.DeadReckoningParameters.EntityAngularVelocity, newEntityStatePDU.EntityLinearVelocity, newEntityStatePDU.DeadReckoningParameters.EntityLinearAcceleration);
+		newEntityStatePDU.EntityLinearVelocity = LastCalculatedBodyLinearVelocity;
+		newEntityStatePDU.DeadReckoningParameters.EntityLinearAcceleration = LastCalculatedBodyLinearAcceleration;
 	}
 
 	newEntityStatePDU.DeadReckoningParameters.OtherParameters = UDeadReckoning_BPFL::FormOtherParameters(DeadReckoningAlgorithm, newEntityStatePDU.EntityOrientation, newEntityStatePDU.EcefLocation);
@@ -363,7 +372,7 @@ bool UDISSendComponent::SendEntityStatePDU()
 
 void UDISSendComponent::CalculateECEFLinearVelocityAndAcceleration(FVector& ECEFLinearVelocity, FVector& ECEFLinearAcceleration)
 {
-	double timeSinceLastCalc = (FDateTime::Now() - TimeOfLastParametersCalculation).GetTotalSeconds();
+	double timeSinceLastCalc = GetOwner()->GetGameTimeSinceCreation() - TimeOfLastParametersCalculation;
 
 	//If delta time is greater than zero, calculate new values. Otherwise use previous calculations
 	if (timeSinceLastCalc > 0)
@@ -387,7 +396,7 @@ void UDISSendComponent::CalculateECEFLinearVelocityAndAcceleration(FVector& ECEF
 
 void UDISSendComponent::CalculateBodyLinearVelocityAndAcceleration(FVector AngularVelocity, FVector& BodyLinearVelocity, FVector& BodyLinearAcceleration)
 {
-	double timeSinceLastCalc = (FDateTime::Now() - TimeOfLastParametersCalculation).GetTotalSeconds();
+	double timeSinceLastCalc = GetOwner()->GetGameTimeSinceCreation() - TimeOfLastParametersCalculation;
 
 	//If delta time greater than zero, calculate new values. Otherwise use previous calculations
 	if (timeSinceLastCalc > 0)
@@ -421,9 +430,9 @@ void UDISSendComponent::CalculateBodyLinearVelocityAndAcceleration(FVector Angul
 FVector UDISSendComponent::CalculateAngularVelocity()
 {
 	FVector angularVelocity = LastCalculatedAngularVelocity;
-	double timeSinceLastCalc = (FDateTime::Now() - TimeOfLastParametersCalculation).GetTotalSeconds();
+	double timeSinceLastCalc = GetOwner()->GetGameTimeSinceCreation() - TimeOfLastParametersCalculation;
 
-	if (timeSinceLastCalc)
+	if (timeSinceLastCalc > 0)
 	{
 		//Convert the rotators to quaternions
 		FQuat oldQuat = LastCalculatedUnrealRotation.Quaternion();
@@ -433,6 +442,13 @@ FVector UDISSendComponent::CalculateAngularVelocity()
 
 		//Get the rotational difference between the quaternions -- Gives back direction of rotation too
 		FQuat rotDiff = oldQuat.Inverse() * newQuat;
+
+		//If negative, flip it
+		if (rotDiff.W < 0)
+		{
+			rotDiff = rotDiff.Inverse();
+			rotDiff.W *= -1;
+		}
 
 		FVector rotationAxis;
 		double rotationAngle;
