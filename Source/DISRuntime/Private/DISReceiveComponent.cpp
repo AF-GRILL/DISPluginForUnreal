@@ -71,7 +71,7 @@ void UDISReceiveComponent::HandleEntityStatePDU(FEntityStatePDU NewEntityStatePD
 
 	if (!PerformDeadReckoning)
 	{
-		GroundClamping_Implementation();
+		GroundClamping();
 	}
 }
 
@@ -92,7 +92,7 @@ void UDISReceiveComponent::HandleEntityStateUpdatePDU(FEntityStateUpdatePDU NewE
 
 	if (!PerformDeadReckoning)
 	{
-		GroundClamping_Implementation();
+		GroundClamping();
 	}
 }
 
@@ -184,7 +184,7 @@ void UDISReceiveComponent::DoDeadReckoning(float DeltaTime)
 		}
 
 		//Perform ground clamping last
-		GroundClamping_Implementation();
+		GroundClamping();
 	}
 }
 
