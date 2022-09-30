@@ -204,8 +204,7 @@ protected:
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 
 	/**
-	 * Tries to send out a new Entity State PDU.
-	 * Updates last calculated linear velocity, linear acceleration, and angular velocity whether a PDU was emitted or not.
+	 * Updates last calculated linear velocity, linear acceleration, and angular velocity.
 	*/
 	void UpdateEntityStateCalculations();
 
