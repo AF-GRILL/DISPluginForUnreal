@@ -219,7 +219,7 @@ private:
 	float DeltaTimeSinceLastPDU = 0;
 
 	FTimerHandle UpdateEntityStateCalculationsHandle;
-	FDateTime TimeOfLastParametersCalculation;
+	float TimeOfLastParametersCalculation;
 
 	FVector LastCalculatedUnrealLocation;
 	FRotator LastCalculatedUnrealRotation;
