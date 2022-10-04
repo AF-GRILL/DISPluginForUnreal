@@ -206,13 +206,6 @@ FEntityStatePDU UDISSendComponent::FormEntityStatePDU()
 		UE_LOG(LogDISSendComponent, Warning, TEXT("Invalid GeoReference. Please make sure one is in the world."));
 	}
 
-	//Verify close to enough time has passed to need values calculated again
-	double deltaTime = GetOwner()->GetGameTimeSinceCreation() - TimeOfLastParametersCalculation;
-	if ((deltaTime - EntityStateCalculationRate) > 0)
-	{
-		UpdateEntityStateCalculations();
-	}
-
 	//Calculate the angular velocity of the entity
 	newEntityStatePDU.DeadReckoningParameters.EntityAngularVelocity = LastCalculatedAngularVelocity;
 
