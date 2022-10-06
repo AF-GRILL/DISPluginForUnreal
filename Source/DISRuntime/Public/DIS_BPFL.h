@@ -161,13 +161,13 @@ public:
 		static void CalculateNorthEastDownVectorsFromLatLon(const float LatitudeDegrees, const float LongitudeDegrees, FNorthEastDown& OutNorthEastDownVectors);
 
 	/**
-	 * Calculates the East, North, and Up vectors at given latitude and longitude.
+	 * Calculates the latitude and longitude at the given East, North, and Up vectors.
 	 * @param NorthEastDownVectors The vectors pointing to the North, to the East, and toward the center of the Earth
 	 * @param LatitudeDegrees The target latitude given in degrees
 	 * @param LongitudeDegrees The target longitude given in degrees	 
 	 */
 	UFUNCTION(BlueprintPure, Category = "GRILL DIS|Unit Conversions")
-		static void CalculateLatLongFromNorthEastDownVectors(FNorthEastDown NorthEastDownVectors, float& LatitudeDegrees, float& LongitudeDegrees);
+		static void CalculateLatLonFromNorthEastDownVectors(FNorthEastDown NorthEastDownVectors, float& LatitudeDegrees, float& LongitudeDegrees);
 
 	/**
 	 * Calculates the DIS orientation values Psi, Theta, and Phi in degrees with the given Heading, Pitch, and Roll in degrees at the given Latitude and Longitude.
