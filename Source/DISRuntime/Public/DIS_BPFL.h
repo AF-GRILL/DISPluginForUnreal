@@ -319,7 +319,7 @@ public:
 	 * Get Unreal rotation from a DIS entity state PDU
 	 * @param EntityStatePdu The DIS PDU struct indicating the current state of the DIS entity
 	 * @param GeoReferencingSystem The GeoReferencing Subsystem reference.
-	 * @param UnrealRotation The Heading (yaw), Pitch, and Roll calculated from the given entity state
+	 * @param UnrealRotation The rotation of the entity in Unreal
 	 */
 	UFUNCTION(BlueprintPure, Category = "GRILL DIS|Unit Conversions")
 		static void GetUnrealRotationFromEntityStatePdu(const FEntityStatePDU EntityStatePdu, AGeoReferencingSystem* GeoReferencingSystem, FRotator& UnrealRotation);
@@ -337,8 +337,8 @@ public:
 	 * Gets the Unreal X, Y, Z coordinates and rotation from a DIS entity state PDU. Location values returned change depending on if GeoReferencing Subsystem is set to Flat Earth or Round Earth.
 	 * @param EntityStatePdu The DIS PDU struct indicating the current state of the DIS entity
 	 * @param GeoReferencingSystem The GeoReferencing Subsystem reference.
-	 * @param UnrealLocation The location of the entity as a vector where X is Latitude, Y is Longitude, and Z is Height
-	 * @param UnrealRotation The desired Yaw, Pitch, and Roll calculated from the given entity state
+	 * @param UnrealLocation The location of the entity in Unreal
+	 * @param UnrealRotation The rotation of the entity in Unreal
 	 */
 	UFUNCTION(BlueprintPure, Category = "GRILL DIS|Unit Conversions")
 		static void GetUnrealLocationAndOrientationFromEntityStatePdu(const FEntityStatePDU EntityStatePdu, AGeoReferencingSystem* GeoReferencingSystem, FVector& UnrealLocation, FRotator& UnrealRotation);
