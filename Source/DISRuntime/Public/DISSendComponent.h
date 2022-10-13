@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "TimerManager.h"
 #include "DISEnumsAndStructs.h"
 #include "PDUMasterInclude.h"
 #include "UDPSubsystem.h"
