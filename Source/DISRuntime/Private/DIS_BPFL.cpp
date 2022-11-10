@@ -8,26 +8,33 @@ DEFINE_LOG_CATEGORY(LogDIS_BPFL);
 
 void UDIS_BPFL::CalculateLatLonHeightFromEcefXYZ(const FEarthCenteredEarthFixedDouble Ecef, FLatLonHeightDouble& OutLatLonHeightDegreesMeters)
 {
-	constexpr double EarthSemiMajorRadiusMeters = 6378137;
-	constexpr double EarthSemiMinorRadiusMeters = 6356752.3142;
+	constexpr double earthEquitorialRadiusMeters = 6378137;
+	constexpr double earthPolarRadiusMeters = 6356752.3142;
 
-	const double EarthSemiMajorRadiusMetersSquare = FMath::Square(EarthSemiMajorRadiusMeters);
-	const double EarthSemiMinorRadiusMetersSquare = FMath::Square(EarthSemiMinorRadiusMeters);
-	const double DistFromXToY = FMath::Sqrt(FMath::Square(Ecef.X) + FMath::Square(Ecef.Y));
+	const double earthEquitorialRadiusMetersSquared = FMath::Square(earthEquitorialRadiusMeters);
+	const double earthPolarRadiusMetersSquared = FMath::Square(earthPolarRadiusMeters);
 
-	const double Longitude = FMath::RadiansToDegrees(FMath::Atan2(Ecef.Y, Ecef.X));
-	// Latitude accurate to ~5 decimal places
-	const double Latitude = FMath::RadiansToDegrees(FMath::Atan((EarthSemiMajorRadiusMetersSquare / EarthSemiMinorRadiusMetersSquare) * (Ecef.Z / DistFromXToY)));
+	double eSquared = (earthEquitorialRadiusMetersSquared - earthPolarRadiusMetersSquared) / earthEquitorialRadiusMetersSquared;
+	double ePrimeSquared = (earthEquitorialRadiusMetersSquared - earthPolarRadiusMetersSquared) / earthPolarRadiusMetersSquared;
 
-	const double CosLatitude = FMath::Cos(FMath::DegreesToRadians(Latitude));
-	const double SinLatitude = FMath::Sin(FMath::DegreesToRadians(Latitude));
-	const double Height = (DistFromXToY / CosLatitude) - (EarthSemiMajorRadiusMetersSquare / FMath::Sqrt(
-		(EarthSemiMajorRadiusMetersSquare * FMath::Square(CosLatitude)) + (EarthSemiMinorRadiusMetersSquare *
-			FMath::Square(SinLatitude))));
+	double p = FMath::Sqrt(FMath::Square(Ecef.X) + FMath::Square(Ecef.Y));
+	double F = 54 * earthPolarRadiusMetersSquared * FMath::Square(Ecef.Z);
+	double G = FMath::Square(p) + (1 - eSquared) * FMath::Square(Ecef.Z) - eSquared * (earthEquitorialRadiusMetersSquared - earthPolarRadiusMetersSquared);
+	double c = (FMath::Square(eSquared) * F * FMath::Square(p)) / FMath::Pow(G, 3);
 
-	OutLatLonHeightDegreesMeters.Latitude = Latitude;
-	OutLatLonHeightDegreesMeters.Longitude = Longitude;
-	OutLatLonHeightDegreesMeters.Height = Height;
+	double s = FMath::Pow(1 + c + FMath::Sqrt(FMath::Square(c) + 2 * c), 1. / 3.);
+	double k = s + 1 + 1 / s;
+	double P = F / (3 * FMath::Square(k) * FMath::Square(G));
+	double Q = FMath::Sqrt(1 + 2 * FMath::Square(eSquared) * P);
+
+	double rNot = (-P * eSquared * p) / (1 + Q) + FMath::Sqrt(1. / 2. * earthEquitorialRadiusMetersSquared * (1 + 1 / Q) - (P * (1 - eSquared) * FMath::Square(Ecef.Z)) / (Q * (1 + Q)) - 1. / 2. * P * FMath::Square(p));
+	double U = FMath::Sqrt(FMath::Square(p - eSquared * rNot) + FMath::Square(Ecef.Z));
+	double V = FMath::Sqrt(FMath::Square(p - eSquared * rNot) + (1 - eSquared) * FMath::Square(Ecef.Z));
+	double zNot = (earthPolarRadiusMetersSquared * Ecef.Z) / (earthEquitorialRadiusMeters * V);
+
+	OutLatLonHeightDegreesMeters.Height = U * (1 - earthPolarRadiusMetersSquared / (earthEquitorialRadiusMeters * V));
+	OutLatLonHeightDegreesMeters.Latitude = glm::degrees(FMath::Atan((Ecef.Z + ePrimeSquared * zNot) / p));
+	OutLatLonHeightDegreesMeters.Longitude = glm::degrees(FMath::Atan2(Ecef.Y, Ecef.X));
 }
 
 void UDIS_BPFL::CalculateLatLonHeightFromEcefXYZ(const FEarthCenteredEarthFixedFloat ECEF, FLatLonHeightFloat& OutLatLonHeightDegreesMeters)
@@ -49,30 +56,23 @@ void UDIS_BPFL::CalculateLatLonHeightFromEcefXYZ(const FEarthCenteredEarthFixedF
 
 void UDIS_BPFL::CalculateEcefXYZFromLatLonHeight(const FLatLonHeightDouble LatLonHeightDegreesMeters, FEarthCenteredEarthFixedDouble& OutEcef)
 {
-	constexpr double EarthSemiMajorRadiusMeters = 6378137;
-	constexpr double EarthSemiMinorRadiusMeters = 6356752.3142;
+	double earthEquitorialRadiusMeters = 6378137;
+	double earthPolarRadiusMeters = 6356752.3142;
 
-	const double CosLatitude = glm::cos(glm::radians(LatLonHeightDegreesMeters.Latitude));
-	const double SinLatitude = glm::sin(glm::radians(LatLonHeightDegreesMeters.Latitude));
-	const double CosLongitude = FMath::Cos(FMath::DegreesToRadians(LatLonHeightDegreesMeters.Longitude));
-	const double SinLongitude = FMath::Sin(FMath::DegreesToRadians(LatLonHeightDegreesMeters.Longitude));
+	double earthEquitorialRadiusMetersSquared = FMath::Square(earthEquitorialRadiusMeters);
+	double earthPolarRadiusMetersSquared = FMath::Square(earthPolarRadiusMeters);
 
-	const double XYBaseConversion = (EarthSemiMajorRadiusMeters / (FMath::Sqrt(FMath::Square(CosLatitude) + ((FMath::Square(EarthSemiMinorRadiusMeters) / FMath::Square(EarthSemiMajorRadiusMeters)) * FMath::Square(SinLatitude))))) + LatLonHeightDegreesMeters.Height;
-	const double ZBaseConversion = (EarthSemiMinorRadiusMeters / (((FMath::Sqrt(FMath::Square(CosLatitude) * (FMath::Square(EarthSemiMajorRadiusMeters) / FMath::Square(EarthSemiMinorRadiusMeters)) + FMath::Square(SinLatitude)))))) + LatLonHeightDegreesMeters.Height;
+	double eSquared = 1 - earthPolarRadiusMetersSquared / earthEquitorialRadiusMetersSquared;
+	double f = 1 - earthPolarRadiusMeters / earthEquitorialRadiusMeters;
 
-	DIS::Vector3Double Location;
+	double nLat = earthEquitorialRadiusMeters / FMath::Sqrt(1 - eSquared * FMath::Square(FMath::Sin(glm::radians(LatLonHeightDegreesMeters.Latitude))));
 
-	const double EcefX = XYBaseConversion * CosLatitude * CosLongitude;
-	const double EcefY = XYBaseConversion * CosLatitude * SinLongitude;
-	const double EcefZ = ZBaseConversion * SinLatitude;
+	double latRadians = glm::radians(LatLonHeightDegreesMeters.Latitude);
+	double lonRadians = glm::radians(LatLonHeightDegreesMeters.Longitude);
 
-	Location.setX(EcefX);
-	Location.setY(EcefY);
-	Location.setZ(EcefZ);
-
-	OutEcef.X = EcefX;
-	OutEcef.Y = EcefY;
-	OutEcef.Z = EcefZ;
+	OutEcef.X = (nLat + LatLonHeightDegreesMeters.Height) * FMath::Cos(latRadians) * FMath::Cos(lonRadians);
+	OutEcef.Y = (nLat + LatLonHeightDegreesMeters.Height) * FMath::Cos(latRadians) * FMath::Sin(lonRadians);
+	OutEcef.Z = (FMath::Square(1 - f) * nLat + LatLonHeightDegreesMeters.Height) * FMath::Sin(latRadians);
 }
 
 void UDIS_BPFL::CalculateEcefXYZFromLatLonHeight(const FLatLonHeightFloat LatLonHeightDegreesMeters, FEarthCenteredEarthFixedFloat& OutECEF)
