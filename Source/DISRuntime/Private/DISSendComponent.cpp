@@ -379,8 +379,8 @@ void UDISSendComponent::CalculateECEFLinearVelocityAndAcceleration(FVector& ECEF
 		FVector curLinVelECEF;
 		FVector oldLinVelECEF;
 		UDIS_BPFL::GetEcefXYZFromUnrealLocation(FVector::ZeroVector, GeoReferencingSystem, originECEF);
-		UDIS_BPFL::GetEcefXYZFromUnrealLocation(curUnrealLinearVelocity, GeoReferencingSystem, curLinVelECEF);
-		UDIS_BPFL::GetEcefXYZFromUnrealLocation(LastCalculatedUnrealLinearVelocity, GeoReferencingSystem, oldLinVelECEF);
+		UDIS_BPFL::GetEcefXYZFromUnrealLocation(curUnrealLinearVelocity * 100, GeoReferencingSystem, curLinVelECEF);
+		UDIS_BPFL::GetEcefXYZFromUnrealLocation(LastCalculatedUnrealLinearVelocity * 100, GeoReferencingSystem, oldLinVelECEF);
 
 		//Convert linear velocity vectors to be in ECEF coordinates --- UE origin may not be Earth center and may lie rotated on Earth
 		ECEFLinearVelocity = curLinVelECEF - originECEF;
