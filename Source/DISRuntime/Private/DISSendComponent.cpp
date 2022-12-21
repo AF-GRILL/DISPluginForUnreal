@@ -375,9 +375,17 @@ void UDISSendComponent::CalculateECEFLinearVelocityAndAcceleration(FVector& ECEF
 		//Divide location offset by 100 to convert to meters
 		FVector curUnrealLinearVelocity = (curLoc - LastCalculatedUnrealLocation) / (timeSinceLastCalc * 100);
 
+		//TODO: Remove Convert Unreal Vector to ECEF Vector function. Make it
+		FEarthCenteredEarthFixedFloat originECEF;
+		FEarthCenteredEarthFixedFloat curLinVelECEF;
+		FEarthCenteredEarthFixedFloat oldLinVelECEF;
+		UDIS_BPFL::GetEcefXYZFromUnrealLocation(FVector::ZeroVector, GeoReferencingSystem, originECEF);
+		UDIS_BPFL::GetEcefXYZFromUnrealLocation(curUnrealLinearVelocity, GeoReferencingSystem, curLinVelECEF);
+		UDIS_BPFL::GetEcefXYZFromUnrealLocation(LastCalculatedUnrealLinearVelocity, GeoReferencingSystem, oldLinVelECEF);
+
 		//Convert linear velocity vectors to be in ECEF coordinates --- UE origin may not be Earth center and may lie rotated on Earth
-		ECEFLinearVelocity = UDIS_BPFL::ConvertUnrealVectorToECEFVector(curUnrealLinearVelocity, curLoc, GeoReferencingSystem);
-		FVector prevECEFLinearVelocity = UDIS_BPFL::ConvertUnrealVectorToECEFVector(LastCalculatedUnrealLinearVelocity, LastCalculatedUnrealLocation, GeoReferencingSystem);
+		ECEFLinearVelocity = FVector(curLinVelECEF.X - originECEF.X, curLinVelECEF.Y - originECEF.Y, curLinVelECEF.Z - originECEF.Z);
+		FVector prevECEFLinearVelocity = FVector(oldLinVelECEF.X - originECEF.X, oldLinVelECEF.Y - originECEF.Y, oldLinVelECEF.Z - originECEF.Z);
 		ECEFLinearAcceleration = (ECEFLinearVelocity - prevECEFLinearVelocity) / timeSinceLastCalc;
 	}
 	else
