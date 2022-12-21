@@ -430,15 +430,6 @@ public:
 		static void GetNorthEastDownVectorsFromEastNorthUpVectors(FEastNorthUp EastNorthUpVectors, FNorthEastDown& NorthEastDownVectors);
 
 	/**
-	 * Converts the given Unreal Engine vector to be in terms of ECEF. Resulting vector will be same magnitude, but in direction of ECEF NED vectors of the given location.
-	 * @param UnrealVector The Unreal vector to be converted to ECEF coordinates
-	 * @param CurrentLocation The Unreal Engine location that the entity is at
-	 * @param GeoReferencingSystem The GeoReferencing Subsystem reference.
-	*/
-	UFUNCTION(BlueprintPure, Category = "GRILL DIS|Unit Conversions")
-		static FVector ConvertUnrealVectorToECEFVector(FVector UnrealVector, FVector CurrentLocation, AGeoReferencingSystem* GeoReferencingSystem);
-
-	/**
 	 * Convert between North, East, Down and East, North, Up orientation representation using double values
 	 * @param StartingVectors The matrix representation of the starting vectors (each vector is a column)
 	 * @return The resulting conversion of swapping the first two vectors and negating the last

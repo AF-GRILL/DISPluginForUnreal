@@ -564,24 +564,6 @@ void UDIS_BPFL::GetNorthEastDownVectorsFromEastNorthUpVectors(const FEastNorthUp
 	NorthEastDownVectors = FNorthEastDown(NorthVector, EastVector, DownVector);
 }
 
-FVector UDIS_BPFL::ConvertUnrealVectorToECEFVector(FVector UnrealVector, FVector CurrentLocation, AGeoReferencingSystem* GeoReferencingSystem)
-{
-	FVector ecefVector = FVector();
-
-	if (IsValid(GeoReferencingSystem))
-	{
-		FVector llh;
-		FNorthEastDown nedVectors;
-		GetLatLonHeightFromUnrealLocation(CurrentLocation, GeoReferencingSystem, llh);
-		CalculateNorthEastDownVectorsFromLatLon(llh.X, llh.Y, nedVectors);
-
-		//Convert the Unreal Engine vector to be in terms of ECEF
-		ecefVector = nedVectors.NorthVector * -UnrealVector.Y + nedVectors.EastVector * UnrealVector.X - nedVectors.DownVector * UnrealVector.Z;
-	}
-
-	return ecefVector;
-}
-
 glm::dmat3 UDIS_BPFL::ConvertNedAndEnu(const glm::dmat3 StartingVectors)
 {
 	const glm::dmat3 ConversionMatrix = glm::dmat3(0, 1, 0, 1, 0, 0, 0, 0, -1);
