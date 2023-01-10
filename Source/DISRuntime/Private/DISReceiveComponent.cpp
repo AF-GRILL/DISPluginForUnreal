@@ -24,15 +24,20 @@ void UDISReceiveComponent::InitializeComponent()
 {
 	Super::InitializeComponent();
 
-	//Check if the owning actor was tagged as being spawned from the network
-	if (GetOwner()->Tags.Contains(ADISGameManager::SPAWNED_FROM_NETWORK_TAG))
+	ADISGameManager* DISGameManager = ADISGameManager::GetDISGameManager(Cast<UObject>(GetWorld()));
+
+	if (IsValid(DISGameManager))
 	{
-		SpawnedFromNetwork = true;
-		GetOwner()->Tags.Remove(ADISGameManager::SPAWNED_FROM_NETWORK_TAG);
-	}
-	else
-	{
-		SpawnedFromNetwork = false;
+		FInitialDISConditions initDISConditions = *DISGameManager->InitialEntityConditions.Find(GetOwner());
+		SpawnedFromNetwork = initDISConditions.SpawnedFromNetwork;
+
+		UpdateCommonEntityStateInfo(initDISConditions.EntityStatePDU);
+
+		EntityType = initDISConditions.EntityStatePDU.EntityType;
+		EntityForceID = initDISConditions.EntityStatePDU.ForceID;
+		EntityMarking = initDISConditions.EntityStatePDU.Marking;
+
+		DISGameManager->InitialEntityConditions.Remove(GetOwner());
 	}
 }
 

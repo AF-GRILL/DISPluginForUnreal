@@ -54,6 +54,29 @@ struct FReceiveSocketInfo
 		FReceiveSocketSettings SocketSettings;
 };
 
+USTRUCT()
+struct FInitialDISConditions
+{
+	GENERATED_BODY()
+
+	UPROPERTY()
+		FEntityStatePDU EntityStatePDU;
+	UPROPERTY()
+		bool SpawnedFromNetwork;
+
+	FInitialDISConditions()
+	{
+		EntityStatePDU = FEntityStatePDU();
+		SpawnedFromNetwork = false;
+	}
+
+	FInitialDISConditions(FEntityStatePDU EntityStatePDU, bool SpawnedFromNetwork)
+	{
+		this->EntityStatePDU = EntityStatePDU;
+		this->SpawnedFromNetwork = SpawnedFromNetwork;
+	}
+};
+
 UCLASS(Blueprintable)
 class DISRUNTIME_API ADISGameManager : public AInfo
 {
@@ -63,7 +86,7 @@ class DISRUNTIME_API ADISGameManager : public AInfo
 public:
 	ADISGameManager();
 
-	static const FName SPAWNED_FROM_NETWORK_TAG;
+	TMap<AActor*, FInitialDISConditions> InitialEntityConditions;
 
 	/**
 	 * Gets a reference to the DIS Game Manager actor in the current open level.

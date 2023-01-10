@@ -324,14 +324,14 @@ void UDeadReckoning_BPFL::CalculateDeadReckonedOrientation(const double PsiRadia
 	OutThetaRadians = glm::asin(-OrientationMatrix[2][0]);
 
 	// Special case for |Theta| = pi/2
-	double CosTheta = 1e-5;
+	double CosThetaRadians = 1e-5;
 	if (abs(OutThetaRadians) != glm::pi<double>() / 2)
 	{
-		CosTheta = glm::cos(OutThetaRadians);
+		CosThetaRadians = glm::cos(OutThetaRadians);
 	}
 
-	OutPsiRadians = glm::acos(OrientationMatrix[0][0] / CosTheta) * (abs(OrientationMatrix[1][0]) / OrientationMatrix[1][0]);
-	OutPhiRadians = glm::acos(OrientationMatrix[2][2] / CosTheta) * (abs(OrientationMatrix[2][1]) / OrientationMatrix[2][1]);
+	OutPsiRadians = glm::acos(FMath::Clamp(OrientationMatrix[0][0] / CosThetaRadians, -1, 1)) * (abs(OrientationMatrix[1][0]) / OrientationMatrix[1][0]);
+	OutPhiRadians = glm::acos(FMath::Clamp(OrientationMatrix[2][2] / CosThetaRadians, -1, 1)) * (abs(OrientationMatrix[2][1]) / OrientationMatrix[2][1]);
 }
 
 glm::dvec3 UDeadReckoning_BPFL::GetEntityBodyDeadReckonedPosition(const glm::dvec3 InitialPositionVector, const glm::dvec3 BodyVelocityVector, const glm::dvec3 BodyLinearAccelerationVector, const glm::dvec3 BodyAngularVelocityVector, const glm::dvec3 EntityOrientation, const double DeltaTime)

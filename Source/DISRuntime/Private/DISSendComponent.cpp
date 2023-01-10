@@ -374,7 +374,6 @@ void UDISSendComponent::CalculateECEFLinearVelocityAndAcceleration(FVector& ECEF
 		//Divide location offset by 100 to convert to meters
 		FVector curUnrealLinearVelocity = (curLoc - LastCalculatedUnrealLocation) / (timeSinceLastCalc * 100);
 
-		//TODO: Remove Convert Unreal Vector to ECEF Vector function. Make it
 		FVector originECEF;
 		FVector curLinVelECEF;
 		FVector oldLinVelECEF;
