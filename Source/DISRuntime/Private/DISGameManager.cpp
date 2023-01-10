@@ -7,7 +7,6 @@
 #include "PDUProcessor.h"
 
 DEFINE_LOG_CATEGORY(LogDISGameManager);
-const FName ADISGameManager::SPAWNED_FROM_NETWORK_TAG = FName("SPAWNED_FROM_NETWORK");
 
 ADISGameManager::ADISGameManager() 
 {
@@ -317,7 +316,11 @@ void ADISGameManager::SpawnNewEntityFromEntityState(FEntityStatePDU EntityStateP
 
 		//Defer spawning of the actor. Allows an uncompleted actor reference to be used to add a tag to prior to finishing spawning of the actor.
 		AActor* spawnedActor = GetWorld()->SpawnActorDeferred<AActor>(associatedClass, spawnTransform, nullptr, nullptr, ESpawnActorCollisionHandlingMethod::AlwaysSpawn);
-		spawnedActor->Tags.Add(SPAWNED_FROM_NETWORK_TAG);
+
+		FInitialDISConditions initialDISConditions = FInitialDISConditions(EntityStatePDUIn, true);
+		//Store the initial received ESPDU -- This gets used by the DISReceiveComponents later to set initial conditions when initializing themselves
+		InitialEntityConditions.Add(spawnedActor, initialDISConditions);
+
 		UGameplayStatics::FinishSpawningActor(spawnedActor, spawnTransform);
 
 		if (spawnedActor != nullptr)
