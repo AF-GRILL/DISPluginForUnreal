@@ -163,7 +163,7 @@ bool UUDPSubsystem::OpenSendSocket(FSendSocketSettings SocketSettings, int32& Se
 	}
 
 	FSocket* SenderSocket;
-	FUdpSocketBuilder SocketBuilder = FUdpSocketBuilder(SocketSettings.SocketDescription).AsReusable();
+	FUdpSocketBuilder SocketBuilder = FUdpSocketBuilder(SocketSettings.SocketDescription).AsNonBlocking().AsReusable();
 	
 	//Handle setting up send socket based on different connection types
 	switch (SocketSettings.SendSocketConnectionType)

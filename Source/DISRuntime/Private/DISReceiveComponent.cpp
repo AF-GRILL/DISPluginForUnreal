@@ -26,6 +26,8 @@ void UDISReceiveComponent::InitializeComponent()
 
 	ADISGameManager* DISGameManager = ADISGameManager::GetDISGameManager(Cast<UObject>(GetWorld()));
 
+	EntityECEFLocationDifference.Init(0, 3);
+
 	if (IsValid(DISGameManager))
 	{
 		FInitialDISConditions initDISConditions = *DISGameManager->InitialEntityConditions.Find(GetOwner());
@@ -46,7 +48,6 @@ void UDISReceiveComponent::BeginPlay()
 {
 	Super::BeginPlay();
 
-	EntityECEFLocationDifference.Init(0, 3);
 	GeoReferencingSystem = AGeoReferencingSystem::GetGeoReferencingSystem(Cast<UObject>(GetWorld()));
 }
 

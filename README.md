@@ -26,6 +26,65 @@
 	- This actor stores the DIS Enumeration to class mappings and other various DIS information.
 	- More information on the actor itself can be found in the **DIS Game Manager section** below
 
+# Implemented DIS PDUs
+
+The GRILL DIS for Unreal plugin currently supports the below PDUs:
+- Entity State
+- Entity State Update
+- Remove Entity
+- Fire
+- Detonate
+- Start Resume
+- Stop Freeze
+
+If additional PDU support is desired a few steps need to be taken:
+1. Make a new Unreal Engine C++ class to contain the PDU information
+	- This class will act as a container for the OpenDIS library version of the PDU. It will allow for interoperability between the PDUs and Unreal Engine.
+2. In the PDU Processor class, add in a new case into the "ProcessDISPacket" function for processing the new PDU type.
+3. In the DIS Game Manager class, add in a new function for handling logic the received PDU needs to perform.
+
+# Setting Up an Empty Project
+
+If creating a new project using the GRILL DIS for Unreal plugin, the following steps can be performed to set it up with DIS capabilities.
+_**Additional info for all of these topics can be found in their respective sections below.**_
+
+**Receiving DIS**
+1. Place a single DIS Game Manager actor into the level
+	- This actor can be searched for via the "Place Actors" window in Unreal Engine.
+2. On the DIS Game Manager, alter the network parameters according to the needs for the project.
+	- The network parameters are located on the DIS Game Manager inside of the Networking header under the GRILL DIS tab.
+	- The receive sockets are utilized to handle incoming DIS network packets.
+3. Place a single Geo Referencing System actor into the level
+	- This actor can be searched for via the "Place Actors" window in Unreal Engine.
+4. On the Geo Referencing System, set the "Origin Location" variable to the geospatial location that the Unreal Engine origin is desired to be at.
+5. Make custom Unreal Engine actors for all DIS entities the project is expected to receive and handle.
+	- Attach a DIS Receive Component to all of the actors that are going to be DIS entities and set the parameters on the component accordingly.
+		- This component contains events for handling incoming DIS information.
+6. Create a custom DIS Enumeration Mapping asset that maps DIS entity types to the custom Unreal Engine actors made in step 5.
+7. On the DIS Game Manager, set the "DIS Enumeration Mapping" variable on it to the DIS Enumeration Mapping asset made in step 6.
+
+**Sending DIS**
+1. Place a single DIS Game Manager actor into the level
+2. On the DIS Game Manager, alter the network parameters according to the needs for the project.
+	- The network parameters are located on the DIS Game Manager inside of the Networking header under the GRILL DIS tab.
+	- The send sockets are utilized to emit DIS network packets.
+3. Place a single Geo Referencing System actor into the level
+4. On the Geo Referencing System, set the "Origin Location" variable to the geospatial location that the Unreal Engine origin is desired to be at.
+5. Make custom Unreal Engine actors for all DIS entities the project is expected to receive and handle.
+	- Attach a DIS Send Component to all of the actors that are going to be DIS entities and set the parameters on the component accordingly.
+		- This component will emit DIS PDUs using opened send sockets.
+		- **NOTE:** These send sockets can be opened through the DIS Game Manager or manually via the UDP Subsystem.
+
+**General Flow**
+- The DIS plugin maintains a mapping within the DIS Game Manager that maps DIS Entity IDs to Unreal actors that exist in the current level.
+- When an EntityStatePDU is received, it gets parsed and info it contains is utilized to check the mapping.
+	- If a match is found:
+		- An actor for the EntityStatePDU already exists in the level and is notified about the new information.
+	- If a match is not found:
+		- The DIS Game Manager looks in the DIS Enumeration Mapping asset attached to it for what actor should represent this new entity.
+			- If an entity type is found in the DIS Enumeration Mapping asset that matches the entity type contained in the EntityStatePDU, the corresponding actor is spawned.
+			- Otherwise nothing is done.
+
 # UDP Subsystem
 
 - The UDP Subsystem is what is used to control UDP socket connections.
@@ -40,6 +99,7 @@
 	- Get Connected Receive Socket IDs
 	- Get Connected Send Socket IDs
 	- Any Connected Sockets
+	- Emit Bytes
 
 ![UDPFunctions](Resources/ReadMeImages/UDPFunctions.png)
 
