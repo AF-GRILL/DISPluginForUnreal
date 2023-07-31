@@ -92,7 +92,7 @@ void UDISSendComponent::EndPlay(const EEndPlayReason::Type EndPlayReason)
 	finalESPDU.EntityType = EntityType;
 	finalESPDU.ForceID = EntityForceID;
 	finalESPDU.Marking = EntityMarking;
-	finalESPDU.EntityAppearance |= 1 << 23;
+	finalESPDU.EntityAppearance.IsDeactivated = true;
 
 	if (IsValid(DISGameManager))
 	{

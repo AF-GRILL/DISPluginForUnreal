@@ -39,7 +39,7 @@ struct FEntityStatePDU : public FEntityInformationFamilyPDU
 		FEntityType EntityType;
 	/** A series of enumerations used to describe the appearance of the entity according to SISO-REF-010-2015 UIDs 31-43. */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|Structs|PDUs|EntityState")
-		int32 EntityAppearance;
+		FEntityAppearance EntityAppearance;
 	/** A series of enumerations used to describe the capabilities of the entity according to SISO-REF-010-2015 UID 55. */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|Structs|PDUs|EntityState")
 		int32 Capabilities;
@@ -104,7 +104,7 @@ struct FEntityStatePDU : public FEntityInformationFamilyPDU
 		ForceID = static_cast<EForceID>(EntityStatePDUIn->getForceId());
 		Marking = FString(EntityStatePDUIn->getMarking().getCharacters());
 		Marking.LeftInline(11);
-		EntityAppearance = EntityStatePDUIn->getEntityAppearance();
+		EntityAppearance = FEntityAppearance(EntityStatePDUIn->getEntityAppearance());
 		Capabilities = EntityStatePDUIn->getCapabilities();
 
 		//Entity type
@@ -164,7 +164,7 @@ struct FEntityStatePDU : public FEntityInformationFamilyPDU
 		OutOrientation.setPhi(EntityOrientation.Roll);
 		EntityStatePDUOut.setEntityOrientation(OutOrientation);
 
-		EntityStatePDUOut.setEntityAppearance(EntityAppearance);
+		EntityStatePDUOut.setEntityAppearance(EntityAppearance.UpdateValue());
 		EntityStatePDUOut.setDeadReckoningParameters(DeadReckoningParameters.ToOpenDIS());
 
 		DIS::Marking OutMarking;
