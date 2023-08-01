@@ -51,15 +51,15 @@ struct FPDU
 
 	virtual ~FPDU() {}
 
-	void SetupFromOpenDIS(DIS::Pdu* PDUIn)
+	void SetupFromOpenDIS(const DIS::Pdu& PDUIn)
 	{
-		ProtocolVersion = PDUIn->getProtocolVersion();
-		ExerciseID = PDUIn->getExerciseID();
-		PduType = static_cast<EPDUType>(PDUIn->getPduType());
-		ProtocolFamily = PDUIn->getProtocolFamily();
-		Timestamp = PDUIn->getTimestamp();
-		Length = PDUIn->getLength();
-		Padding = PDUIn->getPadding();
+		ProtocolVersion = PDUIn.getProtocolVersion();
+		ExerciseID = PDUIn.getExerciseID();
+		PduType = static_cast<EPDUType>(PDUIn.getPduType());
+		ProtocolFamily = PDUIn.getProtocolFamily();
+		Timestamp = PDUIn.getTimestamp();
+		Length = PDUIn.getLength();
+		Padding = PDUIn.getPadding();
 	}
 
 	void ToOpenDIS(DIS::Pdu& PDUOut)
@@ -85,7 +85,7 @@ struct FPDU
 		return DISDataStreamToBytes(buffer);
 	}
 
-	TArray<uint8> DISDataStreamToBytes(DIS::DataStream DataStream) 
+	TArray<uint8> DISDataStreamToBytes(const DIS::DataStream& DataStream) 
 	{
 		TArray<uint8> byteArrayOut;
 		byteArrayOut.Init(0, DataStream.size());

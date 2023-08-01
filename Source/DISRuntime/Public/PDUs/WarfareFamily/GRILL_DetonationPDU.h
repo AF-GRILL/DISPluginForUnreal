@@ -58,47 +58,47 @@ struct FDetonationPDU : public FWarfareFamilyPDU
 
 	virtual ~FDetonationPDU() {}
 
-	void SetupFromOpenDIS(DIS::DetonationPdu* DetonationPDUIn)
+	void SetupFromOpenDIS(const DIS::DetonationPdu& DetonationPDUIn)
 	{
 		FWarfareFamilyPDU::SetupFromOpenDIS(DetonationPDUIn);
 
 		//Detonation PDU specifics
 		//MunitionEntityID
-		MunitionEntityID = DetonationPDUIn->getMunitionID();
+		MunitionEntityID = DetonationPDUIn.getMunitionID();
 
 		//event id
-		EventID = DetonationPDUIn->getEventID();
+		EventID = DetonationPDUIn.getEventID();
 
 		//velocity
-		Velocity[0] = DetonationPDUIn->getVelocity().getX();
-		Velocity[1] = DetonationPDUIn->getVelocity().getY();
-		Velocity[2] = DetonationPDUIn->getVelocity().getZ();
+		Velocity[0] = DetonationPDUIn.getVelocity().getX();
+		Velocity[1] = DetonationPDUIn.getVelocity().getY();
+		Velocity[2] = DetonationPDUIn.getVelocity().getZ();
 
 		//location
-		EcefLocation[0] = DetonationPDUIn->getLocationInWorldCoordinates().getX();
-		EcefLocation[1] = DetonationPDUIn->getLocationInWorldCoordinates().getY();
-		EcefLocation[2] = DetonationPDUIn->getLocationInWorldCoordinates().getZ();
+		EcefLocation[0] = DetonationPDUIn.getLocationInWorldCoordinates().getX();
+		EcefLocation[1] = DetonationPDUIn.getLocationInWorldCoordinates().getY();
+		EcefLocation[2] = DetonationPDUIn.getLocationInWorldCoordinates().getZ();
 
 		//location
-		LocationInEntityCoords[0] = DetonationPDUIn->getLocationInEntityCoordinates().getX();
-		LocationInEntityCoords[1] = DetonationPDUIn->getLocationInEntityCoordinates().getY();
-		LocationInEntityCoords[2] = DetonationPDUIn->getLocationInEntityCoordinates().getZ();
+		LocationInEntityCoords[0] = DetonationPDUIn.getLocationInEntityCoordinates().getX();
+		LocationInEntityCoords[1] = DetonationPDUIn.getLocationInEntityCoordinates().getY();
+		LocationInEntityCoords[2] = DetonationPDUIn.getLocationInEntityCoordinates().getZ();
 
 		//burst descriptor
-		BurstDescriptor.Warhead = DetonationPDUIn->getBurstDescriptor().getWarhead();
-		BurstDescriptor.Fuse = DetonationPDUIn->getBurstDescriptor().getFuse();
-		BurstDescriptor.Rate = DetonationPDUIn->getBurstDescriptor().getRate();
-		BurstDescriptor.Quantity = DetonationPDUIn->getBurstDescriptor().getQuantity();
-		BurstDescriptor.EntityType = DetonationPDUIn->getBurstDescriptor().getMunition();
+		BurstDescriptor.Warhead = DetonationPDUIn.getBurstDescriptor().getWarhead();
+		BurstDescriptor.Fuse = DetonationPDUIn.getBurstDescriptor().getFuse();
+		BurstDescriptor.Rate = DetonationPDUIn.getBurstDescriptor().getRate();
+		BurstDescriptor.Quantity = DetonationPDUIn.getBurstDescriptor().getQuantity();
+		BurstDescriptor.EntityType = DetonationPDUIn.getBurstDescriptor().getMunition();
 
 		//single vars
-		DetonationResult = static_cast<EDetonationResult>(DetonationPDUIn->getDetonationResult());
-		Pad = DetonationPDUIn->getPad();
+		DetonationResult = static_cast<EDetonationResult>(DetonationPDUIn.getDetonationResult());
+		Pad = DetonationPDUIn.getPad();
 
 		//Articulation Parameters
-		for (int i = 0; i < DetonationPDUIn->getNumberOfArticulationParameters(); i++)
+		for (int i = 0; i < DetonationPDUIn.getNumberOfArticulationParameters(); i++)
 		{
-			DIS::ArticulationParameter tempArtParam = DetonationPDUIn->getArticulationParameters()[i];
+			DIS::ArticulationParameter tempArtParam = DetonationPDUIn.getArticulationParameters()[i];
 			FArticulationParameters newArtParam;
 			newArtParam.ParameterTypeDesignator = tempArtParam.getParameterTypeDesignator();
 			newArtParam.ChangeIndicator = tempArtParam.getChangeIndicator();

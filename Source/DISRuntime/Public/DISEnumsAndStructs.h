@@ -669,7 +669,7 @@ struct FEntityType
 
 	double ToDouble() const
 	{
-		uint8_t* temp = new uint8[8];
+		uint8_t temp[8];
 		temp[0] = Extra;
 		temp[1] = Specific;
 		temp[2] = Subcategory;
