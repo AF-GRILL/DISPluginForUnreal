@@ -20,7 +20,7 @@ struct FEntityInformationFamilyPDU : public FPDU
 
 	virtual ~FEntityInformationFamilyPDU() {}
 
-	void SetupFromOpenDIS(DIS::EntityInformationFamilyPdu* EntityInfoFamilyPDUIn)
+	void SetupFromOpenDIS(const DIS::EntityInformationFamilyPdu& EntityInfoFamilyPDUIn)
 	{
 		FPDU::SetupFromOpenDIS(EntityInfoFamilyPDUIn);
 	}

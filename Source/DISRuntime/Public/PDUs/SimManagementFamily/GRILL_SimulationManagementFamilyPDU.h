@@ -27,12 +27,12 @@ struct FSimulationManagementFamilyPDU : public FPDU
 
     virtual ~FSimulationManagementFamilyPDU() {}
 
-    void SetupFromOpenDIS(DIS::SimulationManagementFamilyPdu* SimFamilyPDUIn)
+    void SetupFromOpenDIS(const DIS::SimulationManagementFamilyPdu& SimFamilyPDUIn)
     {
         FPDU::SetupFromOpenDIS(SimFamilyPDUIn);
 
-        OriginatingEntityID = SimFamilyPDUIn->getOriginatingEntityID();
-        ReceivingEntityID = SimFamilyPDUIn->getReceivingEntityID();
+        OriginatingEntityID = SimFamilyPDUIn.getOriginatingEntityID();
+        ReceivingEntityID = SimFamilyPDUIn.getReceivingEntityID();
     }
 
     void ToOpenDIS(DIS::SimulationManagementFamilyPdu& simFamilyPDUOut)

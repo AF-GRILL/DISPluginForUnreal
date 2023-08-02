@@ -49,38 +49,38 @@ struct FEntityStateUpdatePDU : public FEntityInformationFamilyPDU
 
 	virtual ~FEntityStateUpdatePDU() {}
 
-	void SetupFromOpenDIS(DIS::EntityStateUpdatePdu* EntityStateUpdatePDUIn)
+	void SetupFromOpenDIS(const DIS::EntityStateUpdatePdu& EntityStateUpdatePDUIn)
 	{
 		FEntityInformationFamilyPDU::SetupFromOpenDIS(EntityStateUpdatePDUIn);
 
 		//Entity State Update specifics
 		//entity id
-		EntityID = EntityStateUpdatePDUIn->getEntityID();
+		EntityID = EntityStateUpdatePDUIn.getEntityID();
 
 		//location
-		EcefLocation[0] = EntityStateUpdatePDUIn->getEntityLocation().getX();
-		EcefLocation[1] = EntityStateUpdatePDUIn->getEntityLocation().getY();
-		EcefLocation[2] = EntityStateUpdatePDUIn->getEntityLocation().getZ();
+		EcefLocation[0] = EntityStateUpdatePDUIn.getEntityLocation().getX();
+		EcefLocation[1] = EntityStateUpdatePDUIn.getEntityLocation().getY();
+		EcefLocation[2] = EntityStateUpdatePDUIn.getEntityLocation().getZ();
 
 		//rotation
-		DIS::Orientation& rotation = EntityStateUpdatePDUIn->getEntityOrientation();
+		const DIS::Orientation& rotation = EntityStateUpdatePDUIn.getEntityOrientation();
 		EntityOrientation.Yaw = rotation.getPsi();
 		EntityOrientation.Roll = rotation.getPhi();
 		EntityOrientation.Pitch = rotation.getTheta();
 
 		//velocity (originally in float so this is fine)
-		EntityLinearVelocity[0] = EntityStateUpdatePDUIn->getEntityLinearVelocity().getX();
-		EntityLinearVelocity[1] = EntityStateUpdatePDUIn->getEntityLinearVelocity().getY();
-		EntityLinearVelocity[2] = EntityStateUpdatePDUIn->getEntityLinearVelocity().getZ();
+		EntityLinearVelocity[0] = EntityStateUpdatePDUIn.getEntityLinearVelocity().getX();
+		EntityLinearVelocity[1] = EntityStateUpdatePDUIn.getEntityLinearVelocity().getY();
+		EntityLinearVelocity[2] = EntityStateUpdatePDUIn.getEntityLinearVelocity().getZ();
 
 		//Single Vars
-		Padding1 = EntityStateUpdatePDUIn->getPadding1();
-		EntityAppearance = FEntityAppearance(EntityStateUpdatePDUIn->getEntityAppearance());
+		Padding1 = EntityStateUpdatePDUIn.getPadding1();
+		EntityAppearance = EntityStateUpdatePDUIn.getEntityAppearance();
 
 		//Articulation Parameters
-		for (int i = 0; i < EntityStateUpdatePDUIn->getNumberOfArticulationParameters(); i++)
+		for (int i = 0; i < EntityStateUpdatePDUIn.getNumberOfArticulationParameters(); i++)
 		{
-			DIS::ArticulationParameter tempArtParam = EntityStateUpdatePDUIn->getArticulationParameters()[i];
+			DIS::ArticulationParameter tempArtParam = EntityStateUpdatePDUIn.getArticulationParameters()[i];
 			FArticulationParameters newArtParam;
 			newArtParam.ParameterTypeDesignator = tempArtParam.getParameterTypeDesignator();
 			newArtParam.ChangeIndicator = tempArtParam.getChangeIndicator();
