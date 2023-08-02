@@ -138,6 +138,12 @@ public:
 	 */
 	UFUNCTION(BlueprintCallable, Category = "GRILL DIS|Game Manager")
 		void HandleStartResumePDU(FStartResumePDU StartResumePDUIn);
+	/**
+	 * Delegates the given ElectromagneticEmissions PDU to the appropriate DIS Entity actor.
+	 * @param ElectromagneticEmissionsPDUIn - The ElectromagneticEmissions PDU to pass to the appropriate entity.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "GRILL DIS|Game Manager")
+		void HandleElectromagneticEmissionsPDU(FElectromagneticEmissionsPDU ElectromagneticEmissionsPDUIn);
 
 	/**
 	 * Adds a new entry to the DIS Entity map.
