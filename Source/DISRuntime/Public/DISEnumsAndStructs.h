@@ -225,6 +225,15 @@ enum class EDetonationResult : uint8
 	MissDueToFlyOutAndEndGameFailure	UMETA(DisplayName = "Miss due to fly-out and end-game failure")
 };
 
+UENUM(BlueprintType)
+enum class EEntityDamage : uint8
+{
+	NoDamage,
+	SlightDamage,
+	ModerateDamage,
+	Destroyed
+};
+
 USTRUCT(BlueprintType)
 struct FEastNorthUp
 {
@@ -857,15 +866,6 @@ struct FDeadReckoningParameters
 		OutParam.setEntityAngularVelocity(OutAngularVelocity);
 		return OutParam;
 	}
-};
-
-UENUM(BlueprintType)
-enum class EEntityDamage : uint8
-{
-	NoDamage,
-	SlightDamage,
-	ModerateDamage,
-	Destroyed
 };
 
 USTRUCT(BlueprintType)

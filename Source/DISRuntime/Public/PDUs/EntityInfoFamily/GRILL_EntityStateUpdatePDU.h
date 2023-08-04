@@ -42,7 +42,6 @@ struct FEntityStateUpdatePDU : public FEntityInformationFamilyPDU
 		EcefLocation = FVector(0, 0, 0);
 		EntityOrientation = FRotator(0, 0, 0);
 		EntityLinearVelocity = FVector(0, 0, 0);
-		EntityAppearance = 0;
 		Padding1 = 0;
 		ArticulationParameters = TArray<FArticulationParameters>();
 	}
