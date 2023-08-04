@@ -298,7 +298,7 @@ struct FLatLonHeightDouble
 		Height = 0;
 	}
 
-	FLatLonHeightDouble(const double Latitude,const double Longitude, const double Height)
+	FLatLonHeightDouble(const double Latitude, const double Longitude, const double Height)
 	{
 		this->Latitude = Latitude;
 		this->Longitude = Longitude;

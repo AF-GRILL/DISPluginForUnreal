@@ -156,7 +156,7 @@ public:
 	UPROPERTY(BlueprintAssignable, Category = "GRILL DIS|UDP Subsystem|Events")
 		FUDPReceiveSocketStateSignature OnReceiveSocketClosed;
 
-	/** Called after a sned UDP socket has been opened.
+	/** Called after a send UDP socket has been opened.
 	Passes the bound IP and port as a parameter. */
 	UPROPERTY(BlueprintAssignable, Category = "GRILL DIS|UDP Subsystem|Events")
 		FUDPSendSocketStateSignature OnSendSocketOpened;

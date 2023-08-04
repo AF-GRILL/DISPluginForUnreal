@@ -13,7 +13,7 @@ struct FStopFreezePDU : public FSimulationManagementFamilyPDU
 {
 	GENERATED_BODY()
 
-	/** The  real-world time at which the entity/exercise is to start/resume in the exercise. */
+	/** The  real-world time at which the entity/exercise is to stop/freeze in the exercise. */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|Structs|PDUs|StopFreeze")
 		FClockTime RealWorldTime;
 	/** The reason that an entity or exercise was stopped/frozen. */
