@@ -27,7 +27,7 @@ struct FFirePDU : public FWarfareFamilyPDU
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|Structs|PDUs|Fire")
 		float Range;
 	/**
-	* The velocity of the fired munition at the point whenn the issuing simulation
+	* The velocity of the fired munition at the point when the issuing simulation
 	* application intends the externally visable effects of the launch to first become
 	* apparent represented in world coordinates in meters per second.
 	*/
