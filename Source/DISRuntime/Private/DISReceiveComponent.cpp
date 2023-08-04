@@ -97,6 +97,7 @@ void UDISReceiveComponent::HandleEntityStateUpdatePDU(FEntityStateUpdatePDU NewE
 	MostRecentEntityStatePDU = NewEntityStateUpdatePDU;
 	UpdateCommonEntityStateInfo(MostRecentEntityStatePDU);
 
+	ApplyToOwnerIfActivated(MostRecentEntityStatePDU);
 	OnReceivedEntityStateUpdatePDU.Broadcast(NewEntityStateUpdatePDU);
 
 	if (!PerformDeadReckoning)
@@ -126,7 +127,6 @@ void UDISReceiveComponent::UpdateCommonEntityStateInfo(FEntityStatePDU NewEntity
 	GetOwner()->SetLifeSpan(DISTimeoutSeconds);
 
 	NumberEntityStatePDUsReceived++;
-	ApplyToOwnerIfActivated(MostRecentDeadReckonedEntityStatePDU);
 }
 
 void UDISReceiveComponent::HandleFirePDU(FFirePDU FirePDUIn)
