@@ -26,11 +26,11 @@ struct FRemoveEntityPDU : public FSimulationManagementFamilyPDU
 
 	virtual ~FRemoveEntityPDU() {}
 
-	void SetupFromOpenDIS(DIS::RemoveEntityPdu* RemoveEntityPDUIn)
+	void SetupFromOpenDIS(const DIS::RemoveEntityPdu& RemoveEntityPDUIn)
 	{
 		FSimulationManagementFamilyPDU::SetupFromOpenDIS(RemoveEntityPDUIn);
 
-		RequestID = RemoveEntityPDUIn->getRequestID();
+		RequestID = RemoveEntityPDUIn.getRequestID();
 	}
 
 	void ToOpenDIS(DIS::RemoveEntityPdu& RemoveEntityPDUOut)

@@ -70,16 +70,16 @@ struct FEntityStatePDU : public FEntityInformationFamilyPDU
 
 	virtual ~FEntityStatePDU() {}
 
-	void SetupFromOpenDIS(DIS::EntityStatePdu* EntityStatePDUIn)
+	void SetupFromOpenDIS(const DIS::EntityStatePdu& EntityStatePDUIn)
 	{
 		FEntityInformationFamilyPDU::SetupFromOpenDIS(EntityStatePDUIn);
 
 		// Entity State PDU specifics
 		//entity id
-		EntityID = EntityStatePDUIn->getEntityID();
+		EntityID = EntityStatePDUIn.getEntityID();
 
 		//pure since unsupported in BP
-		DIS::Vector3Double& position = EntityStatePDUIn->getEntityLocation();
+		const DIS::Vector3Double& position = EntityStatePDUIn.getEntityLocation();
 		EntityLocationDouble[0] = position.getX();
 		EntityLocationDouble[1] = position.getY();
 		EntityLocationDouble[2] = position.getZ();
@@ -90,43 +90,43 @@ struct FEntityStatePDU : public FEntityInformationFamilyPDU
 		EntityLocation[2] = position.getZ();
 
 		//rotation
-		DIS::Orientation& rotation = EntityStatePDUIn->getEntityOrientation();
+		const DIS::Orientation& rotation = EntityStatePDUIn.getEntityOrientation();
 		EntityOrientation.Yaw = rotation.getPsi();
 		EntityOrientation.Roll = rotation.getPhi();
 		EntityOrientation.Pitch = rotation.getTheta();
 
 		//velocity (originally in float so this is fine)
-		EntityLinearVelocity[0] = EntityStatePDUIn->getEntityLinearVelocity().getX();
-		EntityLinearVelocity[1] = EntityStatePDUIn->getEntityLinearVelocity().getY();
-		EntityLinearVelocity[2] = EntityStatePDUIn->getEntityLinearVelocity().getZ();
+		EntityLinearVelocity[0] = EntityStatePDUIn.getEntityLinearVelocity().getX();
+		EntityLinearVelocity[1] = EntityStatePDUIn.getEntityLinearVelocity().getY();
+		EntityLinearVelocity[2] = EntityStatePDUIn.getEntityLinearVelocity().getZ();
 
 		//Dead reckoning
-		DeadReckoningParameters.DeadReckoningAlgorithm = static_cast<EDeadReckoningAlgorithm>(EntityStatePDUIn->getDeadReckoningParameters().getDeadReckoningAlgorithm());
-		DeadReckoningParameters.OtherParameters = TArray<uint8>(reinterpret_cast<uint8*>(EntityStatePDUIn->getDeadReckoningParameters().getOtherParameters()), 15);
-		DeadReckoningParameters.EntityLinearAcceleration[0] = EntityStatePDUIn->getDeadReckoningParameters().getEntityLinearAcceleration().getX();
-		DeadReckoningParameters.EntityLinearAcceleration[1] = EntityStatePDUIn->getDeadReckoningParameters().getEntityLinearAcceleration().getY();
-		DeadReckoningParameters.EntityLinearAcceleration[2] = EntityStatePDUIn->getDeadReckoningParameters().getEntityLinearAcceleration().getZ();
-		DeadReckoningParameters.EntityAngularVelocity[0] = EntityStatePDUIn->getDeadReckoningParameters().getEntityAngularVelocity().getX();
-		DeadReckoningParameters.EntityAngularVelocity[1] = EntityStatePDUIn->getDeadReckoningParameters().getEntityAngularVelocity().getY();
-		DeadReckoningParameters.EntityAngularVelocity[2] = EntityStatePDUIn->getDeadReckoningParameters().getEntityAngularVelocity().getZ();
+		DeadReckoningParameters.DeadReckoningAlgorithm = static_cast<EDeadReckoningAlgorithm>(EntityStatePDUIn.getDeadReckoningParameters().getDeadReckoningAlgorithm());
+		DeadReckoningParameters.OtherParameters = TArray<uint8>(reinterpret_cast<const uint8*>(EntityStatePDUIn.getDeadReckoningParameters().getOtherParameters()), 15);
+		DeadReckoningParameters.EntityLinearAcceleration[0] = EntityStatePDUIn.getDeadReckoningParameters().getEntityLinearAcceleration().getX();
+		DeadReckoningParameters.EntityLinearAcceleration[1] = EntityStatePDUIn.getDeadReckoningParameters().getEntityLinearAcceleration().getY();
+		DeadReckoningParameters.EntityLinearAcceleration[2] = EntityStatePDUIn.getDeadReckoningParameters().getEntityLinearAcceleration().getZ();
+		DeadReckoningParameters.EntityAngularVelocity[0] = EntityStatePDUIn.getDeadReckoningParameters().getEntityAngularVelocity().getX();
+		DeadReckoningParameters.EntityAngularVelocity[1] = EntityStatePDUIn.getDeadReckoningParameters().getEntityAngularVelocity().getY();
+		DeadReckoningParameters.EntityAngularVelocity[2] = EntityStatePDUIn.getDeadReckoningParameters().getEntityAngularVelocity().getZ();
 
 		//single vars
-		ForceID = static_cast<EForceID>(EntityStatePDUIn->getForceId());
-		Marking = FString(EntityStatePDUIn->getMarking().getCharacters());
+		ForceID = static_cast<EForceID>(EntityStatePDUIn.getForceId());
+		Marking = FString(EntityStatePDUIn.getMarking().getCharacters());
 		Marking.LeftInline(11);
-		EntityAppearance = EntityStatePDUIn->getEntityAppearance();
-		Capabilities = EntityStatePDUIn->getCapabilities();
+		EntityAppearance = EntityStatePDUIn.getEntityAppearance();
+		Capabilities = EntityStatePDUIn.getCapabilities();
 
 		//Entity type
-		EntityType = EntityStatePDUIn->getEntityType();
+		EntityType = EntityStatePDUIn.getEntityType();
 
 		//Alternative Entity type
-		AlternativeEntityType = EntityStatePDUIn->getAlternativeEntityType();
+		AlternativeEntityType = EntityStatePDUIn.getAlternativeEntityType();
 
 		//Articulation Parameters
-		for (int i = 0; i < EntityStatePDUIn->getNumberOfArticulationParameters(); i++)
+		for (int i = 0; i < EntityStatePDUIn.getNumberOfArticulationParameters(); i++)
 		{
-			DIS::ArticulationParameter tempArtParam = EntityStatePDUIn->getArticulationParameters()[i];
+			DIS::ArticulationParameter tempArtParam = EntityStatePDUIn.getArticulationParameters()[i];
 			FArticulationParameters newArtParam;
 			newArtParam.ParameterTypeDesignator = tempArtParam.getParameterTypeDesignator();
 			newArtParam.ChangeIndicator = tempArtParam.getChangeIndicator();

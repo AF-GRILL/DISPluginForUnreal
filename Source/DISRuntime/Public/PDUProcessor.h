@@ -36,7 +36,7 @@ public:
 	 * @param InData - The DIS packet in bytes to process.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "GRILL DIS|PDU Processor")
-		void ProcessDISPacket(TArray<uint8> InData);
+		void ProcessDISPacket(const TArray<uint8>& InData);
 	
 	/**
 	 * Called after an Entity State PDU is processed.

@@ -27,12 +27,12 @@ struct FWarfareFamilyPDU : public FPDU
 
 	virtual ~FWarfareFamilyPDU() {}
 
-	void SetupFromOpenDIS(DIS::WarfareFamilyPdu* WarfareFamilyPDUIn)
+	void SetupFromOpenDIS(const DIS::WarfareFamilyPdu& WarfareFamilyPDUIn)
 	{
 		FPDU::SetupFromOpenDIS(WarfareFamilyPDUIn);
 
-		FiringEntityID = WarfareFamilyPDUIn->getFiringEntityID();
-		TargetEntityID = WarfareFamilyPDUIn->getTargetEntityID();
+		FiringEntityID = WarfareFamilyPDUIn.getFiringEntityID();
+		TargetEntityID = WarfareFamilyPDUIn.getTargetEntityID();
 	}
 
 	void ToOpenDIS(DIS::WarfareFamilyPdu& WarfareFamilyPDUOut)
