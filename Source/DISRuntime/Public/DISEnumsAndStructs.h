@@ -225,6 +225,15 @@ enum class EDetonationResult : uint8
 	MissDueToFlyOutAndEndGameFailure	UMETA(DisplayName = "Miss due to fly-out and end-game failure")
 };
 
+UENUM(BlueprintType)
+enum class EEntityDamage : uint8
+{
+	NoDamage,
+	SlightDamage,
+	ModerateDamage,
+	Destroyed
+};
+
 USTRUCT()
 struct FEarthCenteredEarthFixedDouble
 {
@@ -975,5 +984,102 @@ struct FDeadReckoningParameters
 		OutAngularVelocity.setZ(EntityAngularVelocity.Z);
 		OutParam.setEntityAngularVelocity(OutAngularVelocity);
 		return OutParam;
+	}
+};
+
+USTRUCT(BlueprintType)
+struct FEntityAppearance
+{
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|Structs")
+		bool PaintScheme = false;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|Structs")
+		bool MobilityKilled = false;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|Structs")
+		bool FirePowerKilled = false;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|Structs")
+		EEntityDamage Damage = EEntityDamage::NoDamage;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|Structs")
+		bool IsSmoking = false;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|Structs")
+		bool IsEngineSmoking = false;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|Structs")
+		int Trailing = 0;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|Structs")
+		int HatchState = 0;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|Structs")
+		bool LightPrimary = false;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|Structs")
+		bool LightSecondary = false;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|Structs")
+		bool LightCollision = false;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|Structs")
+		bool IsFlaming = false;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|Structs")
+		bool IsFrozen = false;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|Structs")
+		bool IsDeactivated = false;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|Structs")
+		bool IsLandingGearExtended = false;
+
+	int32 RawVal = 0;
+
+	FEntityAppearance() {}
+
+	FEntityAppearance(uint32 val)
+		: RawVal(val)
+	{
+		PaintScheme = (val & (0b1 << 0) >> 0);
+		MobilityKilled = (val & (0b1 << 1) >> 1);
+		FirePowerKilled = (val & (0b1 << 2) >> 2);
+		Damage = static_cast<EEntityDamage>((val & (0b11 << 3)) >> 3);
+		IsSmoking = (val & (0b1 << 5) >> 5);
+		IsEngineSmoking = (val & (0b1 << 6) >> 6);
+		Trailing = ((val & (0b11 << 7)) >> 7);
+		HatchState = ((val & (0b111 << 9)) >> 9);
+		LightPrimary = (val & (0b1 << 12) >> 12);
+		LightSecondary = (val & (0b1 << 13) >> 13);
+		LightCollision = (val & (0b1 << 14) >> 14);
+		IsFlaming = (val & (0b1 << 15) >> 15);
+
+		IsFrozen = (val & (0b1 << 21) >> 21);
+		IsDeactivated = (val & (0b1 << 23) >> 23);
+
+		IsLandingGearExtended = (val & (0b1 << 25) >> 25);
+	}
+
+	int32 UpdateValue()
+	{
+		RawVal |= PaintScheme << 0;
+		RawVal |= MobilityKilled << 1;
+		RawVal |= FirePowerKilled << 2;
+		RawVal |= int(Damage) << 3;
+		RawVal |= IsSmoking << 5;
+		RawVal |= IsEngineSmoking << 6;
+		RawVal |= Trailing << 7;
+		RawVal |= HatchState << 9;
+		RawVal |= LightPrimary << 12;
+		RawVal |= LightSecondary << 13;
+		RawVal |= LightCollision << 14;
+		RawVal |= IsFlaming << 15;
+		RawVal |= IsFrozen << 21;
+		RawVal |= IsDeactivated << 23;
+		RawVal |= IsLandingGearExtended << 25;
+		return RawVal;
 	}
 };

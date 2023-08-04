@@ -376,7 +376,7 @@ bool UDeadReckoning_BPFL::DeadReckoning(FEntityStatePDU EntityPDUToDeadReckon, f
 	bool bSupported = true;
 
 	//If the entity is frozen, don't update dead reckoning
-	if (EntityPDUToDeadReckon.EntityAppearance & (1 << 21))
+	if (EntityPDUToDeadReckon.EntityAppearance.IsFrozen)
 	{
 		return false;
 	}

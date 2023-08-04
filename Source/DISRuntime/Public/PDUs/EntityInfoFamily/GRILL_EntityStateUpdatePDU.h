@@ -30,7 +30,7 @@ struct FEntityStateUpdatePDU : public FEntityInformationFamilyPDU
 		FVector EntityLinearVelocity;
 	/** A series of enumerations used to describe the appearance of the entity according to SISO-REF-010-2015 UIDs 31-43. */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|Structs|PDUs|EntityStateUpdate")
-		int32 EntityAppearance;
+		FEntityAppearance EntityAppearance;
 	/** An 8 bit field of unused padding */
 	UPROPERTY()
 		int32 Padding1;
@@ -46,7 +46,6 @@ struct FEntityStateUpdatePDU : public FEntityInformationFamilyPDU
 		EntityOrientation = FRotator(0, 0, 0);
 		EntityLocationDouble.Init(0, 3);
 		EntityLinearVelocity = FVector(0, 0, 0);
-		EntityAppearance = 0;
 		Padding1 = 0;
 		ArticulationParameters = TArray<FArticulationParameters>();
 	}
@@ -85,7 +84,7 @@ struct FEntityStateUpdatePDU : public FEntityInformationFamilyPDU
 
 		//Single Vars
 		Padding1 = EntityStateUpdatePDUIn.getPadding1();
-		EntityAppearance = EntityStateUpdatePDUIn.getEntityAppearance();
+		EntityAppearance = FEntityAppearance(EntityStateUpdatePDUIn.getEntityAppearance());
 
 		//Articulation Parameters
 		for (int i = 0; i < EntityStateUpdatePDUIn.getNumberOfArticulationParameters(); i++)
@@ -147,7 +146,7 @@ struct FEntityStateUpdatePDU : public FEntityInformationFamilyPDU
 		OutOrientation.setPhi(EntityOrientation.Roll);
 		EntityStateUpdatePDUOut.setEntityOrientation(OutOrientation);
 
-		EntityStateUpdatePDUOut.setEntityAppearance(EntityAppearance);
+		EntityStateUpdatePDUOut.setEntityAppearance(EntityAppearance.UpdateValue());
 
 		std::vector<DIS::ArticulationParameter> OutArtParams;
 		for (FArticulationParameters ArticulationParameter : ArticulationParameters)

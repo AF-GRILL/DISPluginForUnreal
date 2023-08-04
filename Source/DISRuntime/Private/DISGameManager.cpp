@@ -161,7 +161,7 @@ void ADISGameManager::HandleEntityStatePDU(FEntityStatePDU EntityStatePDUIn)
 		else
 		{
 			//Check if the entity has been deactivated -- Entity is deactivated if the 23rd bit of the Entity Appearance value is set
-			if (EntityStatePDUIn.EntityAppearance & (1 << 23))
+			if (EntityStatePDUIn.EntityAppearance.IsDeactivated)
 			{
 				UE_LOG(LogDISGameManager, Log, TEXT("Received Entity State PDU with a Deactivated Entity Appearance for an entity that is not in the level. Ignoring the PDU. Entity marking: %s"), *EntityStatePDUIn.Marking);
 				return;

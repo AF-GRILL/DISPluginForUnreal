@@ -64,7 +64,7 @@ void UDISReceiveComponent::TickComponent(float DeltaTime, ELevelTick TickType, F
 void UDISReceiveComponent::HandleEntityStatePDU(FEntityStatePDU NewEntityStatePDU)
 {
 	//Check if the entity has been deactivated -- Entity is deactivated if the 23rd bit of the Entity Appearance value is set
-	if (NewEntityStatePDU.EntityAppearance & (1 << 23))
+	if (NewEntityStatePDU.EntityAppearance.IsDeactivated)
 	{
 		UE_LOG(LogDISReceiveComponent, Log, TEXT("%s Entity Appearance is set to deactivated, deleting entity..."), *NewEntityStatePDU.Marking);
 		GetOwner()->Destroy();
@@ -89,7 +89,7 @@ void UDISReceiveComponent::HandleEntityStatePDU(FEntityStatePDU NewEntityStatePD
 void UDISReceiveComponent::HandleEntityStateUpdatePDU(FEntityStateUpdatePDU NewEntityStateUpdatePDU)
 {
 	//Check if the entity has been deactivated -- Entity is deactivated if the 23rd bit of the Entity Appearance value is set
-	if (NewEntityStateUpdatePDU.EntityAppearance & (1 << 23))
+	if (NewEntityStateUpdatePDU.EntityAppearance.IsDeactivated)
 	{
 		UE_LOG(LogDISReceiveComponent, Log, TEXT("%s Entity Appearance is set to deactivated, deleting entity..."), *NewEntityStateUpdatePDU.EntityID.ToString());
 		GetOwner()->Destroy();
