@@ -211,6 +211,11 @@ public:
 	 */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|DIS Receive Component|DIS Settings")
 		TEnumAsByte<ETraceTypeQuery> GoundClampingCollisionChannel = UEngineTypes::ConvertToTraceType(ECollisionChannel::ECC_Visibility);
+	/**
+	 * To automatically apply entity states to the owner actor.
+	 */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|DIS Receive Component|DIS Settings")
+		bool ApplyToOwner = false;
 
 protected:
 	// Called when the game starts
@@ -226,4 +231,5 @@ private:
 
 	void UpdateCommonEntityStateInfo(FEntityStatePDU NewEntityStatePDU);
 	FEntityStatePDU SmoothDeadReckoning(FEntityStatePDU DeadReckonPDUToSmooth);
+	void ApplyToOwnerIfActivated(FEntityStatePDU const& StatePDU);
 };

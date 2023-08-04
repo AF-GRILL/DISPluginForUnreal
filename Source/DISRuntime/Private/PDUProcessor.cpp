@@ -22,7 +22,7 @@ void UPDUProcessor::HandleOnReceivedUDPBytes(const TArray<uint8>& Bytes, const F
 	ProcessDISPacket(Bytes);
 }
 
-void UPDUProcessor::ProcessDISPacket(TArray<uint8> InData)
+void UPDUProcessor::ProcessDISPacket(const TArray<uint8>& InData)
 {
 	SCOPE_CYCLE_COUNTER(STAT_ProcessDISPacket);
 	int bytesArrayLength = InData.Num();
@@ -32,105 +32,96 @@ void UPDUProcessor::ProcessDISPacket(TArray<uint8> InData)
 		return;
 	}
 
-	EPDUType receivedPDUType = static_cast<EPDUType>(InData[PDU_TYPE_POSITION]);
+	const EPDUType receivedPDUType = static_cast<EPDUType>(InData[PDU_TYPE_POSITION]);
+
+	DIS::DataStream ds((char*)&InData[0], bytesArrayLength, BigEndian);
 
 	//For list of enums for PDU type refer to SISO-REF-010-2015, ANNEX A
 	switch (receivedPDUType)
 	{
 	case EPDUType::EntityState:
 	{
-		DIS::EntityStatePdu* receivedESPDU = new DIS::EntityStatePdu();
-		DIS::DataStream ds((char*)&InData[0], bytesArrayLength, BigEndian);
-		receivedESPDU->unmarshal(ds);
+		DIS::EntityStatePdu receivedESPDU;
+		receivedESPDU.unmarshal(ds);
 
 		FEntityStatePDU entityStatePDU;
 		entityStatePDU.SetupFromOpenDIS(receivedESPDU);
 
 		OnEntityStatePDUProcessed.Broadcast(entityStatePDU);
 
-		break;
+		return;
 	}
 	case EPDUType::Fire:
 	{
-		DIS::FirePdu* receivedFirePDU = new DIS::FirePdu();
-		DIS::DataStream ds((char*)&InData[0], bytesArrayLength, BigEndian);
-		receivedFirePDU->unmarshal(ds);
+		DIS::FirePdu receivedFirePDU;
+		receivedFirePDU.unmarshal(ds);
 
 		FFirePDU firePDU;
 		firePDU.SetupFromOpenDIS(receivedFirePDU);
 
 		OnFirePDUProcessed.Broadcast(firePDU);
 
-		break;
+		return;
 	}
 	case EPDUType::Detonation:
 	{
-		DIS::DetonationPdu* receivedDetonationPDU = new DIS::DetonationPdu();
-		DIS::DataStream ds((char*)&InData[0], bytesArrayLength, BigEndian);
-		receivedDetonationPDU->unmarshal(ds);
+		DIS::DetonationPdu receivedDetonationPDU;
+		receivedDetonationPDU.unmarshal(ds);
 
 		FDetonationPDU detonationPDU;
 		detonationPDU.SetupFromOpenDIS(receivedDetonationPDU);
 
 		OnDetonationPDUProcessed.Broadcast(detonationPDU);
 
-		break;
+		return;
 	}
 	case EPDUType::RemoveEntity:
 	{
-		DIS::RemoveEntityPdu* receivedRemoveEntityPDU = new DIS::RemoveEntityPdu();
-		DIS::DataStream ds((char*)&InData[0], bytesArrayLength, BigEndian);
-		receivedRemoveEntityPDU->unmarshal(ds);
+		DIS::RemoveEntityPdu receivedRemoveEntityPDU;
+		receivedRemoveEntityPDU.unmarshal(ds);
 
 		FRemoveEntityPDU removeEntityPDU;
 		removeEntityPDU.SetupFromOpenDIS(receivedRemoveEntityPDU);
 
 		OnRemoveEntityPDUProcessed.Broadcast(removeEntityPDU);
 
-		break;
+		return;
 	}
 	case EPDUType::Start_Resume:
 	{
-		DIS::StartResumePdu* receivedStartResumePDU = new DIS::StartResumePdu();
-		DIS::DataStream ds((char*)&InData[0], bytesArrayLength, BigEndian);
-		receivedStartResumePDU->unmarshal(ds);
+		DIS::StartResumePdu receivedStartResumePDU;
+		receivedStartResumePDU.unmarshal(ds);
 
 		FStartResumePDU StartResumePDU;
 		StartResumePDU.SetupFromOpenDIS(receivedStartResumePDU);
 
 		OnStartResumePDUProcessed.Broadcast(StartResumePDU);
 
-		break;
+		return;
 	}
 	case EPDUType::Stop_Freeze:
 	{
-		DIS::StopFreezePdu* receivedStopFreezePDU = new DIS::StopFreezePdu();
-		DIS::DataStream ds((char*)&InData[0], bytesArrayLength, BigEndian);
-		receivedStopFreezePDU->unmarshal(ds);
+		DIS::StopFreezePdu receivedStopFreezePDU;
+		receivedStopFreezePDU.unmarshal(ds);
 
 		FStopFreezePDU StopFreezePDU;
 		StopFreezePDU.SetupFromOpenDIS(receivedStopFreezePDU);
 
 		OnStopFreezePDUProcessed.Broadcast(StopFreezePDU);
 
-		break;
+		return;
 	}
 	case EPDUType::EntityStateUpdate:
 	{
-		DIS::EntityStateUpdatePdu* receivedESUPDU = new DIS::EntityStateUpdatePdu();
-		DIS::DataStream ds((char*)&InData[0], bytesArrayLength, BigEndian);
-		receivedESUPDU->unmarshal(ds);
+		DIS::EntityStateUpdatePdu receivedESUPDU;
+		receivedESUPDU.unmarshal(ds);
 
 		FEntityStateUpdatePDU entityStateUpdatePDU;
 		entityStateUpdatePDU.SetupFromOpenDIS(receivedESUPDU);
 
 		OnEntityStateUpdatePDUProcessed.Broadcast(entityStateUpdatePDU);
 
-		break;
-	}
-	default:
-	{
-		break;
+		return;
 	}
 	}
 }

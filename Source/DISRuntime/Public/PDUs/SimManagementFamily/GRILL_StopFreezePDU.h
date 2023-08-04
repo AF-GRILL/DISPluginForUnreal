@@ -41,20 +41,20 @@ struct FStopFreezePDU : public FSimulationManagementFamilyPDU
 
 	virtual ~FStopFreezePDU() {}
 
-	void SetupFromOpenDIS(DIS::StopFreezePdu* StopFreezePDUIn)
+	void SetupFromOpenDIS(const DIS::StopFreezePdu& StopFreezePDUIn)
 	{
 		FSimulationManagementFamilyPDU::SetupFromOpenDIS(StopFreezePDUIn);
 
 		// Stop/Freeze PDU specifics
-		DIS::ClockTime tempRealWorldTime = StopFreezePDUIn->getRealWorldTime();
+		DIS::ClockTime tempRealWorldTime = StopFreezePDUIn.getRealWorldTime();
 
 		RealWorldTime.Hour = tempRealWorldTime.getHour();
 		RealWorldTime.TimePastHour = tempRealWorldTime.getTimePastHour();
 
-		Reason = static_cast<EReason>(StopFreezePDUIn->getReason());
-		FrozenBehavior = StopFreezePDUIn->getFrozenBehavior();
-		PaddingOne = StopFreezePDUIn->getPadding1();
-		RequestID = StopFreezePDUIn->getRequestID();
+		Reason = static_cast<EReason>(StopFreezePDUIn.getReason());
+		FrozenBehavior = StopFreezePDUIn.getFrozenBehavior();
+		PaddingOne = StopFreezePDUIn.getPadding1();
+		RequestID = StopFreezePDUIn.getRequestID();
 	}
 
 	void ToOpenDIS(DIS::StopFreezePdu& StopFreezePDUOut)

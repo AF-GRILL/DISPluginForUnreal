@@ -27,7 +27,7 @@ struct FEntityStateUpdatePDU : public FEntityInformationFamilyPDU
 		FVector EntityLinearVelocity;
 	/** A series of enumerations used to describe the appearance of the entity according to SISO-REF-010-2015 UIDs 31-43. */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|Structs|PDUs|EntityStateUpdate")
-		int32 EntityAppearance;
+		FEntityAppearance EntityAppearance;
 	/** An 8 bit field of unused padding */
 	UPROPERTY()
 		int32 Padding1;
@@ -49,38 +49,38 @@ struct FEntityStateUpdatePDU : public FEntityInformationFamilyPDU
 
 	virtual ~FEntityStateUpdatePDU() {}
 
-	void SetupFromOpenDIS(DIS::EntityStateUpdatePdu* EntityStateUpdatePDUIn)
+	void SetupFromOpenDIS(const DIS::EntityStateUpdatePdu& EntityStateUpdatePDUIn)
 	{
 		FEntityInformationFamilyPDU::SetupFromOpenDIS(EntityStateUpdatePDUIn);
 
 		//Entity State Update specifics
 		//entity id
-		EntityID = EntityStateUpdatePDUIn->getEntityID();
+		EntityID = EntityStateUpdatePDUIn.getEntityID();
 
 		//location
-		EcefLocation[0] = EntityStateUpdatePDUIn->getEntityLocation().getX();
-		EcefLocation[1] = EntityStateUpdatePDUIn->getEntityLocation().getY();
-		EcefLocation[2] = EntityStateUpdatePDUIn->getEntityLocation().getZ();
+		EcefLocation[0] = EntityStateUpdatePDUIn.getEntityLocation().getX();
+		EcefLocation[1] = EntityStateUpdatePDUIn.getEntityLocation().getY();
+		EcefLocation[2] = EntityStateUpdatePDUIn.getEntityLocation().getZ();
 
 		//rotation
-		DIS::Orientation& rotation = EntityStateUpdatePDUIn->getEntityOrientation();
+		const DIS::Orientation& rotation = EntityStateUpdatePDUIn.getEntityOrientation();
 		EntityOrientation.Yaw = rotation.getPsi();
 		EntityOrientation.Roll = rotation.getPhi();
 		EntityOrientation.Pitch = rotation.getTheta();
 
 		//velocity (originally in float so this is fine)
-		EntityLinearVelocity[0] = EntityStateUpdatePDUIn->getEntityLinearVelocity().getX();
-		EntityLinearVelocity[1] = EntityStateUpdatePDUIn->getEntityLinearVelocity().getY();
-		EntityLinearVelocity[2] = EntityStateUpdatePDUIn->getEntityLinearVelocity().getZ();
+		EntityLinearVelocity[0] = EntityStateUpdatePDUIn.getEntityLinearVelocity().getX();
+		EntityLinearVelocity[1] = EntityStateUpdatePDUIn.getEntityLinearVelocity().getY();
+		EntityLinearVelocity[2] = EntityStateUpdatePDUIn.getEntityLinearVelocity().getZ();
 
 		//Single Vars
-		Padding1 = EntityStateUpdatePDUIn->getPadding1();
-		EntityAppearance = EntityStateUpdatePDUIn->getEntityAppearance();
+		Padding1 = EntityStateUpdatePDUIn.getPadding1();
+		EntityAppearance = EntityStateUpdatePDUIn.getEntityAppearance();
 
 		//Articulation Parameters
-		for (int i = 0; i < EntityStateUpdatePDUIn->getNumberOfArticulationParameters(); i++)
+		for (int i = 0; i < EntityStateUpdatePDUIn.getNumberOfArticulationParameters(); i++)
 		{
-			DIS::ArticulationParameter tempArtParam = EntityStateUpdatePDUIn->getArticulationParameters()[i];
+			DIS::ArticulationParameter tempArtParam = EntityStateUpdatePDUIn.getArticulationParameters()[i];
 			FArticulationParameters newArtParam;
 			newArtParam.ParameterTypeDesignator = tempArtParam.getParameterTypeDesignator();
 			newArtParam.ChangeIndicator = tempArtParam.getChangeIndicator();
@@ -126,7 +126,7 @@ struct FEntityStateUpdatePDU : public FEntityInformationFamilyPDU
 		OutOrientation.setPhi(EntityOrientation.Roll);
 		EntityStateUpdatePDUOut.setEntityOrientation(OutOrientation);
 
-		EntityStateUpdatePDUOut.setEntityAppearance(EntityAppearance);
+		EntityStateUpdatePDUOut.setEntityAppearance(EntityAppearance.UpdateValue());
 
 		std::vector<DIS::ArticulationParameter> OutArtParams;
 		for (FArticulationParameters ArticulationParameter : ArticulationParameters)

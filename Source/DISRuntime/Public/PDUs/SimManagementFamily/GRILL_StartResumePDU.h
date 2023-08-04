@@ -32,13 +32,13 @@ struct FStartResumePDU : public FSimulationManagementFamilyPDU
 
 	virtual ~FStartResumePDU() {}
 
-	void SetupFromOpenDIS(DIS::StartResumePdu* StartResumePDUIn)
+	void SetupFromOpenDIS(const DIS::StartResumePdu& StartResumePDUIn)
 	{
 		FSimulationManagementFamilyPDU::SetupFromOpenDIS(StartResumePDUIn);
 
 		// Start/Resume PDU specific
-		DIS::ClockTime tempRealWorldTime = StartResumePDUIn->getRealWorldTime();
-		DIS::ClockTime tempSimulationTime = StartResumePDUIn->getRealWorldTime();
+		DIS::ClockTime tempRealWorldTime = StartResumePDUIn.getRealWorldTime();
+		DIS::ClockTime tempSimulationTime = StartResumePDUIn.getRealWorldTime();
 
 		RealWorldTime.Hour = tempRealWorldTime.getHour();
 		RealWorldTime.TimePastHour = tempRealWorldTime.getTimePastHour();
@@ -46,7 +46,7 @@ struct FStartResumePDU : public FSimulationManagementFamilyPDU
 		SimulationTime.Hour = tempSimulationTime.getHour();
 		SimulationTime.TimePastHour = tempSimulationTime.getTimePastHour();
 
-		RequestID = StartResumePDUIn->getRequestID();
+		RequestID = StartResumePDUIn.getRequestID();
 	}
 
 	void ToOpenDIS(DIS::StartResumePdu& StartResumePDUOut)

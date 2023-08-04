@@ -61,39 +61,39 @@ struct FFirePDU : public FWarfareFamilyPDU
 
 	virtual ~FFirePDU() {}
 
-	void SetupFromOpenDIS(DIS::FirePdu* FirePDUIn)
+	void SetupFromOpenDIS(const DIS::FirePdu& FirePDUIn)
 	{
 		FWarfareFamilyPDU::SetupFromOpenDIS(FirePDUIn);
 
 		// Fire PDU specifics
 		//single vars
-		FireMissionIndex = FirePDUIn->getFireMissionIndex();
-		Range = FirePDUIn->getRange();
+		FireMissionIndex = FirePDUIn.getFireMissionIndex();
+		Range = FirePDUIn.getRange();
 
 		//MunitionEntityID
-		MunitionEntityID.Site = FirePDUIn->getMunitionID().getSite();
-		MunitionEntityID.Application = FirePDUIn->getMunitionID().getApplication();
-		MunitionEntityID.Entity = FirePDUIn->getMunitionID().getEntity();
+		MunitionEntityID.Site = FirePDUIn.getMunitionID().getSite();
+		MunitionEntityID.Application = FirePDUIn.getMunitionID().getApplication();
+		MunitionEntityID.Entity = FirePDUIn.getMunitionID().getEntity();
 
 		//velocity
-		Velocity[0] = FirePDUIn->getVelocity().getX();
-		Velocity[1] = FirePDUIn->getVelocity().getY();
-		Velocity[2] = FirePDUIn->getVelocity().getZ();
+		Velocity[0] = FirePDUIn.getVelocity().getX();
+		Velocity[1] = FirePDUIn.getVelocity().getY();
+		Velocity[2] = FirePDUIn.getVelocity().getZ();
 
 		//location
-		EcefLocation[0] = FirePDUIn->getLocationInWorldCoordinates().getX();
-		EcefLocation[1] = FirePDUIn->getLocationInWorldCoordinates().getY();
-		EcefLocation[2] = FirePDUIn->getLocationInWorldCoordinates().getZ();
+		EcefLocation[0] = FirePDUIn.getLocationInWorldCoordinates().getX();
+		EcefLocation[1] = FirePDUIn.getLocationInWorldCoordinates().getY();
+		EcefLocation[2] = FirePDUIn.getLocationInWorldCoordinates().getZ();
 
 		//event id
-		EventID = FirePDUIn->getEventID();
+		EventID = FirePDUIn.getEventID();
 
 		//burst descriptor
-		BurstDescriptor.Warhead = FirePDUIn->getBurstDescriptor().getWarhead();
-		BurstDescriptor.Fuse = FirePDUIn->getBurstDescriptor().getFuse();
-		BurstDescriptor.Rate = FirePDUIn->getBurstDescriptor().getRate();
-		BurstDescriptor.Quantity = FirePDUIn->getBurstDescriptor().getQuantity();
-		BurstDescriptor.EntityType = FirePDUIn->getBurstDescriptor().getMunition();
+		BurstDescriptor.Warhead = FirePDUIn.getBurstDescriptor().getWarhead();
+		BurstDescriptor.Fuse = FirePDUIn.getBurstDescriptor().getFuse();
+		BurstDescriptor.Rate = FirePDUIn.getBurstDescriptor().getRate();
+		BurstDescriptor.Quantity = FirePDUIn.getBurstDescriptor().getQuantity();
+		BurstDescriptor.EntityType = FirePDUIn.getBurstDescriptor().getMunition();
 	}
 
 	void ToOpenDIS(DIS::FirePdu& FirePDUOut)
