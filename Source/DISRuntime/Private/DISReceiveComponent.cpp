@@ -30,16 +30,20 @@ void UDISReceiveComponent::InitializeComponent()
 
 	if (IsValid(DISGameManager))
 	{
-		FInitialDISConditions initDISConditions = *DISGameManager->InitialEntityConditions.Find(GetOwner());
-		SpawnedFromNetwork = initDISConditions.SpawnedFromNetwork;
+		auto const* FoundInitConditions = DISGameManager->InitialEntityConditions.Find(GetOwner());
+		if (FoundInitConditions)
+		{
+			FInitialDISConditions initDISConditions = *FoundInitConditions;
+			SpawnedFromNetwork = initDISConditions.SpawnedFromNetwork;
 
-		UpdateCommonEntityStateInfo(initDISConditions.EntityStatePDU);
+			UpdateCommonEntityStateInfo(initDISConditions.EntityStatePDU);
 
-		EntityType = initDISConditions.EntityStatePDU.EntityType;
-		EntityForceID = initDISConditions.EntityStatePDU.ForceID;
-		EntityMarking = initDISConditions.EntityStatePDU.Marking;
+			EntityType = initDISConditions.EntityStatePDU.EntityType;
+			EntityForceID = initDISConditions.EntityStatePDU.ForceID;
+			EntityMarking = initDISConditions.EntityStatePDU.Marking;
 
-		DISGameManager->InitialEntityConditions.Remove(GetOwner());
+			DISGameManager->InitialEntityConditions.Remove(GetOwner());
+		}
 	}
 }
 
@@ -73,6 +77,7 @@ void UDISReceiveComponent::HandleEntityStatePDU(FEntityStatePDU NewEntityStatePD
 	EntityForceID = NewEntityStatePDU.ForceID;
 	EntityMarking = NewEntityStatePDU.Marking;
 
+	ApplyToOwnerIfActivated(NewEntityStatePDU);
 	OnReceivedEntityStatePDU.Broadcast(NewEntityStatePDU);
 
 	if (!PerformDeadReckoning)
@@ -94,6 +99,7 @@ void UDISReceiveComponent::HandleEntityStateUpdatePDU(FEntityStateUpdatePDU NewE
 	MostRecentEntityStatePDU = NewEntityStateUpdatePDU;
 	UpdateCommonEntityStateInfo(MostRecentEntityStatePDU);
 
+	ApplyToOwnerIfActivated(MostRecentEntityStatePDU);
 	OnReceivedEntityStateUpdatePDU.Broadcast(NewEntityStateUpdatePDU);
 
 	if (!PerformDeadReckoning)
@@ -186,6 +192,8 @@ void UDISReceiveComponent::DoDeadReckoning(float DeltaTime)
 				MostRecentDeadReckonedEntityStatePDU = SmoothDeadReckoning(MostRecentDeadReckonedEntityStatePDU);
 			}
 
+			ApplyToOwnerIfActivated(MostRecentDeadReckonedEntityStatePDU);
+
 			OnDeadReckoningUpdate.Broadcast(MostRecentDeadReckonedEntityStatePDU);
 		}
 
@@ -244,6 +252,11 @@ void UDISReceiveComponent::GroundClamping_Implementation()
 			TArray<FTransform> allClampTransforms;
 			allClampTransforms.Add(clampTransform);
 
+			if (ApplyToOwner)
+			{
+				GetOwner()->SetActorLocationAndRotation(clampLocation, clampRotation);
+			}
+
 			OnGroundClampingUpdate.Broadcast(allClampTransforms);
 		}
 	}
@@ -267,4 +280,16 @@ FEntityStatePDU UDISReceiveComponent::SmoothDeadReckoning(FEntityStatePDU DeadRe
 	SmoothedDeadReckonPDU.EntityOrientation -= FMath::Lerp(EntityRotationDifference, FRotator(0, 0, 0), alpha);
 
 	return SmoothedDeadReckonPDU;
+}
+
+void UDISReceiveComponent::ApplyToOwnerIfActivated(FEntityStatePDU const& StatePDU)
+{
+	if (!ApplyToOwner)
+	{
+		return;
+	}
+	FVector newLocation;
+	FRotator newRotation;
+	UDIS_BPFL::GetUnrealLocationAndOrientationFromEntityStatePdu(StatePDU, GeoReferencingSystem, newLocation, newRotation);
+	GetOwner()->SetActorLocationAndRotation(newLocation, newRotation);
 }
