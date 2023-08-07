@@ -239,7 +239,7 @@ struct FEastNorthUp
 {
 	GENERATED_BODY()
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|Structs")
+		UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|Structs")
 		FVector EastVector;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|Structs")
 		FVector NorthVector;
@@ -266,7 +266,7 @@ struct FNorthEastDown
 {
 	GENERATED_BODY()
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|Structs")
+		UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|Structs")
 		FVector NorthVector;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|Structs")
 		FVector EastVector;
@@ -293,7 +293,7 @@ struct FHeadingPitchRoll
 {
 	GENERATED_BODY()
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|Structs")
+		UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|Structs")
 		float Heading;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|Structs")
 		float Pitch;
@@ -307,7 +307,7 @@ struct FHeadingPitchRoll
 		Roll = 0.0f;
 	}
 
-	FHeadingPitchRoll(const float Heading, const float Pitch, const float Roll) 
+	FHeadingPitchRoll(const float Heading, const float Pitch, const float Roll)
 	{
 		this->Heading = Heading;
 		this->Pitch = Pitch;
@@ -320,14 +320,14 @@ struct FPsiThetaPhi
 {
 	GENERATED_BODY()
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|Structs")
+		UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|Structs")
 		float Psi;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|Structs")
 		float Theta;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|Structs")
 		float Phi;
 
-	FPsiThetaPhi() 
+	FPsiThetaPhi()
 	{
 		Psi = 0.0f;
 		Theta = 0.0f;
@@ -354,7 +354,7 @@ struct FClockTime
 {
 	GENERATED_BODY()
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|Structs")
+		UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|Structs")
 		int32 Hour;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ClampMin = "0", ClampMax = "4294967295"), Category = "GRILL DIS|Structs")
 		int64 TimePastHour;
@@ -381,7 +381,7 @@ struct FEntityID
 {
 	GENERATED_BODY()
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ClampMin = "0", ClampMax = "65535"), Category = "GRILL DIS|Structs")
+		UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ClampMin = "0", ClampMax = "65535"), Category = "GRILL DIS|Structs")
 		int32 Site;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ClampMin = "0", ClampMax = "65535"), Category = "GRILL DIS|Structs")
 		int32 Application;
@@ -460,7 +460,7 @@ struct FEntityID
 
 	uint64 ToUInt64() const
 	{
-		return (static_cast<uint64>(Site)<< 32) | (static_cast<uint64>(Application)<< 16) | (static_cast<uint64>(Entity));
+		return (static_cast<uint64>(Site) << 32) | (static_cast<uint64>(Application) << 16) | (static_cast<uint64>(Entity));
 	}
 };
 
@@ -469,7 +469,7 @@ struct FEventID
 {
 	GENERATED_BODY()
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ClampMin = "0", ClampMax = "65535"), Category = "GRILL DIS|Structs")
+		UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ClampMin = "0", ClampMax = "65535"), Category = "GRILL DIS|Structs")
 		int32 Site;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ClampMin = "0", ClampMax = "65535"), Category = "GRILL DIS|Structs")
 		int32 Application;
@@ -505,8 +505,8 @@ struct FEntityType
 {
 	GENERATED_BODY()
 
-	/** Kind of entity */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ClampMin = "0", ClampMax = "255"), Category = "GRILL DIS|Structs")
+		/** Kind of entity */
+		UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ClampMin = "0", ClampMax = "255"), Category = "GRILL DIS|Structs")
 		int32 EntityKind;
 	/** Domain of entity (air, surface, subsurface, space, etc) */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ClampMin = "0", ClampMax = "255"), Category = "GRILL DIS|Structs")
@@ -672,7 +672,7 @@ struct FEntityType
 	{
 		const uint64 BitString = ((static_cast<uint64>(Extra) & 0xFF) << 0) | ((static_cast<uint64>(Specific) & 0xFF) << 8) | ((static_cast<uint64>(Subcategory) & 0xFF) << 16) |
 			((static_cast<uint64>(Category) & 0xFF) << 24) | ((static_cast<uint64>(Country) & 0xFF) << 32) | ((static_cast<uint64>(Domain) & 0xFF) << 48) | ((static_cast<uint64>(EntityKind) & 0xFF) << 56);
-		
+
 		return BitString;
 	}
 
@@ -732,9 +732,9 @@ USTRUCT(BlueprintType)
 struct FArticulationParameters
 {
 	GENERATED_BODY()
-		
-	/**  Identification of whether the Parameter Type Record is for an articulated (0) or attached part (1) shall be designated by this field */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ClampMin = "0", ClampMax = "1"), Category = "GRILL DIS|Structs")
+
+		/**  Identification of whether the Parameter Type Record is for an articulated (0) or attached part (1) shall be designated by this field */
+		UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ClampMin = "0", ClampMax = "1"), Category = "GRILL DIS|Structs")
 		int32 ParameterTypeDesignator;
 	/** Indicates the change of any paramater for any articulated part. Increments by 1 for each change. */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ClampMin = "0", ClampMax = "255"), Category = "GRILL DIS|Structs")
@@ -787,8 +787,8 @@ struct FBurstDescriptor
 {
 	GENERATED_BODY()
 
-	/** The type of the entity */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|Structs")
+		/** The type of the entity */
+		UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|Structs")
 		FEntityType EntityType;
 	/** The type of warhead (0 - 65,535) */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ClampMin = "0", ClampMax = "65535"), Category = "GRILL DIS|Structs")
@@ -828,8 +828,8 @@ struct FDeadReckoningParameters
 {
 	GENERATED_BODY()
 
-	/** The type of dead reackoning algorithm used by the entity (0 - 9) */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ClampMin = "0", ClampMax = "9"), Category = "GRILL DIS|Structs")
+		/** The type of dead reackoning algorithm used by the entity (0 - 9) */
+		UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ClampMin = "0", ClampMax = "9"), Category = "GRILL DIS|Structs")
 		EDeadReckoningAlgorithm DeadReckoningAlgorithm;
 	/** Field used to specify other dead reckoning parameters which are currently undefined */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|Structs")
@@ -873,9 +873,9 @@ struct FEntityAppearance
 {
 	GENERATED_BODY()
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|Structs")
+		UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|Structs")
 		bool PaintScheme = false;
-	
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|Structs")
 		bool MobilityKilled = false;
 
@@ -925,23 +925,32 @@ struct FEntityAppearance
 	FEntityAppearance(uint32 val)
 		: RawVal(val)
 	{
-		PaintScheme = (val & (0b1 << 0) >> 0);
-		MobilityKilled = (val & (0b1 << 1) >> 1);
-		FirePowerKilled = (val & (0b1 << 2) >> 2);
-		Damage = static_cast<EEntityDamage>((val & (0b11 << 3)) >> 3);
-		IsSmoking= (val & (0b1 << 5) >> 5);
-		IsEngineSmoking = (val & (0b1 << 6) >> 6);
-		Trailing = ((val & (0b11 << 7)) >> 7);
-		HatchState = ((val & (0b111 << 9)) >> 9);
-		LightPrimary = (val & (0b1 << 12) >> 12);
-		LightSecondary = (val & (0b1 << 13) >> 13);
-		LightCollision = (val & (0b1 << 14) >> 14);
-		IsFlaming = (val & (0b1 << 15) >> 15);
+		PaintScheme = getField(val, 0);
+		MobilityKilled = getField(val, 1);
+		FirePowerKilled = getField(val, 2);
+		Damage = static_cast<EEntityDamage>(getField(val, 0b11, 3));
+		IsSmoking = getField(val, 5);
+		IsEngineSmoking = getField(val, 6);
+		Trailing = getField(val, 0b11, 7);
+		HatchState = getField(val, 0b111, 9);
+		LightPrimary = getField(val, 12);
+		LightSecondary = getField(val, 13);
+		LightCollision = getField(val, 14);
+		IsFlaming = getField(val, 15);
 
-		IsFrozen = (val & (0b1 << 21) >> 21);
-		IsDeactivated = (val & (0b1 << 23) >> 23);
+		IsFrozen = getField(val, 21);
+		IsDeactivated = getField(val, 23);
 
-		IsLandingGearExtended = (val & (0b1 << 25) >> 25);
+		IsLandingGearExtended = getField(val, 25);
+	}
+
+	static int getField(uint32 val, int mask, int pos)
+	{
+		return (val & (mask << pos)) >> pos;
+	}
+	static bool getField(uint32 val, int pos)
+	{
+		return getField(val, 0b1, pos) != 0;
 	}
 
 	int32 UpdateValue()
