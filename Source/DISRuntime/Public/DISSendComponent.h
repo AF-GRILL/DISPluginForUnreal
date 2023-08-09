@@ -12,6 +12,7 @@
 
 //Forward declarations
 class ADISGameManager;
+class AGeoReferencingSystem;
 
 DECLARE_LOG_CATEGORY_EXTERN(LogDISSendComponent, Log, All);
 
