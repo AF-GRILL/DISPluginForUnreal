@@ -10,35 +10,6 @@
 #include "PDUs/DistributedEmissionsFamily/GRILL_DistributedEmissionsFamilyPDU.h"
 #include "GRILL_ElectromagneticEmissionsPDU.generated.h"
 
-UENUM(BlueprintType)
-enum class EBeamFunction: uint8
-{
-	Other,
-	Search,
-	HeightFinding,
-	Acquisition,
-	Tracking,
-	AcquisitionAndTracking,
-	CommandGuidance,
-	Illumination,
-	Ranging,
-	MissileBeacon,
-	MissileFusing,
-	ActiveRadarMissileSeeker,
-	Jamming,
-	IFF,
-	NavigationWeather,
-	Meteorological,
-	DataTransmission,
-	NavigationalDirectionalBeacon,
-	TimeSharedSearch,
-	TimeSharedAcquisition,
-	TimeSharedTrack,
-	TimeSharedCommandGuidance,
-	TimeSharedIllumination,
-	TimeSharedJamming,
-};
-
 USTRUCT(BlueprintType)
 struct FElectromagneticEmissionBeamData
 {
