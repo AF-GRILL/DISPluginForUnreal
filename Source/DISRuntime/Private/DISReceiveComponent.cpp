@@ -17,7 +17,9 @@ UDISReceiveComponent::UDISReceiveComponent()
 {
 	bWantsInitializeComponent = true;
 	PrimaryComponentTick.bCanEverTick = true;
-	PrimaryComponentTick.bStartWithTickEnabled = false;
+	PrimaryComponentTick.bStartWithTickEnabled = true;
+	// The PrePhysics tick group ensures that there is no jittering with camera using SpringArms or equivalent
+	PrimaryComponentTick.TickGroup = ETickingGroup::TG_PrePhysics;
 }
 
 void UDISReceiveComponent::InitializeComponent()
@@ -57,6 +59,8 @@ void UDISReceiveComponent::BeginPlay()
 void UDISReceiveComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
+	DoDeadReckoning(DeltaTime);
+	ApplyToOwnerIfActivated(MostRecentDeadReckonedEntityStatePDU);
 }
 
 void UDISReceiveComponent::HandleEntityStatePDU(FEntityStatePDU NewEntityStatePDU)
@@ -75,10 +79,9 @@ void UDISReceiveComponent::HandleEntityStatePDU(FEntityStatePDU NewEntityStatePD
 	EntityForceID = NewEntityStatePDU.ForceID;
 	EntityMarking = NewEntityStatePDU.Marking;
 
-	ApplyToOwnerIfActivated(NewEntityStatePDU);
 	OnReceivedEntityStatePDU.Broadcast(NewEntityStatePDU);
 
-	if (!PerformDeadReckoning)
+	if (!PerformDeadReckoning && !ApplyToOwner)
 	{
 		GroundClamping();
 	}
@@ -100,7 +103,7 @@ void UDISReceiveComponent::HandleEntityStateUpdatePDU(FEntityStateUpdatePDU NewE
 	ApplyToOwnerIfActivated(MostRecentEntityStatePDU);
 	OnReceivedEntityStateUpdatePDU.Broadcast(NewEntityStateUpdatePDU);
 
-	if (!PerformDeadReckoning)
+	if (!PerformDeadReckoning && !ApplyToOwner)
 	{
 		GroundClamping();
 	}
@@ -193,12 +196,13 @@ void UDISReceiveComponent::DoDeadReckoning(float DeltaTime)
 				MostRecentDeadReckonedEntityStatePDU = SmoothDeadReckoning(MostRecentDeadReckonedEntityStatePDU);
 			}
 
-			ApplyToOwnerIfActivated(MostRecentDeadReckonedEntityStatePDU);
 			OnDeadReckoningUpdate.Broadcast(MostRecentDeadReckonedEntityStatePDU);
 		}
-
-		//Perform ground clamping last
-		GroundClamping();
+		if (!ApplyToOwner)
+		{ 
+			//Perform ground clamping last
+			GroundClamping();
+		}
 	}
 }
 
@@ -282,4 +286,5 @@ void UDISReceiveComponent::ApplyToOwnerIfActivated(FEntityStatePDU const& StateP
 	FRotator newRotation;
 	UDIS_BPFL::GetUnrealLocationAndOrientationFromEntityStatePdu(StatePDU, GeoReferencingSystem, newLocation, newRotation);
 	GetOwner()->SetActorLocationAndRotation(newLocation, newRotation);
+	GroundClamping();
 }
