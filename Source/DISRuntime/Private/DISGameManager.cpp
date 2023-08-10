@@ -99,32 +99,6 @@ void ADISGameManager::BeginPlay()
 	}
 }
 
-void ADISGameManager::Tick(float DeltaTime)
-{
-	Super::Tick(DeltaTime);
-
-	for (std::pair<FEntityID, AActor*> DisEntity : RawDISActorMappings)
-	{
-		if (IsValid(DisEntity.second))
-		{
-			UDISReceiveComponent* DISComponent = IDISInterface::Execute_GetActorDISReceiveComponent(DisEntity.second);
-
-			if (DISComponent)
-			{
-				DISComponent->DoDeadReckoning(DeltaTime);
-			}
-			else 
-			{
-				UE_LOG(LogDISGameManager, Warning, TEXT("Cannot find DISComponent on entity %s"), *DisEntity.second->GetName())
-			}
-		}
-		else
-		{
-			UE_LOG(LogDISGameManager, Error, TEXT("Encountered null reference within RawDISActorMapping! Check C++ side usage of RawDISActorMapping to verify using properly!"));
-		}
-	}
-}
-
 void ADISGameManager::HandleOnDISEntityDestroyed(AActor* DestroyedActor)
 {
 	bool anyRemoved = false;

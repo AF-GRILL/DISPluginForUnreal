@@ -18,6 +18,7 @@ UDISReceiveComponent::UDISReceiveComponent()
 	bWantsInitializeComponent = true;
 	PrimaryComponentTick.bCanEverTick = true;
 	PrimaryComponentTick.bStartWithTickEnabled = true;
+	// The PrePhysics tick group ensures that there is no jittering with camera using SpringArms or equivalent
 	PrimaryComponentTick.TickGroup = ETickingGroup::TG_PrePhysics;
 }
 
@@ -58,6 +59,7 @@ void UDISReceiveComponent::BeginPlay()
 void UDISReceiveComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
+	DoDeadReckoning(DeltaTime);
 	ApplyToOwnerIfActivated(MostRecentDeadReckonedEntityStatePDU);
 }
 
@@ -195,6 +197,11 @@ void UDISReceiveComponent::DoDeadReckoning(float DeltaTime)
 			}
 
 			OnDeadReckoningUpdate.Broadcast(MostRecentDeadReckonedEntityStatePDU);
+		}
+		if (!ApplyToOwner)
+		{ 
+			//Perform ground clamping last
+			GroundClamping();
 		}
 	}
 }
