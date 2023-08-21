@@ -75,12 +75,15 @@ void UDISReceiveComponent::HandleEntityStatePDU(FEntityStatePDU NewEntityStatePD
 	EntityForceID = NewEntityStatePDU.ForceID;
 	EntityMarking = NewEntityStatePDU.Marking;
 
-	ApplyToOwnerIfActivated(NewEntityStatePDU);
 	OnReceivedEntityStatePDU.Broadcast(NewEntityStatePDU);
 
 	if (!PerformDeadReckoning)
 	{
-		GroundClamping();
+		//If ground clamping not enabled, check if we should apply to owner
+		if (!GroundClamping() && ApplyToOwner)
+		{
+			ApplyToOwnerIfActivated(MostRecentDeadReckonedEntityStatePDU);
+		}
 	}
 }
 
@@ -97,12 +100,15 @@ void UDISReceiveComponent::HandleEntityStateUpdatePDU(FEntityStateUpdatePDU NewE
 	MostRecentEntityStatePDU = NewEntityStateUpdatePDU;
 	UpdateCommonEntityStateInfo(MostRecentEntityStatePDU);
 
-	ApplyToOwnerIfActivated(MostRecentEntityStatePDU);
 	OnReceivedEntityStateUpdatePDU.Broadcast(NewEntityStateUpdatePDU);
 
 	if (!PerformDeadReckoning)
 	{
-		GroundClamping();
+		//If ground clamping not enabled, check if we should apply to owner
+		if (!GroundClamping() && ApplyToOwner)
+		{
+			ApplyToOwnerIfActivated(MostRecentDeadReckonedEntityStatePDU);
+		}
 	}
 }
 
@@ -188,16 +194,18 @@ void UDISReceiveComponent::DoDeadReckoning(float DeltaTime)
 				MostRecentDeadReckonedEntityStatePDU = SmoothDeadReckoning(MostRecentDeadReckonedEntityStatePDU);
 			}
 
-			ApplyToOwnerIfActivated(MostRecentDeadReckonedEntityStatePDU);
 			OnDeadReckoningUpdate.Broadcast(MostRecentDeadReckonedEntityStatePDU);
 		}
 
-		//Perform ground clamping last
-		GroundClamping();
+		//Perform ground clamping last -- If ground clamping not enabled, check if we should apply to owner
+		if (!GroundClamping() && ApplyToOwner)
+		{
+			ApplyToOwnerIfActivated(MostRecentDeadReckonedEntityStatePDU);
+		}
 	}
 }
 
-void UDISReceiveComponent::GroundClamping_Implementation()
+bool UDISReceiveComponent::GroundClamping_Implementation()
 {
 	//Verify that ground clamping is enabled, the entity is owned by another sim, is of the ground domain, and that it is not a munition
 	if (SpawnedFromNetwork && (PerformGroundClamping == EGroundClampingMode::AlwaysGroundClamp || (PerformGroundClamping == EGroundClampingMode::GroundClampWithDISOptions && EntityType.Domain == 1 && EntityType.EntityKind != 2)))
@@ -251,6 +259,12 @@ void UDISReceiveComponent::GroundClamping_Implementation()
 			}
 			OnGroundClampingUpdate.Broadcast(allClampTransforms);
 		}
+
+		return true;
+	}
+	else
+	{
+		return false;
 	}
 }
 
