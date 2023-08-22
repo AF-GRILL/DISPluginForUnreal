@@ -234,6 +234,35 @@ enum class EEntityDamage : uint8
 	Destroyed
 };
 
+UENUM(BlueprintType)
+enum class EBeamFunction : uint8
+{
+	Other,
+	Search,
+	HeightFinding,
+	Acquisition,
+	Tracking,
+	AcquisitionAndTracking,
+	CommandGuidance,
+	Illumination,
+	Ranging,
+	MissileBeacon,
+	MissileFusing,
+	ActiveRadarMissileSeeker,
+	Jamming,
+	IFF,
+	NavigationWeather,
+	Meteorological,
+	DataTransmission,
+	NavigationalDirectionalBeacon,
+	TimeSharedSearch,
+	TimeSharedAcquisition,
+	TimeSharedTrack,
+	TimeSharedCommandGuidance,
+	TimeSharedIllumination,
+	TimeSharedJamming,
+};
+
 USTRUCT()
 struct FEarthCenteredEarthFixedDouble
 {
@@ -992,7 +1021,7 @@ struct FEntityAppearance
 {
 	GENERATED_BODY()
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|Structs")
+		UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|Structs")
 		bool PaintScheme = false;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|Structs")
@@ -1044,23 +1073,32 @@ struct FEntityAppearance
 	FEntityAppearance(uint32 val)
 		: RawVal(val)
 	{
-		PaintScheme = (val & (0b1 << 0) >> 0);
-		MobilityKilled = (val & (0b1 << 1) >> 1);
-		FirePowerKilled = (val & (0b1 << 2) >> 2);
-		Damage = static_cast<EEntityDamage>((val & (0b11 << 3)) >> 3);
-		IsSmoking = (val & (0b1 << 5) >> 5);
-		IsEngineSmoking = (val & (0b1 << 6) >> 6);
-		Trailing = ((val & (0b11 << 7)) >> 7);
-		HatchState = ((val & (0b111 << 9)) >> 9);
-		LightPrimary = (val & (0b1 << 12) >> 12);
-		LightSecondary = (val & (0b1 << 13) >> 13);
-		LightCollision = (val & (0b1 << 14) >> 14);
-		IsFlaming = (val & (0b1 << 15) >> 15);
+		PaintScheme = getField(val, 0);
+		MobilityKilled = getField(val, 1);
+		FirePowerKilled = getField(val, 2);
+		Damage = static_cast<EEntityDamage>(getField(val, 0b11, 3));
+		IsSmoking = getField(val, 5);
+		IsEngineSmoking = getField(val, 6);
+		Trailing = getField(val, 0b11, 7);
+		HatchState = getField(val, 0b111, 9);
+		LightPrimary = getField(val, 12);
+		LightSecondary = getField(val, 13);
+		LightCollision = getField(val, 14);
+		IsFlaming = getField(val, 15);
 
-		IsFrozen = (val & (0b1 << 21) >> 21);
-		IsDeactivated = (val & (0b1 << 23) >> 23);
+		IsFrozen = getField(val, 21);
+		IsDeactivated = getField(val, 23);
 
-		IsLandingGearExtended = (val & (0b1 << 25) >> 25);
+		IsLandingGearExtended = getField(val, 25);
+	}
+
+	static int getField(uint32 val, int mask, int pos)
+	{
+		return (val & (mask << pos)) >> pos;
+	}
+	static bool getField(uint32 val, int pos)
+	{
+		return getField(val, 0b1, pos) != 0;
 	}
 
 	int32 UpdateValue()

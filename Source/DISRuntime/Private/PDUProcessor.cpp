@@ -123,5 +123,17 @@ void UPDUProcessor::ProcessDISPacket(const TArray<uint8>& InData)
 
 		return;
 	}
+	case EPDUType::ElectromagneticEmission:
+	{
+		DIS::ElectromagneticEmissionsPdu receivedPDU;
+		receivedPDU.unmarshal(ds);
+
+		FElectromagneticEmissionsPDU pdu;
+		pdu.SetupFromOpenDIS(receivedPDU);
+
+		OnElectromagneticEmissionsPDUProcessed.Broadcast(pdu);
+
+		return;
+	}
 	}
 }
