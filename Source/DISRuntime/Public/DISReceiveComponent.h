@@ -42,8 +42,9 @@ class DISRUNTIME_API UDISReceiveComponent : public UActorComponent
 	/**
 	 * Clamps an entity to the ground. Verifies that the entity is of ground domain, is not a munition, and is owned by a different sim prior to clamping.
 	 * Calls OnGroundClampingUpdate event when finished.
+	 * Returns whether or not ground clamping was attempted.
 	 */
-	virtual void GroundClamping_Implementation();
+	virtual bool GroundClamping_Implementation();
 
 public:
 	// Sets default values for this component's properties
@@ -63,6 +64,12 @@ public:
 	void HandleElectromagneticEmissionsPDU(FElectromagneticEmissionsPDU ElectromagneticEmissionsPDUIn);
 	void DoDeadReckoning(float DeltaTime);
 
+	/**
+	 * Clamps an entity to the ground. Should call OnGroundClampingUpdate event when finished.
+	 * Returns whether or not ground clamping was attempted.
+	 */
+	UFUNCTION(BlueprintNativeEvent, Category = "GRILL DIS|DIS Receive Component")
+		bool GroundClamping();
 	/**
 	 * Called after a dead reckoning update is performed by the component.
 	 * Passes out an Entity State PDU with updated dead reckoning variables as a parameter.
@@ -126,12 +133,6 @@ public:
 	 */
 	UPROPERTY(BlueprintAssignable, Category = "GRILL DIS|DIS Receive Component|Event")
 		FGroundClampingUpdate OnGroundClampingUpdate;
-
-	/**
-	 * Clamps an entity to the ground. Should call OnGroundClampingUpdate event when finished.
-	 */	
-	UFUNCTION(BlueprintNativeEvent, Category = "GRILL DIS|DIS Receive Component")
-		void GroundClamping();
 
 	/**
 	 * The most recent Entity State PDU that has been received.
