@@ -67,7 +67,11 @@ bool UUDPSubsystem::OpenReceiveSocket(FReceiveSocketSettings SocketSettings, int
 	UDPReceiver->OnDataReceived().BindLambda([this, SocketSettings](const FArrayReaderPtr& DataPtr, const FIPv4Endpoint& Endpoint)
 	{
 		SCOPE_CYCLE_COUNTER(STAT_ReceiveBytes);
-		if (!OnReceivedBytes.IsBound())
+
+		// Capture the delegate locally to ensure thread safety
+		FUDPMessageSignature LocalOnReceivedBytes = OnReceivedBytes;
+
+		if (!LocalOnReceivedBytes.IsBound())
 		{
 			return;
 		}
@@ -89,16 +93,19 @@ bool UUDPSubsystem::OpenReceiveSocket(FReceiveSocketSettings SocketSettings, int
 			//Copy data to receiving thread via lambda capture
 			AsyncTask(ENamedThreads::GameThread, [this, Data, SenderIp]()
 			{
+				// Capture the delegate locally to ensure thread safety
+				FUDPMessageSignature LocalOnReceivedBytes = OnReceivedBytes;
+
 				//double check we're still bound on this thread
-				if (OnReceivedBytes.IsBound())
+				if (LocalOnReceivedBytes.IsBound())
 				{
-					OnReceivedBytes.Broadcast(Data, SenderIp);
+					LocalOnReceivedBytes.Broadcast(Data, SenderIp);
 				}
 			});
 		}
 		else
 		{
-			OnReceivedBytes.Broadcast(Data, SenderIp);
+			LocalOnReceivedBytes.Broadcast(Data, SenderIp);
 		}
 	});
 
