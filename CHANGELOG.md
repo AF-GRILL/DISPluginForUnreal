@@ -1,3 +1,30 @@
+# Beta 0.6.1
+
+- Fixed race condition in UDPReceiver on game start.
+- Added in verification of PDU lengths prior to unmarshalling them.
+- Updated support URL to point to a valid website.
+
+# Beta 0.6.0
+
+- Added in handlers for Electromagnetic Emission PDUs.
+- Clean up decoding of Entity Appearance.
+- Updated Ground Clamping implementation to return whether or not it was attempted.
+- Fixed Entity State PDU automatic location updates happening more than once.
+
+# Beta 0.5.0
+
+- Added option to apply Entity State PDU location and rotation to owner automatically.
+- Added Entity Appearance struct.
+- Fixed memory leak when decoding a PDU.
+
+# Beta 0.4.2
+
+- Updated conversions from LLA to/from ECEF to be more accurate.
+- Updated linear acceleration to be in ECEF.
+- Fix NAN error in dead reckoning.
+- Fix DIS Receive Component not having variables set properly prior to begin play.
+- Made send sockets non-blocking.
+
 # Beta 0.4.1
 
 - Updated Angular Velocity calculations to utilize quaternions rather than euler angles in the DIS Send Component. 
