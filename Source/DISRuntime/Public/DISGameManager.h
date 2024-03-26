@@ -30,7 +30,7 @@ struct FSendSocketInfo
 		FString IpAddress = "255.255.255.255";
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "GRILL DIS|Game Manager|Structs",
-		Meta = (Tooltip = "The Port to either send UDP packets to. Valid Port ranges are from 1024 to 65535.", UIMin = 1024, UIMax = 65535, ClampMin = 1024, ClampMax = 65535))
+		Meta = (Tooltip = "The Port to send UDP packets to. Valid Port ranges are from 1024 to 65535.", UIMin = 1024, UIMax = 65535, ClampMin = 1024, ClampMax = 65535))
 		int32 Port = 3000;
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "GRILL DIS|Game Manager|Structs")
@@ -47,7 +47,7 @@ struct FReceiveSocketInfo
 		FString IpAddress = "0.0.0.0";
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "GRILL DIS|Game Manager|Structs",
-		Meta = (Tooltip = "The Port to either receive UDP packets from. Valid Port ranges are from 1024 to 65535.", UIMin = 1024, UIMax = 65535, ClampMin = 1024, ClampMax = 65535))
+		Meta = (Tooltip = "The Port to receive UDP packets from. Valid Port ranges are from 1024 to 65535.", UIMin = 1024, UIMax = 65535, ClampMin = 1024, ClampMax = 65535))
 		int32 Port = 3000;
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "GRILL DIS|Game Manager|Structs")
