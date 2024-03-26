@@ -9,6 +9,8 @@
 #include "Subsystems/GameInstanceSubsystem.h"
 #include "PDUProcessor.generated.h"
 
+DECLARE_LOG_CATEGORY_EXTERN(LogPDUProcessor, Log, All);
+
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FEntityStatePDUProcessed, FEntityStatePDU, EntityStatePDU);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FEntityStateUpdatePDUProcessed, FEntityStateUpdatePDU, EntityStateUpdatePDU);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FDetonationPDUProcessed, FDetonationPDU, DetonationPDU);
@@ -92,7 +94,36 @@ protected:
 	UFUNCTION()
 		void HandleOnReceivedUDPBytes(const TArray<uint8>& Bytes, const FString& IPAddress);
 
+		/**
+		* Checks that the PDU with the given info is a valid byte length according to the DIS standard. Verifies that any additional bytes the PDU may contain aligns with the byte length of articulated parameters.
+		* Returns whether or not the PDU is a valid byte length.
+		* @param BytesArrayLength - The total length of the received PDU packet
+		* @param PDULengthWithoutArticulationParams - The length the received PDU packet is without taking into account articuted parameters
+		*/
+	UFUNCTION()
+		bool CheckPDUProperLengthWithArticulationParams(int BytesArrayLength, int PDULengthWithoutArticulationParams);
+
+		/**
+		* Checks that the Electromagnetic Emission PDU with the given info is a valid byte length according to the DIS standard.
+		* Returns whether or not the given Electromagnetic Emission PDU is a valid byte length.
+		* @param InData - The Electromagnetic Emission PDU data
+		*/
+	UFUNCTION()
+		bool CheckElectromagneticEmissionPDUProperLength(const TArray<uint8>& InData);
+
 private:
 	DIS::Endian BigEndian = DIS::BIG;
 	const unsigned int PDU_TYPE_POSITION = 2;
+
+	const int ARTICULATION_PARAMETER_BYTES = 16;
+
+	//NOTE: Below values reflect the minimum length that their rescpective PDUs can be
+	const int DETONATION_PDU_BYTES = 104;
+	const int ELECTROMAGNETIC_EMISSION_PDU_BYTES = 224;
+	const int ENTITY_STATE_PDU_BYTES = 144;
+	const int ENTITY_STATE_UPDATE_PDU_BYTES = 72;
+	const int FIRE_PDU_BYTES = 96;
+	const int REMOVE_ENTITY_PDU_BYTES = 28;
+	const int START_RESUME_PDU_BYTES = 44;
+	const int STOP_FREEZE_PDU_BYTES = 40;
 };

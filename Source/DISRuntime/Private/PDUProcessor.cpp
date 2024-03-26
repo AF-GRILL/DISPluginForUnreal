@@ -3,6 +3,8 @@
 #include "PDUProcessor.h"
 #include "UDPSubsystem.h"
 
+DEFINE_LOG_CATEGORY(LogPDUProcessor);
+
 void UPDUProcessor::Initialize(FSubsystemCollectionBase& Collection)
 {
 	Collection.InitializeDependency(UUDPSubsystem::StaticClass());
@@ -41,6 +43,12 @@ void UPDUProcessor::ProcessDISPacket(const TArray<uint8>& InData)
 	{
 	case EPDUType::EntityState:
 	{
+		if (!CheckPDUProperLengthWithArticulationParams(bytesArrayLength, ENTITY_STATE_PDU_BYTES))
+		{
+			UE_LOG(LogPDUProcessor, Error, TEXT("Received Entity State PDU packet with an invalid length! Ignoring the PDU."));
+			return;
+		}
+
 		DIS::EntityStatePdu receivedESPDU;
 		receivedESPDU.unmarshal(ds);
 
@@ -53,6 +61,12 @@ void UPDUProcessor::ProcessDISPacket(const TArray<uint8>& InData)
 	}
 	case EPDUType::Fire:
 	{
+		if (bytesArrayLength != FIRE_PDU_BYTES)
+		{
+			UE_LOG(LogPDUProcessor, Error, TEXT("Received Fire PDU packet with an invalid length! Ignoring the PDU."));
+			return;
+		}
+
 		DIS::FirePdu receivedFirePDU;
 		receivedFirePDU.unmarshal(ds);
 
@@ -65,6 +79,12 @@ void UPDUProcessor::ProcessDISPacket(const TArray<uint8>& InData)
 	}
 	case EPDUType::Detonation:
 	{
+		if (!CheckPDUProperLengthWithArticulationParams(bytesArrayLength, DETONATION_PDU_BYTES))
+		{
+			UE_LOG(LogPDUProcessor, Error, TEXT("Received Detonation PDU packet with an invalid length! Ignoring the PDU."));
+			return;
+		}
+
 		DIS::DetonationPdu receivedDetonationPDU;
 		receivedDetonationPDU.unmarshal(ds);
 
@@ -77,6 +97,12 @@ void UPDUProcessor::ProcessDISPacket(const TArray<uint8>& InData)
 	}
 	case EPDUType::RemoveEntity:
 	{
+		if (bytesArrayLength != REMOVE_ENTITY_PDU_BYTES)
+		{
+			UE_LOG(LogPDUProcessor, Error, TEXT("Received Remove Entity PDU packet with an invalid length! Ignoring the PDU."));
+			return;
+		}
+
 		DIS::RemoveEntityPdu receivedRemoveEntityPDU;
 		receivedRemoveEntityPDU.unmarshal(ds);
 
@@ -89,6 +115,12 @@ void UPDUProcessor::ProcessDISPacket(const TArray<uint8>& InData)
 	}
 	case EPDUType::Start_Resume:
 	{
+		if (bytesArrayLength != START_RESUME_PDU_BYTES)
+		{
+			UE_LOG(LogPDUProcessor, Error, TEXT("Received Start Resume PDU packet with an invalid length! Ignoring the PDU."));
+			return;
+		}
+
 		DIS::StartResumePdu receivedStartResumePDU;
 		receivedStartResumePDU.unmarshal(ds);
 
@@ -101,6 +133,12 @@ void UPDUProcessor::ProcessDISPacket(const TArray<uint8>& InData)
 	}
 	case EPDUType::Stop_Freeze:
 	{
+		if (bytesArrayLength != STOP_FREEZE_PDU_BYTES)
+		{
+			UE_LOG(LogPDUProcessor, Error, TEXT("Received Stop Freeze PDU packet with an invalid length! Ignoring the PDU."));
+			return;
+		}
+
 		DIS::StopFreezePdu receivedStopFreezePDU;
 		receivedStopFreezePDU.unmarshal(ds);
 
@@ -113,6 +151,12 @@ void UPDUProcessor::ProcessDISPacket(const TArray<uint8>& InData)
 	}
 	case EPDUType::EntityStateUpdate:
 	{
+		if (!CheckPDUProperLengthWithArticulationParams(bytesArrayLength, ENTITY_STATE_UPDATE_PDU_BYTES))
+		{
+			UE_LOG(LogPDUProcessor, Error, TEXT("Received Entity State Update PDU packet with an invalid length! Ignoring the PDU."));
+			return;
+		}
+
 		DIS::EntityStateUpdatePdu receivedESUPDU;
 		receivedESUPDU.unmarshal(ds);
 
@@ -125,6 +169,12 @@ void UPDUProcessor::ProcessDISPacket(const TArray<uint8>& InData)
 	}
 	case EPDUType::ElectromagneticEmission:
 	{
+		if (!CheckElectromagneticEmissionPDUProperLength(InData))
+		{
+			UE_LOG(LogPDUProcessor, Error, TEXT("Received Electromagnetic Emission PDU packet with an invalid length! Ignoring the PDU."));
+			return;
+		}
+
 		DIS::ElectromagneticEmissionsPdu receivedPDU;
 		receivedPDU.unmarshal(ds);
 
@@ -136,4 +186,46 @@ void UPDUProcessor::ProcessDISPacket(const TArray<uint8>& InData)
 		return;
 	}
 	}
+}
+
+bool UPDUProcessor::CheckPDUProperLengthWithArticulationParams(int BytesArrayLength, int PDULengthWithoutArticulationParams)
+{
+	//Verify that any extra byte length on a PDU is due to articulation parameters
+	int extraBytes = BytesArrayLength - PDULengthWithoutArticulationParams;
+	int articulationParamAmount = extraBytes / ARTICULATION_PARAMETER_BYTES;
+	return (articulationParamAmount * ARTICULATION_PARAMETER_BYTES) == extraBytes;
+}
+
+bool UPDUProcessor::CheckElectromagneticEmissionPDUProperLength(const TArray<uint8>& InData)
+{
+	int bytesArrayLength = InData.Num();
+	//Get the number of systems in the PDU
+	const int numberOfSystems = static_cast<int>(InData[25]);
+	const int lastIndexIfNoEmitterData = 27;
+	int currentIndex = lastIndexIfNoEmitterData;
+
+	for (int i = 0; i < numberOfSystems; i++)
+	{
+		//Increment to get the number of beams in the current system
+		currentIndex += 2;
+		int numberOfBeams = static_cast<int>(InData[currentIndex]);
+
+		//Increment to get to the end of the emitter system data
+		currentIndex += 18;
+
+		for (int j = 0; j < numberOfBeams; j++)
+		{
+			//Increment to get the number of targets
+			currentIndex += 46;
+			int numberOfTargets = static_cast<int>(InData[currentIndex]);
+
+			//Increment to get to the end of the beam data
+			currentIndex += 6;
+			//Skip over number of targets
+			currentIndex += 8 * numberOfTargets;
+		}
+	}
+
+	//Doing currentIndex + 1 to convert from an array index
+	return (currentIndex + 1) == bytesArrayLength;
 }
