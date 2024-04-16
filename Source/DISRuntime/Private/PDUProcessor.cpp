@@ -185,6 +185,25 @@ void UPDUProcessor::ProcessDISPacket(const TArray<uint8>& InData)
 
 		return;
 	}
+	case EPDUType::Signal:
+	{
+		//CHECK LENGTH... Should the length checks be moved into the specific PDU classes rather than here???
+		if (!CheckSignalPDUProperLength(InData))
+		{
+			UE_LOG(LogPDUProcessor, Error, TEXT("Received Signal PDU packet with an invalid length! Ignoring the PDU."));
+			return;
+		}
+
+		DIS::SignalPdu receivedPDU;
+		receivedPDU.unmarshal(ds);
+
+		FSignalPDU pdu;
+		pdu.SetupFromOpenDIS(receivedPDU);
+
+		OnSignalPDUProcessed.Broadcast(pdu);
+
+		return;
+	}
 	}
 }
 
@@ -228,4 +247,14 @@ bool UPDUProcessor::CheckElectromagneticEmissionPDUProperLength(const TArray<uin
 
 	//Doing currentIndex + 1 to convert from an array index
 	return (currentIndex + 1) == bytesArrayLength;
+}
+
+bool UPDUProcessor::CheckSignalPDUProperLength(const TArray<uint8>& InData)
+{
+	int bytesArrayLength = InData.Num();
+	//Get the data length
+	const int dataLength = static_cast<int>(InData[28] | (InData[29] << 8));
+	const int paddingSize = ceil(dataLength / 32) * 32 - dataLength;
+
+	return (dataLength + paddingSize + SIGNAL_PDU_BYTES) == bytesArrayLength;
 }

@@ -6,7 +6,7 @@
 #include <utils/PDUBank.h>
 #include <utils/DataStream.h>
 
-//PDU type headers, add as more pdu types are support!
+//PDU type headers, add as more pdu types are supported!
 #include <dis6/EntityStatePdu.h>   
 #include <dis6/FirePdu.h>
 #include <dis6/DetonationPdu.h>
@@ -14,6 +14,7 @@
 #include <dis6/EntityStateUpdatePdu.h>
 #include <dis6/StartResumePdu.h>
 #include <dis6/StopFreezePdu.h>
+#include <dis6/OneByteChunk.h>
 
 #include "Kismet/KismetStringLibrary.h"
 #include "CoreMinimal.h"
@@ -1000,5 +1001,26 @@ struct FEntityAppearance
 		RawVal |= IsDeactivated << 23;
 		RawVal |= IsLandingGearExtended << 25;
 		return RawVal;
+	}
+};
+
+USTRUCT(BlueprintType)
+struct FOneByteChunk
+{
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|Structs")
+		TArray<uint8> OtherParameters;
+
+	FOneByteChunk()
+	{
+		OtherParameters.Init(0, 1);
+	}
+
+	DIS::OneByteChunk ToOpenDIS() const
+	{
+		DIS::OneByteChunk OutParam;
+		OutParam.setOtherParameters(reinterpret_cast<const char*>(OtherParameters.GetData()));
+		return OutParam;
 	}
 };

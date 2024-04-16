@@ -165,6 +165,11 @@ void UDISReceiveComponent::HandleElectromagneticEmissionsPDU(FElectromagneticEmi
 	OnReceivedElectromagneticEmissionsPDU.Broadcast(ElectromagneticEmissionsPDUIn);
 }
 
+void UDISReceiveComponent::HandleSignalPDU(FSignalPDU SignalPDUIn)
+{
+	OnReceivedSignalPDU.Broadcast(SignalPDUIn);
+}
+
 void UDISReceiveComponent::DoDeadReckoning(float DeltaTime)
 {
 	DeltaTimeSinceLastPDU += DeltaTime;

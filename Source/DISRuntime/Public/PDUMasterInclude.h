@@ -8,6 +8,8 @@
 #include "PDUs/EntityInfoFamily/GRILL_EntityInformationFamilyPDU.h"
 #include "PDUs/EntityInfoFamily/GRILL_EntityStatePDU.h"
 #include "PDUs/EntityInfoFamily/GRILL_EntityStateUpdatePDU.h"
+#include "PDUs/RadioCommunicationsFamily/GRILL_RadioCommunicationsFamilyPDU.h"
+#include "PDUs/RadioCommunicationsFamily/GRILL_SignalPDU.h"
 #include "PDUs/SimManagementFamily/GRILL_RemoveEntityPDU.h"
 #include "PDUs/SimManagementFamily/GRILL_SimulationManagementFamilyPDU.h"
 #include "PDUs/SimManagementFamily/GRILL_StartResumePDU.h"

@@ -113,22 +113,22 @@ struct FEntityStatePDU : public FEntityInformationFamilyPDU
 		AlternativeEntityType = EntityStatePDUIn.getAlternativeEntityType();
 
 		//Articulation Parameters
-		for (int i = 0; i < EntityStatePDUIn.getNumberOfArticulationParameters(); i++)
+		ArticulationParameters.Empty();
+		for (const auto& ArtParamIn : EntityStatePDUIn.getArticulationParameters())
 		{
-			DIS::ArticulationParameter tempArtParam = EntityStatePDUIn.getArticulationParameters()[i];
 			FArticulationParameters newArtParam;
-			newArtParam.ParameterTypeDesignator = tempArtParam.getParameterTypeDesignator();
-			newArtParam.ChangeIndicator = tempArtParam.getChangeIndicator();
-			newArtParam.PartAttachedTo = tempArtParam.getPartAttachedTo();
-			newArtParam.ParameterType = tempArtParam.getParameterType();
+			newArtParam.ParameterTypeDesignator = ArtParamIn.getParameterTypeDesignator();
+			newArtParam.ChangeIndicator = ArtParamIn.getChangeIndicator();
+			newArtParam.PartAttachedTo = ArtParamIn.getPartAttachedTo();
+			newArtParam.ParameterType = ArtParamIn.getParameterType();
 
 			if (newArtParam.ParameterTypeDesignator == 0)
 			{
-				newArtParam.ParameterValue = tempArtParam.getParameterValue();
+				newArtParam.ParameterValue = ArtParamIn.getParameterValue();
 			}
 			else
 			{
-				newArtParam.AttachedPartType = tempArtParam.getParameterValue();
+				newArtParam.AttachedPartType = ArtParamIn.getParameterValue();
 			}
 
 			ArticulationParameters.Add(newArtParam);

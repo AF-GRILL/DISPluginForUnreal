@@ -20,6 +20,7 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FReceivedRemoveEntityPDU, FRemoveEnt
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FReceivedStopFreezePDU, FStopFreezePDU, StopFreezePDU);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FReceivedStartResumePDU, FStartResumePDU, StartResumePDU);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FReceivedElectromagneticEmissionsPDU, FElectromagneticEmissionsPDU, ElectromagneticEmissionsPDU);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FReceivedSignalPDU, FSignalPDU, SignalPDU);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FGroundClampingUpdate, TArray<FTransform>, ClampTransforms);
 
 DECLARE_STATS_GROUP(TEXT("GRILLDIS_Game"), STATGROUP_DISComponent, STATCAT_Advanced);
@@ -61,6 +62,7 @@ public:
 	void HandleStopFreezePDU(FStopFreezePDU StopFreezePDUIn);
 	void HandleStartResumePDU(FStartResumePDU StartResumePDUIn);
 	void HandleElectromagneticEmissionsPDU(FElectromagneticEmissionsPDU ElectromagneticEmissionsPDUIn);
+	void HandleSignalPDU(FSignalPDU SignalPDUIn);
 	void DoDeadReckoning(float DeltaTime);
 
 	/**
@@ -123,6 +125,12 @@ public:
 	 */
 	UPROPERTY(BlueprintAssignable, Category = "GRILL DIS|DIS Receive Component|Event")
 		FReceivedElectromagneticEmissionsPDU OnReceivedElectromagneticEmissionsPDU;
+	/**
+	 * Called after a Signal PDU is received by the component.
+	 * Passes the Signal PDU that was received as a parameter.
+	 */
+	UPROPERTY(BlueprintAssignable, Category = "GRILL DIS|DIS Receive Component|Event")
+		FReceivedSignalPDU OnReceivedSignalPDU;
 	/**
 	 * Called after Ground Clamping is performed by the component.
 	 * Passes ground clamp transforms (if clamping multiple points) as a parameter.

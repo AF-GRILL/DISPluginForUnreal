@@ -19,6 +19,7 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FRemoveEntityPDUProcessed, FRemoveEn
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FStartResumePDUProcessed, FStartResumePDU, StartResumePDU);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FStopFreezePDUProcessed, FStopFreezePDU, StopFreezePDU);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FElectromagneticEmissionsPDUProcessed, FElectromagneticEmissionsPDU, ElectromagneticEmissionsPDU);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FSignalPDUProcessed, FSignalPDU, SignalPDU);
 
 DECLARE_STATS_GROUP(TEXT("PDUProcessor_Game"), STATGROUP_PDUProcessor, STATCAT_Advanced);
 DECLARE_CYCLE_STAT(TEXT("ProcessDISPacket"), STAT_ProcessDISPacket, STATGROUP_PDUProcessor);
@@ -89,6 +90,12 @@ public:
 	 */
 	UPROPERTY(BlueprintAssignable, Category = "GRILL DIS|PDU Processor|Events")
 		FElectromagneticEmissionsPDUProcessed OnElectromagneticEmissionsPDUProcessed;
+	/**
+	 * Called after a Signal PDU is processed.
+	 * Passes the Signal PDU as a parameter.
+	 */
+	UPROPERTY(BlueprintAssignable, Category = "GRILL DIS|PDU Processor|Events")
+		FSignalPDUProcessed OnSignalPDUProcessed;
 
 protected:
 	UFUNCTION()
@@ -102,7 +109,6 @@ protected:
 	*/
 	UFUNCTION()
 		bool CheckPDUProperLengthWithArticulationParams(int BytesArrayLength, int PDULengthWithoutArticulationParams);
-
 	/**
 	* Checks that the Electromagnetic Emission PDU with the given info is a valid byte length according to the DIS standard.
 	* Returns whether or not the given Electromagnetic Emission PDU is a valid byte length.
@@ -110,6 +116,13 @@ protected:
 	*/
 	UFUNCTION()
 		bool CheckElectromagneticEmissionPDUProperLength(const TArray<uint8>& InData);
+	/**
+	* Checks that the Signal PDU with the given info is a valid byte length according to the DIS standard.
+	* Returns whether or not the given Signal PDU is a valid byte length.
+	* @param InData - The Signal PDU data
+	*/
+	UFUNCTION()
+		bool CheckSignalPDUProperLength(const TArray<uint8>& InData);
 
 private:
 	DIS::Endian BigEndian = DIS::BIG;
@@ -117,13 +130,13 @@ private:
 
 	const int ARTICULATION_PARAMETER_BYTES = 16;
 
-	//NOTE: Below values reflect the minimum length that their rescpective PDUs can be
+	//NOTE: Below values reflect the minimum length that their respective PDUs can be
 	const int DETONATION_PDU_BYTES = 104;
-	const int ELECTROMAGNETIC_EMISSION_PDU_BYTES = 224;
 	const int ENTITY_STATE_PDU_BYTES = 144;
 	const int ENTITY_STATE_UPDATE_PDU_BYTES = 72;
 	const int FIRE_PDU_BYTES = 96;
 	const int REMOVE_ENTITY_PDU_BYTES = 28;
+	const int SIGNAL_PDU_BYTES = 32;
 	const int START_RESUME_PDU_BYTES = 44;
 	const int STOP_FREEZE_PDU_BYTES = 40;
 };

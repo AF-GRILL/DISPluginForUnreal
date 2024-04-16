@@ -144,6 +144,12 @@ public:
 	 */
 	UFUNCTION(BlueprintCallable, Category = "GRILL DIS|Game Manager")
 		void HandleElectromagneticEmissionsPDU(FElectromagneticEmissionsPDU ElectromagneticEmissionsPDUIn);
+	/**
+	 * Delegates the given Signa PDU to the appropriate DIS Entity actor.
+	 * @param SignalPDUIn - The Signa PDU to pass to the appropriate entity.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "GRILL DIS|Game Manager")
+		void HandleSignalPDU(FSignalPDU SignalPDUIn);
 
 	/**
 	 * Adds a new entry to the DIS Entity map.

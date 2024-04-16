@@ -277,6 +277,21 @@ void ADISGameManager::HandleElectromagneticEmissionsPDU(FElectromagneticEmission
 	}
 }
 
+void ADISGameManager::HandleSignalPDU(FSignalPDU SignalPDUIn)
+{
+	//Verify that we are the appropriate sim to handle the ElectromagneticEmissionsPDUIn
+	if (SignalPDUIn.ExerciseID == ExerciseID)
+	{
+		//Get associated OpenDISComponent and relay information
+		UDISReceiveComponent* DISComponent = GetAssociatedDISComponent(SignalPDUIn.EntityID);
+
+		if (DISComponent != nullptr)
+		{
+			DISComponent->HandleSignalPDU(SignalPDUIn);
+		}
+	}
+}
+
 void ADISGameManager::SpawnNewEntityFromEntityState(FEntityStatePDU EntityStatePDUIn)
 {	
 	auto associatedSoftClassReference = RawDISClassMappings.find(EntityStatePDUIn.EntityType);
