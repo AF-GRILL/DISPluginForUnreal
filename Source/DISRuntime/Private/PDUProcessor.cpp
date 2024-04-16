@@ -251,9 +251,9 @@ bool UPDUProcessor::CheckElectromagneticEmissionPDUProperLength(const TArray<uin
 bool UPDUProcessor::CheckSignalPDUProperLength(const TArray<uint8>& InData)
 {
 	int bytesArrayLength = InData.Num();
-	//Get the data length
-	const int dataLength = static_cast<int>(InData[28] | (InData[29] << 8));
-	const int paddingSize = ceil(dataLength / 32) * 32 - dataLength;
+	//Get the data length in bytes
+	const int dataLength = static_cast<int>(InData[28] << 8 | (InData[29])) / 8;
+	const int paddingSize = ceil(dataLength / 32.f) * 32 - dataLength;
 
 	return (dataLength + paddingSize + SIGNAL_PDU_BYTES) == bytesArrayLength;
 }
