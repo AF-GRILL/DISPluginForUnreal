@@ -15,6 +15,12 @@
 #include <dis6/StartResumePdu.h>
 #include <dis6/StopFreezePdu.h>
 #include <dis6/OneByteChunk.h>
+#include <dis6/BeamData.h>
+#include <dis6/FundamentalParameterData.h>
+#include <dis6/TrackJamTarget.h>
+#include <dis6/EmitterSystem.h>
+#include <dis6/ElectromagneticEmissionSystemData.h> 
+#include <dis6/ElectromagneticEmissionBeamData.h> 
 
 #include "Kismet/KismetStringLibrary.h"
 #include "CoreMinimal.h"
@@ -236,7 +242,7 @@ enum class EEntityDamage : uint8
 };
 
 UENUM(BlueprintType)
-enum class EBeamFunction: uint8
+enum class EBeamFunction : uint8
 {
 	Other,
 	Search,
@@ -261,7 +267,195 @@ enum class EBeamFunction: uint8
 	TimeSharedTrack,
 	TimeSharedCommandGuidance,
 	TimeSharedIllumination,
-	TimeSharedJamming,
+	TimeSharedJamming
+};
+
+UENUM(BlueprintType)
+enum class EEncodingType : uint8
+{
+	Other,
+	EightBit_MuLaw,
+	CVSD,
+	ADPCM,
+	SixteenBitLinearPcmTwosComplement_BigEndian,
+	EightBitLinearPcmUnsigned,
+	GsmFull_Rate = 8U,
+	GsmHalfRate,
+	SpeexNarrowBand,
+	SixteenBitLinearPcmTwosComplement_LittleEndian = 100U
+};
+
+UENUM(BlueprintType)
+enum class ETDLType : uint8
+{
+	Other,
+	PADIL,
+	NATOLink1,
+	ATDL1,
+	Link11B,
+	SituationalAwarenessDataLink,
+	Link16LegacyFormat_JTIDS_TADILJ,
+	Link16LegacyFormat_JTIDS_FDL_TADILJ,
+	Link11A,
+	IJMS,
+	Link4A,
+	Link4C,
+	TIBS,
+	ATL,
+	ConstantSource,
+	AbbreviatedCommandandControl,
+	MILSTAR,
+	ATHS,
+	OTHGOLD,
+	TACELINT,
+	WeaponsDataLink_AWW13,
+	EnhancedPositionLocationReportingSystem = 22U,
+	PositionLocationReportingSystem,
+	SINCGARS,
+	HaveQuickI,
+	HaveQuickII,
+	HaveQuickIIA,
+	IntraFlightDataLink1,
+	IntraFlightDataLink2,
+	ImprovedDataModem,
+	AirForceApplicationProgramDevelopment,
+	CooperativeEngagementCapability,
+	ForwardAreaAirDefenseDataLink,
+	GroundBasedDataLink,
+	IntraVehicularInfoSystem,
+	MarineTacticalSystem,
+	TacticalFireDirectionSystem,
+	IntegratedBroadcastService,
+	AirborneInformationTransfer,
+	AdvancedTacticalAirborneReconnaissanceSystemDataLink,
+	BattleGroupPassiveHorizonExtensionSystemDataLink,
+	CommonHighBandwidthDataLink,
+	GuardrailInteroperableDataLink,
+	GuardrailCSS1DataLink,
+	GuardrailCSS2DataLink,
+	GuardrailCSS2MultiRoleDataLink,
+	GuardrailCSS2DirectAirtoSatelliteRelayDataLink,
+	LineofSightDataLinkImplementation,
+	LightweightCDL,
+	L52M,
+	RivetReach_RivetOwlDataLink,
+	SeniorSpan,
+	SeniorSpur,
+	SeniorStretch,
+	SeniorYearInteroperableDataLink,
+	SpaceCDL,
+	TR1modeMISTAirborneDataLink,
+	KubandSATCOMDataLinkImplementation,
+	MissionEquipmentControlDatalink,
+	RadarDataTransmittingSetDataLink,
+	SurveillanceandControlDataLink,
+	TacticalUAVVideo,
+	UHFSATCOMDataLinkImplementation,
+	TacticalCommonDataLink,
+	LowLevelAirPictureInterface,
+	WeaponsDataLink_AGM130,
+	AutomaticIdentificationSystem,
+	WeaponsDataLink_AIM120,
+	WeaponsDataLink_AIM9,
+	GC3 = 99U,
+	Link16StandardizedFormat,
+	Link16EnhancedDataRate,
+	JTIDS_MIDSNetDataLoad,
+	Link22,
+	AFIWCIADSCommunicationsLinks,
+	F22IntraFlightDataLink,
+	LBandSATCOM,
+	TSAFCommunicationsLink,
+	EnhancedSINCGARS7_3,
+	F35MultifunctionAdvancedDataLink,
+	CursoronTarget,
+	AllPurposeStructuredEurocontrolSurveillanceInformationExchange
+};
+
+UENUM(BlueprintType)
+enum class EStateUpdateIndicator : uint8
+{
+	HeartbeatUpdate,
+	ChangedDataUpdate
+};
+
+UENUM(BlueprintType)
+enum class EEmitterSystemFunction : uint8
+{
+	Other,
+	MultiFunction,
+	EarlyWarning_Surveillance,
+	HeightFinder,
+	FireControl,
+	Acquisition_Detection,
+	Tracker,
+	Guidance_Illumination,
+	Firingpoint_launchpointlocation,
+	RangeOnly,
+	RadarAltimeter,
+	Imaging,
+	MotionDetection,
+	Navigation,
+	Weather_Meteorological,
+	Instrumentation,
+	Identification_Classification,
+	AntiAircraftArtilleryFireControl,
+	AirSearch_Bomb,
+	AirIntercept,
+	Altimeter,
+	AirMapping,
+	AirTrafficControl,
+	Beacon,
+	BattlefieldSurveillance,
+	GroundControlApproach,
+	GroundControlIntercept,
+	CoastalSurveillance,
+	Decoy_Mimic,
+	DataTransmission,
+	EarthSurveillance,
+	GunLayBeacon,
+	GroundMapping,
+	HarborSurveillance,
+	InstrumentLandingSystem = 35U,
+	IonosphericSound,
+	Interrogator,
+	Jammer = 42U,
+	MissileAcquisition = 47U,
+	MissileDownlink,
+	Space = 50U,
+	SurfaceSearch,
+	ShellTracking,
+	Television = 56U,
+	Unknown,
+	VideoRemoting,
+	ExperimentalOrTraining,
+	MissileGuidance,
+	MissileHoming,
+	MissileTracking,
+	Navigation_DistanceMeasuringEquipment = 71U,
+	TerrainFollowing,
+	WeatherAvoidance,
+	ProximityFuse,
+	Radiosonde = 76U,
+	Sonobuoy,
+	BathythermalSensor,
+	TowedCounterMeasure,
+	WeaponNonLethal = 96U,
+	WeaponLethal
+};
+
+UENUM(BlueprintType)
+enum class EHighDensityTrackJam : uint8
+{
+	NotSelected,
+	Selected
+};
+
+UENUM(BlueprintType)
+enum class EEmitterName : uint8
+{
+	Other,
+	TBD
 };
 
 USTRUCT(BlueprintType)
@@ -269,12 +463,12 @@ struct FEastNorthUp
 {
 	GENERATED_BODY()
 
-		UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|Structs")
-		FVector EastVector;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|Structs")
-		FVector NorthVector;
+	FVector EastVector;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|Structs")
-		FVector UpVector;
+	FVector NorthVector;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|Structs")
+	FVector UpVector;
 
 	FEastNorthUp()
 	{
@@ -296,12 +490,12 @@ struct FNorthEastDown
 {
 	GENERATED_BODY()
 
-		UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|Structs")
-		FVector NorthVector;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|Structs")
-		FVector EastVector;
+	FVector NorthVector;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|Structs")
-		FVector DownVector;
+	FVector EastVector;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|Structs")
+	FVector DownVector;
 
 	FNorthEastDown()
 	{
@@ -323,12 +517,12 @@ struct FHeadingPitchRoll
 {
 	GENERATED_BODY()
 
-		UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|Structs")
-		float Heading;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|Structs")
-		float Pitch;
+	float Heading;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|Structs")
-		float Roll;
+	float Pitch;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|Structs")
+	float Roll;
 
 	FHeadingPitchRoll()
 	{
@@ -350,12 +544,12 @@ struct FPsiThetaPhi
 {
 	GENERATED_BODY()
 
-		UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|Structs")
-		float Psi;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|Structs")
-		float Theta;
+	float Psi;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|Structs")
-		float Phi;
+	float Theta;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|Structs")
+	float Phi;
 
 	FPsiThetaPhi()
 	{
@@ -384,10 +578,10 @@ struct FClockTime
 {
 	GENERATED_BODY()
 
-		UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|Structs")
-		int32 Hour;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|Structs")
+	int32 Hour;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ClampMin = "0", ClampMax = "4294967295"), Category = "GRILL DIS|Structs")
-		int64 TimePastHour;
+	int64 TimePastHour;
 
 	FClockTime()
 	{
@@ -411,12 +605,12 @@ struct FEntityID
 {
 	GENERATED_BODY()
 
-		UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ClampMin = "0", ClampMax = "65535"), Category = "GRILL DIS|Structs")
-		int32 Site;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ClampMin = "0", ClampMax = "65535"), Category = "GRILL DIS|Structs")
-		int32 Application;
+	int32 Site;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ClampMin = "0", ClampMax = "65535"), Category = "GRILL DIS|Structs")
-		int32 Entity;
+	int32 Application;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ClampMin = "0", ClampMax = "65535"), Category = "GRILL DIS|Structs")
+	int32 Entity;
 
 	FEntityID()
 	{
@@ -499,12 +693,12 @@ struct FEventID
 {
 	GENERATED_BODY()
 
-		UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ClampMin = "0", ClampMax = "65535"), Category = "GRILL DIS|Structs")
-		int32 Site;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ClampMin = "0", ClampMax = "65535"), Category = "GRILL DIS|Structs")
-		int32 Application;
+	int32 Site;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ClampMin = "0", ClampMax = "65535"), Category = "GRILL DIS|Structs")
-		int32 EventNumber;
+	int32 Application;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ClampMin = "0", ClampMax = "65535"), Category = "GRILL DIS|Structs")
+	int32 EventNumber;
 
 	FEventID()
 	{
@@ -535,27 +729,27 @@ struct FEntityType
 {
 	GENERATED_BODY()
 
-		/** Kind of entity */
-		UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ClampMin = "0", ClampMax = "255"), Category = "GRILL DIS|Structs")
-		int32 EntityKind;
+	/** Kind of entity */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ClampMin = "0", ClampMax = "255"), Category = "GRILL DIS|Structs")
+	int32 EntityKind;
 	/** Domain of entity (air, surface, subsurface, space, etc) */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ClampMin = "0", ClampMax = "255"), Category = "GRILL DIS|Structs")
-		int32 Domain;
+	int32 Domain;
 	/** Country to which the design of the entity is attributed */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ClampMin = "0", ClampMax = "65535"), Category = "GRILL DIS|Structs")
-		int32 Country;
+	int32 Country;
 	/** The main category that describes the entity */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ClampMin = "0", ClampMax = "255"), Category = "GRILL DIS|Structs")
-		int32 Category;
+	int32 Category;
 	/** The particular subcategory to which the entity belongs based on the `Category` field */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ClampMin = "0", ClampMax = "255"), Category = "GRILL DIS|Structs")
-		int32 Subcategory;
+	int32 Subcategory;
 	/** Specific information about the entity based on `Subcategory` field */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ClampMin = "0", ClampMax = "255"), Category = "GRILL DIS|Structs")
-		int32 Specific;
+	int32 Specific;
 	/** Extra information required to describe a particular entity */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ClampMin = "0", ClampMax = "255"), Category = "GRILL DIS|Structs")
-		int32 Extra;
+	int32 Extra;
 
 	FEntityType()
 	{
@@ -763,24 +957,24 @@ struct FArticulationParameters
 {
 	GENERATED_BODY()
 
-		/**  Identification of whether the Parameter Type Record is for an articulated (0) or attached part (1) shall be designated by this field */
-		UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ClampMin = "0", ClampMax = "1"), Category = "GRILL DIS|Structs")
-		int32 ParameterTypeDesignator;
+	/**  Identification of whether the Parameter Type Record is for an articulated (0) or attached part (1) shall be designated by this field */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ClampMin = "0", ClampMax = "1"), Category = "GRILL DIS|Structs")
+	int32 ParameterTypeDesignator;
 	/** Indicates the change of any paramater for any articulated part. Increments by 1 for each change. */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ClampMin = "0", ClampMax = "255"), Category = "GRILL DIS|Structs")
-		int32 ChangeIndicator;
+	int32 ChangeIndicator;
 	/** The ID of the part to which this part is attached */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ClampMin = "0", ClampMax = "65535"), Category = "GRILL DIS|Structs")
-		int32 PartAttachedTo;
+	int32 PartAttachedTo;
 	/** The type class (multiples of 32 in the range 1,024 - 4,294,967,264) and type metric (0 - 31) of the articulated part. */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|Structs")
-		int32 ParameterType;
+	int32 ParameterType;
 	/** The parameter value as defined by the ParameterType variable. Will only be utilized if the Parameter Type Designator is an articulated part (0). */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|Structs")
-		float ParameterValue;
+	float ParameterValue;
 	/** The type of the entity. Will only be utilized if the Parameter Type Designator is an attached part (1). */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|Structs")
-		FEntityType AttachedPartType;
+	FEntityType AttachedPartType;
 
 	FArticulationParameters()
 	{
@@ -817,21 +1011,21 @@ struct FBurstDescriptor
 {
 	GENERATED_BODY()
 
-		/** The type of the entity */
-		UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|Structs")
-		FEntityType EntityType;
+	/** The type of the entity */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|Structs")
+	FEntityType EntityType;
 	/** The type of warhead (0 - 65,535) */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ClampMin = "0", ClampMax = "65535"), Category = "GRILL DIS|Structs")
-		int32 Warhead;
+	int32 Warhead;
 	/** The type of fuse (0 - 65,535) */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ClampMin = "0", ClampMax = "65535"), Category = "GRILL DIS|Structs")
-		int32 Fuse;
+	int32 Fuse;
 	/** The number of bursts represented (0 - 65,535) */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ClampMin = "0", ClampMax = "65535"), Category = "GRILL DIS|Structs")
-		int32 Quantity;
+	int32 Quantity;
 	/** The number of rounds per minute for the munition (0 - 65,535) */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ClampMin = "0", ClampMax = "65535"), Category = "GRILL DIS|Structs")
-		int32 Rate;
+	int32 Rate;
 
 	FBurstDescriptor()
 	{
@@ -858,18 +1052,18 @@ struct FDeadReckoningParameters
 {
 	GENERATED_BODY()
 
-		/** The type of dead reackoning algorithm used by the entity (0 - 9) */
-		UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ClampMin = "0", ClampMax = "9"), Category = "GRILL DIS|Structs")
-		EDeadReckoningAlgorithm DeadReckoningAlgorithm;
+	/** The type of dead reackoning algorithm used by the entity (0 - 9) */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ClampMin = "0", ClampMax = "9"), Category = "GRILL DIS|Structs")
+	EDeadReckoningAlgorithm DeadReckoningAlgorithm;
 	/** Field used to specify other dead reckoning parameters which are currently undefined */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|Structs")
-		TArray<uint8> OtherParameters;
+	TArray<uint8> OtherParameters;
 	/** The entity's linear acceleration in m/s^2 in either the World Coordinate System or the Entity's Coordinate System depending on the `DeadReckoningAlgorithm` field. */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|Structs")
-		FVector EntityLinearAcceleration;
+	FVector EntityLinearAcceleration;
 	/** The entity's angular acceleration in radians per second about each of the entity's own coordinate axes. Positive acceleration is defined by the right hand rule. */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|Structs")
-		FVector EntityAngularVelocity;
+	FVector EntityAngularVelocity;
 
 	FDeadReckoningParameters()
 	{
@@ -903,50 +1097,50 @@ struct FEntityAppearance
 {
 	GENERATED_BODY()
 
-		UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|Structs")
-		bool PaintScheme = false;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|Structs")
+	bool PaintScheme = false;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|Structs")
-		bool MobilityKilled = false;
+	bool MobilityKilled = false;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|Structs")
-		bool FirePowerKilled = false;
+	bool FirePowerKilled = false;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|Structs")
-		EEntityDamage Damage = EEntityDamage::NoDamage;
+	EEntityDamage Damage = EEntityDamage::NoDamage;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|Structs")
-		bool IsSmoking = false;
+	bool IsSmoking = false;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|Structs")
-		bool IsEngineSmoking = false;
+	bool IsEngineSmoking = false;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|Structs")
-		int Trailing = 0;
+	int Trailing = 0;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|Structs")
-		int HatchState = 0;
+	int HatchState = 0;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|Structs")
-		bool LightPrimary = false;
+	bool LightPrimary = false;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|Structs")
-		bool LightSecondary = false;
+	bool LightSecondary = false;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|Structs")
-		bool LightCollision = false;
+	bool LightCollision = false;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|Structs")
-		bool IsFlaming = false;
+	bool IsFlaming = false;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|Structs")
-		bool IsFrozen = false;
+	bool IsFrozen = false;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|Structs")
-		bool IsDeactivated = false;
+	bool IsDeactivated = false;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|Structs")
-		bool IsLandingGearExtended = false;
+	bool IsLandingGearExtended = false;
 
 	int32 RawVal = 0;
 
@@ -1010,7 +1204,7 @@ struct FOneByteChunk
 	GENERATED_BODY()
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|Structs")
-		TArray<uint8> OtherParameters;
+	TArray<uint8> OtherParameters;
 
 	FOneByteChunk()
 	{
@@ -1022,5 +1216,333 @@ struct FOneByteChunk
 		DIS::OneByteChunk OutParam;
 		OutParam.setOtherParameters(reinterpret_cast<const char*>(OtherParameters.GetData()));
 		return OutParam;
+	}
+};
+
+USTRUCT(BlueprintType)
+struct FBeamData
+{
+	GENERATED_BODY()
+
+	/** Specifies the beam azimuth an elevation centers and corresponding half-angles     to describe the scan volume */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|Structs")
+	float BeamAzimuthCenter = 0;
+	/** Specifies the beam azimuth sweep to determine scan volume */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|Structs")
+	float BeamAzimuthSweep = 0;
+	/** Specifies the beam elevation center to determine scan volume */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|Structs")
+	float BeamElevationCenter = 0;
+	/** Specifies the beam elevation sweep to determine scan volume */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|Structs")
+	float BeamElevationSweep = 0;
+	/**  This field is provided to allow a receiver to synchronize its regenerated scan pattern to that of the emitter. This field when employed shall specify the percentage of time a scan is through its pattern from its origin. */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|Structs")
+	float BeamSweepSync = 0;
+
+	FBeamData()
+	{
+
+	}
+
+	FBeamData(DIS::BeamData BeamData)
+	{
+		BeamAzimuthCenter = BeamData.getBeamAzimuthCenter();
+		BeamAzimuthSweep = BeamData.getBeamAzimuthSweep();
+		BeamElevationCenter = BeamData.getBeamElevationCenter();
+		BeamElevationSweep = BeamData.getBeamElevationSweep();
+		BeamSweepSync = BeamData.getBeamSweepSync();
+	}
+
+	DIS::BeamData ToOpenDIS()
+	{
+		DIS::BeamData outBeamData;
+
+		outBeamData.setBeamAzimuthCenter(BeamAzimuthCenter);
+		outBeamData.setBeamAzimuthSweep(BeamAzimuthSweep);
+		outBeamData.setBeamElevationCenter(BeamElevationCenter);
+		outBeamData.setBeamElevationSweep(BeamElevationSweep);
+		outBeamData.setBeamSweepSync(BeamSweepSync);
+
+		return outBeamData;
+	}
+};
+
+USTRUCT(BlueprintType)
+struct FFundamentalParameterData
+{
+	GENERATED_BODY()
+
+	/** center frequency of the emission in hertz. */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|Structs")
+	float Frequency = 0;
+	/** Bandwidth of the frequencies corresponding to the fequency field. */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|Structs")
+	float FrequencyRange = 0;
+	/** Effective radiated power for the emission in DdBm. For a      radar noise jammer, indicates the peak of the transmitted power. */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|Structs")
+	float EffectiveRadiatedPower = 0;
+	/** Average repetition frequency of the emission in hertz. */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|Structs")
+	float PulseRepetitionFrequency = 0;
+	/** Average pulse width  of the emission in microseconds. */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|Structs")
+	float PulseWidth = 0;
+	/** Specifies the beam azimuth an elevation centers and corresponding half-angles     to describe the scan volume */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|Structs")
+	float BeamAzimuthCenter = 0;
+	/** Specifies the beam azimuth sweep to determine scan volume */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|Structs")
+	float BeamAzimuthSweep = 0;
+	/** Specifies the beam elevation center to determine scan volume */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|Structs")
+	float BeamElevationCenter = 0;
+	/** Specifies the beam elevation sweep to determine scan volume */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|Structs")
+	float BeamElevationSweep = 0;
+	/**  This field is provided to allow a receiver to synchronize its regenerated scan pattern to that of the emitter. This field when employed shall specify the percentage of time a scan is through its pattern from its origin. */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|Structs")
+	float BeamSweepSync = 0;
+
+	FFundamentalParameterData()
+	{
+
+	}
+
+	FFundamentalParameterData(DIS::FundamentalParameterData FundamentalParameterData)
+	{
+		Frequency = FundamentalParameterData.getFrequency();
+		FrequencyRange = FundamentalParameterData.getFrequencyRange();
+		EffectiveRadiatedPower = FundamentalParameterData.getEffectiveRadiatedPower();
+		PulseRepetitionFrequency = FundamentalParameterData.getPulseRepetitionFrequency();
+		PulseWidth = FundamentalParameterData.getPulseWidth();
+		BeamAzimuthCenter = FundamentalParameterData.getBeamAzimuthCenter();
+		BeamAzimuthSweep = FundamentalParameterData.getBeamAzimuthSweep();
+		BeamElevationCenter = FundamentalParameterData.getBeamElevationCenter();
+		BeamElevationSweep = FundamentalParameterData.getBeamElevationSweep();
+		BeamSweepSync = FundamentalParameterData.getBeamSweepSync();
+	}
+
+	DIS::FundamentalParameterData ToOpenDIS()
+	{
+		DIS::FundamentalParameterData outFundamentalParameterData;
+
+		outFundamentalParameterData.setFrequency(Frequency);
+		outFundamentalParameterData.setFrequencyRange(FrequencyRange);
+		outFundamentalParameterData.setEffectiveRadiatedPower(EffectiveRadiatedPower);
+		outFundamentalParameterData.setPulseRepetitionFrequency(PulseRepetitionFrequency);
+		outFundamentalParameterData.setPulseWidth(PulseWidth);
+		outFundamentalParameterData.setBeamAzimuthCenter(BeamAzimuthCenter);
+		outFundamentalParameterData.setBeamAzimuthSweep(BeamAzimuthSweep);
+		outFundamentalParameterData.setBeamElevationCenter(BeamElevationCenter);
+		outFundamentalParameterData.setBeamElevationSweep(BeamElevationSweep);
+		outFundamentalParameterData.setBeamSweepSync(BeamSweepSync);
+
+		return outFundamentalParameterData;
+	}
+};
+
+USTRUCT(BlueprintType)
+struct FTrackJamTarget
+{
+	GENERATED_BODY()
+
+	/** This field shall identify the targets in an emitter track or emitters a system is attempting to jam. */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|Structs")
+	FEntityID TrackJam;
+	/** The Emitter Identifier shall be the Emitter ID number of the emitter for which the jamming emission is intended. */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|Structs")
+	int32 EmitterID = 0;
+	/** The Beam Identifier shall be Beam ID number of the emitter beam for which the jamming emission is intended. */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|Structs")
+	int32 BeamID = 0;
+
+	FTrackJamTarget()
+	{
+
+	}
+
+	FTrackJamTarget(DIS::TrackJamTarget TrackJamTarget)
+	{
+		TrackJam = TrackJamTarget.getTrackJam();
+		EmitterID = TrackJamTarget.getEmitterID();
+		BeamID = TrackJamTarget.getBeamID();
+	}
+	
+	DIS::TrackJamTarget ToOpenDIS()
+	{
+		DIS::TrackJamTarget outTrackJamTarget;
+
+		outTrackJamTarget.setTrackJam(TrackJam.ToOpenDIS());
+		outTrackJamTarget.setEmitterID(EmitterID);
+		outTrackJamTarget.setBeamID(BeamID);
+
+		return outTrackJamTarget;
+	}
+};
+
+USTRUCT(BlueprintType)
+struct FEmitterSystem
+{
+	GENERATED_BODY()
+
+	EEmitterName EmitterName = EEmitterName::Other;
+	EEmitterSystemFunction Function = EEmitterSystemFunction::Other;
+	int32 EmitterIDNumber = 0;
+
+	FEmitterSystem()
+	{
+
+	}
+
+	FEmitterSystem(DIS::EmitterSystem EmitterSystem)
+	{
+		EmitterName = static_cast<EEmitterName>(EmitterSystem.getEmitterName());
+		Function = static_cast<EEmitterSystemFunction>(EmitterSystem.getFunction());
+		EmitterIDNumber = EmitterSystem.getEmitterIdNumber();
+	}
+
+	DIS::EmitterSystem ToOpenDIS()
+	{
+		DIS::EmitterSystem outEmitterSystem;
+
+		outEmitterSystem.setEmitterName(static_cast<unsigned short>(EmitterName));
+		outEmitterSystem.setFunction(static_cast<unsigned char>(Function));
+		outEmitterSystem.setEmitterIdNumber(EmitterIDNumber);
+
+		return outEmitterSystem;
+	}
+};
+
+USTRUCT(BlueprintType)
+struct FElectromagneticEmissionBeamData
+{
+	GENERATED_BODY()
+
+	/** This field shall specify a unique emitter database number assigned to differentiate between otherwise similar or identical emitter beams within an emitter system. */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|Structs|PDUs|ElectromagneticEmissions")
+	int32 BeamIDNumber = 0;
+	/** This field shall specify a Beam Parameter Index number that shall be used by receiving entities in conjunction with the Emitter Name field to provide a pointer to the stored database parameters required to regenerate the beam. */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|Structs|PDUs|ElectromagneticEmissions")
+	int32 BeamParameterIndex = 0;
+	/** This field shall specify dynamic parameters of the emitter. */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|Structs|PDUs|ElectromagneticEmissions")
+	FFundamentalParameterData FundamentalParameterData;
+	/** beam function of a particular beam */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|Structs|PDUs|ElectromagneticEmissions")
+	EBeamFunction BeamFunction = EBeamFunction::Other;
+	/** This field shall be used to indicate whether or not the receiving simulation applications can assume that all targets, in the scan pattern which the sending emitter can track or jam, are being tracked or jammed respectively. */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|Structs|PDUs|ElectromagneticEmissions")
+	EHighDensityTrackJam HighDensityTrackJam = EHighDensityTrackJam::NotSelected;
+	/** Padding */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|Structs|PDUs|ElectromagneticEmissions")
+	int32 Pad4 = 0;
+	/** This field shall be used to identify one or multiple jamming techniques being applied. */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|Structs|PDUs|ElectromagneticEmissions")
+	int64 JammingModeSequence = 0;
+	/** This field shall identify the targets in an emitter track or emitters a system is attempting to jam. */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|Structs|PDUs|ElectromagneticEmissions")
+	TArray<FTrackJamTarget> TrackJamTargets;
+
+	void SetupFromOpenDIS(const DIS::ElectromagneticEmissionBeamData& Data)
+	{
+		BeamIDNumber = Data.getBeamIDNumber();
+		BeamParameterIndex = Data.getBeamParameterIndex();
+		FundamentalParameterData = Data.getFundamentalParameterData();
+		BeamFunction = static_cast<EBeamFunction>(Data.getBeamFunction());
+		HighDensityTrackJam = static_cast<EHighDensityTrackJam>(Data.getHighDensityTrackJam());
+		Pad4 = Data.getPad4();
+		JammingModeSequence = Data.getJammingModeSequence();
+
+		TrackJamTargets.Empty();
+		for (const auto& Param : Data.getTrackJamTargets())
+		{
+			TrackJamTargets.Add(Param);
+		}
+	}
+
+	DIS::ElectromagneticEmissionBeamData ToOpenDIS()
+	{
+		DIS::ElectromagneticEmissionBeamData outBeamData;
+
+		outBeamData.setBeamIDNumber(BeamIDNumber);
+		outBeamData.setBeamParameterIndex(BeamParameterIndex);
+		outBeamData.setFundamentalParameterData(FundamentalParameterData.ToOpenDIS());
+		outBeamData.setBeamFunction(static_cast<unsigned char>(BeamFunction));
+		outBeamData.setHighDensityTrackJam(static_cast<unsigned char>(HighDensityTrackJam));
+		outBeamData.setPad4(Pad4);
+		outBeamData.setJammingModeSequence(JammingModeSequence);
+
+		std::vector<DIS::TrackJamTarget> outTrackJamTargets;
+		for (FTrackJamTarget Param : TrackJamTargets)
+		{
+			outTrackJamTargets.push_back(Param.ToOpenDIS());
+		}
+		outBeamData.setTrackJamTargets(outTrackJamTargets);
+
+		return outBeamData;
+	}
+};
+
+USTRUCT(BlueprintType)
+struct FElectromagneticEmissionSystemData
+{
+	GENERATED_BODY()
+
+	/**  This field shall specify the length of this emitter system's data. */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|Structs|PDUs|ElectromagneticEmissions")
+	int32 SystemDataLength;
+	/** Padding */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|Structs|PDUs|ElectromagneticEmissions")
+	int32 EmissionsPadding;
+	/** This field shall specify information about a particular emitter system. */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|Structs|PDUs|ElectromagneticEmissions")
+	FEmitterSystem EmitterSystem;
+	/** This field shall specify the location of the antenna beam source with respect to the emitting entity's coordinate system. */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|Structs|PDUs|ElectromagneticEmissions")
+	FVector Location;
+	/** Variable length list of track/jam targets */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|Structs|PDUs|ElectromagneticEmissions")
+	TArray<FElectromagneticEmissionBeamData> BeamDataRecords;
+
+	void SetupFromOpenDIS(const DIS::ElectromagneticEmissionSystemData& Data)
+	{
+		SystemDataLength = Data.getSystemDataLength();
+		EmissionsPadding = Data.getEmissionsPadding2();
+		EmitterSystem = Data.getEmitterSystem();
+
+		Location[0] = Data.getLocation().getX();
+		Location[1] = Data.getLocation().getY();
+		Location[2] = Data.getLocation().getZ();
+
+		BeamDataRecords.Empty();
+		for (const auto& BeamIn : Data.getBeamDataRecords())
+		{
+			FElectromagneticEmissionBeamData Beam;
+			Beam.SetupFromOpenDIS(BeamIn);
+			BeamDataRecords.Add(Beam);
+		}
+	}
+
+	DIS::ElectromagneticEmissionSystemData ToOpenDIS()
+	{
+		DIS::ElectromagneticEmissionSystemData outSystemData;
+
+		outSystemData.setSystemDataLength(SystemDataLength);
+		outSystemData.setEmissionsPadding2(EmissionsPadding);
+		outSystemData.setEmitterSystem(EmitterSystem.ToOpenDIS());
+
+		outSystemData.getLocation().setX(Location[0]);
+		outSystemData.getLocation().setY(Location[1]);
+		outSystemData.getLocation().setZ(Location[2]);
+
+		std::vector<DIS::ElectromagneticEmissionBeamData> outBeamData;
+		for (FElectromagneticEmissionBeamData Param : BeamDataRecords)
+		{
+			outBeamData.push_back(Param.ToOpenDIS());
+		}
+		outSystemData.setBeamDataRecords(outBeamData);
+
+		return outSystemData;
 	}
 };

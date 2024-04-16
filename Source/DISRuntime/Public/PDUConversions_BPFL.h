@@ -93,4 +93,10 @@ public:
 	{
 		return SignalPDUIn.ToBytes();
 	}
+
+	UFUNCTION(BlueprintPure, Category = "GRILL DIS|PDU Conversions")
+	static TArray<uint8> ConvertElectromagneticEmissionsPDUToBytes(FElectromagneticEmissionsPDU ElectromagneticEmissionsPDUIn)
+	{
+		return ElectromagneticEmissionsPDUIn.ToBytes();
+	}
 };
