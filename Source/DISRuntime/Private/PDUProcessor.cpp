@@ -187,7 +187,6 @@ void UPDUProcessor::ProcessDISPacket(const TArray<uint8>& InData)
 	}
 	case EPDUType::Signal:
 	{
-		//CHECK LENGTH... Should the length checks be moved into the specific PDU classes rather than here???
 		if (!CheckSignalPDUProperLength(InData))
 		{
 			UE_LOG(LogPDUProcessor, Error, TEXT("Received Signal PDU packet with an invalid length! Ignoring the PDU."));
