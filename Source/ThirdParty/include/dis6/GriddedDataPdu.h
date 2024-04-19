@@ -6,8 +6,8 @@
 #include <dis6/GridAxisRecord.h>
 #include <vector>
 #include <dis6/SyntheticEnvironmentFamilyPdu.h>
-#include <utils/DataStream.h>
-#include <dis6/msLibMacro.h>
+#include <dis6/utils/DataStream.h>
+#include <dis6/opendis6_export.h>
 
 
 namespace DIS
@@ -18,7 +18,7 @@ namespace DIS
 //
 // @author DMcG, jkg
 
-class EXPORT_MACRO GriddedDataPdu : public SyntheticEnvironmentFamilyPdu
+class OPENDIS6_EXPORT GriddedDataPdu : public SyntheticEnvironmentFamilyPdu
 {
 protected:
   /** environmental simulation application ID */

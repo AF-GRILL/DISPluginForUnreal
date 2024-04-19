@@ -6,8 +6,8 @@
 #include <dis6/BurstDescriptor.h>
 #include <dis6/Vector3Float.h>
 #include <dis6/WarfareFamilyPdu.h>
-#include <utils/DataStream.h>
-#include <dis6/msLibMacro.h>
+#include <dis6/utils/DataStream.h>
+#include <dis6/opendis6_export.h>
 
 
 namespace DIS
@@ -18,7 +18,7 @@ namespace DIS
 //
 // @author DMcG, jkg
 
-class EXPORT_MACRO FirePdu : public WarfareFamilyPdu
+class OPENDIS6_EXPORT FirePdu : public WarfareFamilyPdu
 {
 protected:
   /** ID of the munition that is being shot */

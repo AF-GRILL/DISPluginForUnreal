@@ -4,8 +4,8 @@
 #include <dis6/VariableDatum.h>
 #include <vector>
 #include <dis6/SimulationManagementWithReliabilityFamilyPdu.h>
-#include <utils/DataStream.h>
-#include <dis6/msLibMacro.h>
+#include <dis6/utils/DataStream.h>
+#include <dis6/opendis6_export.h>
 
 
 namespace DIS
@@ -16,7 +16,7 @@ namespace DIS
 //
 // @author DMcG, jkg
 
-class EXPORT_MACRO CommentReliablePdu : public SimulationManagementWithReliabilityFamilyPdu
+class OPENDIS6_EXPORT CommentReliablePdu : public SimulationManagementWithReliabilityFamilyPdu
 {
 protected:
   /** Fixed datum record count */

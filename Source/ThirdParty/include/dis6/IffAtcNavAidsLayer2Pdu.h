@@ -6,8 +6,8 @@
 #include <dis6/FundamentalParameterDataIff.h>
 #include <vector>
 #include <dis6/IffAtcNavAidsLayer1Pdu.h>
-#include <utils/DataStream.h>
-#include <dis6/msLibMacro.h>
+#include <dis6/utils/DataStream.h>
+#include <dis6/opendis6_export.h>
 
 
 namespace DIS
@@ -18,7 +18,7 @@ namespace DIS
 //
 // @author DMcG, jkg
 
-class EXPORT_MACRO IffAtcNavAidsLayer2Pdu : public IffAtcNavAidsLayer1Pdu
+class OPENDIS6_EXPORT IffAtcNavAidsLayer2Pdu : public IffAtcNavAidsLayer1Pdu
 {
 protected:
   /** layer header */

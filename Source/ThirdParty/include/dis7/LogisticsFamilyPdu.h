@@ -1,8 +1,8 @@
 #pragma once
 
 #include <dis7/Pdu.h>
-#include <utils/DataStream.h>
-#include <dis7/msLibMacro.h>
+#include <dis7/utils/DataStream.h>
+#include <dis7/opendis7_export.h>
 
 
 namespace DIS
@@ -13,7 +13,7 @@ namespace DIS
 //
 // @author DMcG, jkg
 
-class EXPORT_MACRO LogisticsFamilyPdu : public Pdu
+class OPENDIS7_EXPORT LogisticsFamilyPdu : public Pdu
 {
 protected:
 

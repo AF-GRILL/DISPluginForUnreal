@@ -8,8 +8,8 @@
 #include <dis6/LinearSegmentParameter.h>
 #include <vector>
 #include <dis6/SyntheticEnvironmentFamilyPdu.h>
-#include <utils/DataStream.h>
-#include <dis6/msLibMacro.h>
+#include <dis6/utils/DataStream.h>
+#include <dis6/opendis6_export.h>
 
 
 namespace DIS
@@ -20,7 +20,7 @@ namespace DIS
 //
 // @author DMcG, jkg
 
-class EXPORT_MACRO LinearObjectStatePdu : public SyntheticEnvironmentFamilyPdu
+class OPENDIS6_EXPORT LinearObjectStatePdu : public SyntheticEnvironmentFamilyPdu
 {
 protected:
   /** Object in synthetic environment */

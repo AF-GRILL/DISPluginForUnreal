@@ -2,8 +2,8 @@
 
 #include <dis6/ClockTime.h>
 #include <dis6/SimulationManagementFamilyPdu.h>
-#include <utils/DataStream.h>
-#include <dis6/msLibMacro.h>
+#include <dis6/utils/DataStream.h>
+#include <dis6/opendis6_export.h>
 
 
 namespace DIS
@@ -14,7 +14,7 @@ namespace DIS
 //
 // @author DMcG, jkg
 
-class EXPORT_MACRO StopFreezePdu : public SimulationManagementFamilyPdu
+class OPENDIS6_EXPORT StopFreezePdu : public SimulationManagementFamilyPdu
 {
 protected:
   /** UTC time at which the simulation shall stop or freeze */

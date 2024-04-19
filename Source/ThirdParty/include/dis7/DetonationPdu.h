@@ -9,8 +9,8 @@
 #include <dis7/VariableParameter.h>
 #include <vector>
 #include <dis7/WarfareFamilyPdu.h>
-#include <utils/DataStream.h>
-#include <dis7/msLibMacro.h>
+#include <dis7/utils/DataStream.h>
+#include <dis7/opendis7_export.h>
 
 
 namespace DIS
@@ -21,7 +21,7 @@ namespace DIS
 //
 // @author DMcG, jkg
 
-class EXPORT_MACRO DetonationPdu : public WarfareFamilyPdu
+class OPENDIS7_EXPORT DetonationPdu : public WarfareFamilyPdu
 {
 protected:
   /** ID of the expendable entity, Section 7.3.3  */

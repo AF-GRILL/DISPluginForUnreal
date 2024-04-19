@@ -8,8 +8,8 @@
 #include <dis6/Vector3Float.h>
 #include <vector>
 #include <dis6/RadioCommunicationsFamilyPdu.h>
-#include <utils/DataStream.h>
-#include <dis6/msLibMacro.h>
+#include <dis6/utils/DataStream.h>
+#include <dis6/opendis6_export.h>
 
 
 namespace DIS
@@ -20,7 +20,7 @@ namespace DIS
 //
 // @author DMcG, jkg
 
-class EXPORT_MACRO TransmitterPdu : public RadioCommunicationsFamilyPdu
+class OPENDIS6_EXPORT TransmitterPdu : public RadioCommunicationsFamilyPdu
 {
 protected:
   /** linear accelleration of entity */

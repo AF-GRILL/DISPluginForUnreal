@@ -1,7 +1,7 @@
 #pragma once
 
-#include <utils/DataStream.h>
-#include <dis6/msLibMacro.h>
+#include <dis6/utils/DataStream.h>
+#include <dis6/opendis6_export.h>
 #include <vector>
 
 // length in bytes for the variable data. This should be a dynamically allocated array.
@@ -11,11 +11,11 @@ namespace DIS
 {
 // Section 5.2.32. Variable Datum Record
 
-// Copyright (c) 2007-2009, MOVES Institute, Naval Postgraduate School. All rights reserved. 
+// Copyright (c) 2007-2009, MOVES Institute, Naval Postgraduate School. All rights reserved.
 //
 // @author DMcG, jkg
 
-class EXPORT_MACRO VariableDatum
+class OPENDIS6_EXPORT VariableDatum
 {
 protected:
   /** ID of the variable datum */
@@ -57,7 +57,7 @@ virtual unsigned int getMarshalledSize() const;
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions
 //  are met:
-// 
+//
 //  * Redistributions of source code must retain the above copyright
 // notice, this list of conditions and the following disclaimer.
 // * Redistributions in binary form must reproduce the above copyright
@@ -70,7 +70,7 @@ virtual unsigned int getMarshalledSize() const;
 // nor the names of its contributors may be used to endorse or
 //  promote products derived from this software without specific
 // prior written permission.
-// 
+//
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
 // AS IS AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
 // LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS

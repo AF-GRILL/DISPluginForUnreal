@@ -3,8 +3,8 @@
 #include <dis7/FourByteChunk.h>
 #include <vector>
 #include <dis7/SimulationManagementWithReliabilityFamilyPdu.h>
-#include <utils/DataStream.h>
-#include <dis7/msLibMacro.h>
+#include <dis7/utils/DataStream.h>
+#include <dis7/opendis7_export.h>
 
 
 namespace DIS
@@ -15,7 +15,7 @@ namespace DIS
 //
 // @author DMcG, jkg
 
-class EXPORT_MACRO RecordQueryReliablePdu : public SimulationManagementWithReliabilityFamilyPdu
+class OPENDIS7_EXPORT RecordQueryReliablePdu : public SimulationManagementWithReliabilityFamilyPdu
 {
 protected:
   /** request ID */

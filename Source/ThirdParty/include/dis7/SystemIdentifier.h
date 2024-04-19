@@ -1,7 +1,7 @@
 #pragma once
 
-#include <utils/DataStream.h>
-#include <dis7/msLibMacro.h>
+#include <dis7/utils/DataStream.h>
+#include <dis7/opendis7_export.h>
 
 
 namespace DIS
@@ -12,7 +12,7 @@ namespace DIS
 //
 // @author DMcG, jkg
 
-class EXPORT_MACRO SystemIdentifier
+class OPENDIS7_EXPORT SystemIdentifier
 {
 protected:
   /** general type of emitting system, an enumeration */
@@ -22,7 +22,7 @@ protected:
   unsigned short _systemName; 
 
   /** mode of operation for the system, an enumeration */
-  unsigned short _systemMode; 
+  unsigned char _systemMode; 
 
   /** status of this PDU, see section 6.2.15 */
   unsigned char _changeOptions;
@@ -41,8 +41,8 @@ protected:
     unsigned short getSystemName() const; 
     void setSystemName(unsigned short pX); 
 
-    unsigned short getSystemMode() const; 
-    void setSystemMode(unsigned short pX); 
+    unsigned char getSystemMode() const; 
+    void setSystemMode(unsigned char pX); 
 
     unsigned char getChangeOptions() const;
     void setChangeOptions(unsigned char pX);

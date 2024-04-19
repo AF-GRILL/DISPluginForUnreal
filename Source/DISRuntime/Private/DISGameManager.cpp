@@ -279,6 +279,7 @@ void ADISGameManager::HandleElectromagneticEmissionsPDU(FElectromagneticEmission
 
 void ADISGameManager::HandleSignalPDU(FSignalPDU SignalPDUIn)
 {
+	UE_LOG(LogDISGameManager, Error, TEXT("Processed Signal PDU!!"));
 	//Verify that we are the appropriate sim to handle the ElectromagneticEmissionsPDUIn
 	if (SignalPDUIn.ExerciseID == ExerciseID)
 	{

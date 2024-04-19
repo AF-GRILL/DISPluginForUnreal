@@ -3,8 +3,8 @@
 #pragma once
 //dis headers
 #include <dis6/Pdu.h>
-#include <utils/PDUBank.h>
-#include <utils/DataStream.h>
+#include <dis6/utils/PDUBank.h>
+#include <dis6/utils/DataStream.h>
 
 //PDU type headers, add as more pdu types are supported!
 #include <dis6/EntityStatePdu.h>   
@@ -14,7 +14,6 @@
 #include <dis6/EntityStateUpdatePdu.h>
 #include <dis6/StartResumePdu.h>
 #include <dis6/StopFreezePdu.h>
-#include <dis6/OneByteChunk.h>
 #include <dis6/BeamData.h>
 #include <dis6/FundamentalParameterData.h>
 #include <dis6/TrackJamTarget.h>
@@ -268,6 +267,15 @@ enum class EBeamFunction : uint8
 	TimeSharedCommandGuidance,
 	TimeSharedIllumination,
 	TimeSharedJamming
+};
+
+UENUM(BlueprintType)
+enum class EEncodingClass : uint8
+{
+	EncodedAudio,
+	RawBinaryData,
+	Application_SpecificData,
+	DatabaseIndex
 };
 
 UENUM(BlueprintType)
@@ -1213,23 +1221,34 @@ struct FEntityAppearance
 };
 
 USTRUCT(BlueprintType)
-struct FOneByteChunk
+struct FEncodingScheme
 {
 	GENERATED_BODY()
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|Structs")
-	TArray<uint8> OtherParameters;
+	EEncodingClass EncodingClass;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|Structs")
+	EEncodingType EncodingType;
 
-	FOneByteChunk()
+	FEncodingScheme(){}
+
+	FEncodingScheme(unsigned short EncodingScheme)
 	{
-		OtherParameters.Init(0, 1);
+		//Mask for getting first 14 bits of Encoding Scheme.
+		unsigned short mask = 0;
+		mask = ~mask;
+		mask = mask >> 2;
+
+		EncodingClass = static_cast<EEncodingClass>(EncodingScheme >> 14);
+		EncodingType = static_cast<EEncodingType>(EncodingScheme & mask);
 	}
 
-	DIS::OneByteChunk ToOpenDIS() const
+	unsigned short ToOpenDIS()
 	{
-		DIS::OneByteChunk OutParam;
-		OutParam.setOtherParameters(reinterpret_cast<const char*>(OtherParameters.GetData()));
-		return OutParam;
+		unsigned short outEncodingClass = static_cast<unsigned short>(EncodingClass);
+		unsigned short outEncodingType = static_cast<unsigned short>(EncodingType);
+
+		return (outEncodingClass << 14) | outEncodingType;
 	}
 };
 

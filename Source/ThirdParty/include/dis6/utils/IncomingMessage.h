@@ -5,12 +5,12 @@
 #ifndef _dcl_dis_incoming_message_
 #define _dcl_dis_incoming_message_
 
-#include <utils/IBufferProcessor.h>   // for base class
-#include <utils/IPduBank.h> 
+#include <dis6/utils/IBufferProcessor.h>   // for base class
+#include <dis6/utils/IPduBank.h> 
 #include <map>                      // for member
-#include <utils/Endian.h>             // for internal type
-#include <dis6/msLibMacro.h>         // for library symbols
-#include <utils/PDUType.h>
+#include <dis6/utils/Endian.h>             // for internal type
+#include <dis6/opendis6_export.h>         // for library symbols
+#include <dis6/utils/PDUType.h>
 
 namespace DIS
 {
@@ -19,7 +19,7 @@ namespace DIS
    class DataStream;
 
    /// A framework for routing the packet to the correct processor.
-   class EXPORT_MACRO IncomingMessage : public IBufferProcessor
+   class OPENDIS6_EXPORT IncomingMessage : public IBufferProcessor
    {
    public:
       /// the container type for supporting processors.

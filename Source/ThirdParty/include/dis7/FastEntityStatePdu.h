@@ -3,8 +3,8 @@
 #include <dis7/VariableParameter.h>
 #include <vector>
 #include <dis7/EntityInformationFamilyPdu.h>
-#include <utils/DataStream.h>
-#include <dis7/msLibMacro.h>
+#include <dis7/utils/DataStream.h>
+#include <dis7/opendis7_export.h>
 
 
 namespace DIS
@@ -15,7 +15,7 @@ namespace DIS
 //
 // @author DMcG, jkg
 
-class EXPORT_MACRO FastEntityStatePdu : public EntityInformationFamilyPdu
+class OPENDIS7_EXPORT FastEntityStatePdu : public EntityInformationFamilyPdu
 {
 protected:
   /** The site ID */

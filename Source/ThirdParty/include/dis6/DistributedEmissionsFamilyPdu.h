@@ -1,8 +1,8 @@
 #pragma once
 
 #include <dis6/Pdu.h>
-#include <utils/DataStream.h>
-#include <dis6/msLibMacro.h>
+#include <dis6/utils/DataStream.h>
+#include <dis6/opendis6_export.h>
 
 
 namespace DIS
@@ -13,7 +13,7 @@ namespace DIS
 //
 // @author DMcG, jkg
 
-class EXPORT_MACRO DistributedEmissionsFamilyPdu : public Pdu
+class OPENDIS6_EXPORT DistributedEmissionsFamilyPdu : public Pdu
 {
 protected:
 

@@ -4,8 +4,8 @@
 #include <dis7/VariableDatum.h>
 #include <vector>
 #include <dis7/SimulationManagementFamilyPdu.h>
-#include <utils/DataStream.h>
-#include <dis7/msLibMacro.h>
+#include <dis7/utils/DataStream.h>
+#include <dis7/opendis7_export.h>
 
 
 namespace DIS
@@ -16,7 +16,7 @@ namespace DIS
 //
 // @author DMcG, jkg
 
-class EXPORT_MACRO EventReportPdu : public SimulationManagementFamilyPdu
+class OPENDIS7_EXPORT EventReportPdu : public SimulationManagementFamilyPdu
 {
 protected:
   /** Type of event */

@@ -1,12 +1,12 @@
 #ifndef _dcl_dis_endian_h_
 #define _dcl_dis_endian_h_
 
-#include <dis6/msLibMacro.h>       // for library symbols
+#include <dis7/opendis7_export.h>       // for library symbols
 
 namespace DIS
 {
    /// the order of bytes that are on the left
-   EXPORT_MACRO enum Endian
+   enum OPENDIS7_EXPORT Endian
    {
       LITTLE=1,
       BIG=0,

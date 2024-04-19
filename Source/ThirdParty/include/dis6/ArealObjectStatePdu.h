@@ -9,8 +9,8 @@
 #include <dis6/Vector3Double.h>
 #include <vector>
 #include <dis6/SyntheticEnvironmentFamilyPdu.h>
-#include <utils/DataStream.h>
-#include <dis6/msLibMacro.h>
+#include <dis6/utils/DataStream.h>
+#include <dis6/opendis6_export.h>
 
 
 namespace DIS
@@ -21,7 +21,7 @@ namespace DIS
 //
 // @author DMcG, jkg
 
-class EXPORT_MACRO ArealObjectStatePdu : public SyntheticEnvironmentFamilyPdu
+class OPENDIS6_EXPORT ArealObjectStatePdu : public SyntheticEnvironmentFamilyPdu
 {
 protected:
   /** Object in synthetic environment */

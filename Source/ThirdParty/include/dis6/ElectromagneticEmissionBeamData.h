@@ -3,8 +3,8 @@
 #include <dis6/FundamentalParameterData.h>
 #include <dis6/TrackJamTarget.h>
 #include <vector>
-#include <utils/DataStream.h>
-#include <dis6/msLibMacro.h>
+#include <dis6/utils/DataStream.h>
+#include <dis6/opendis6_export.h>
 
 
 namespace DIS
@@ -15,7 +15,7 @@ namespace DIS
 //
 // @author DMcG, jkg
 
-class EXPORT_MACRO ElectromagneticEmissionBeamData
+class OPENDIS6_EXPORT ElectromagneticEmissionBeamData
 {
 protected:
   /** This field shall specify the length of this beams data in 32 bit words */

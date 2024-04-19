@@ -5,8 +5,8 @@
 #include <dis7/VectoringNozzleSystem.h>
 #include <vector>
 #include <dis7/DistributedEmissionsFamilyPdu.h>
-#include <utils/DataStream.h>
-#include <dis7/msLibMacro.h>
+#include <dis7/utils/DataStream.h>
+#include <dis7/opendis7_export.h>
 
 
 namespace DIS
@@ -17,7 +17,7 @@ namespace DIS
 //
 // @author DMcG, jkg
 
-class EXPORT_MACRO SeesPdu : public DistributedEmissionsFamilyPdu
+class OPENDIS7_EXPORT SeesPdu : public DistributedEmissionsFamilyPdu
 {
 protected:
   /** Originating entity ID */

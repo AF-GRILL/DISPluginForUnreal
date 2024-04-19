@@ -4,8 +4,8 @@
 #include <dis6/Vector3Float.h>
 #include <dis6/AcousticBeamData.h>
 #include <vector>
-#include <utils/DataStream.h>
-#include <dis6/msLibMacro.h>
+#include <dis6/utils/DataStream.h>
+#include <dis6/opendis6_export.h>
 
 
 namespace DIS
@@ -16,7 +16,7 @@ namespace DIS
 //
 // @author DMcG, jkg
 
-class EXPORT_MACRO AcousticEmitterSystemData
+class OPENDIS6_EXPORT AcousticEmitterSystemData
 {
 protected:
   /** Length of emitter system data */
