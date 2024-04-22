@@ -1490,7 +1490,10 @@ USTRUCT(BlueprintType)
 struct FElectromagneticEmissionBeamData
 {
 	GENERATED_BODY()
-
+	
+	/** This field shall specify the length of this beam's data (including track/jam information) in 32-bit words. */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|Structs|PDUs|ElectromagneticEmissions")
+	int32 BeamDataLength;
 	/** This field shall specify a unique emitter database number assigned to differentiate between otherwise similar or identical emitter beams within an emitter system. */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|Structs|PDUs|ElectromagneticEmissions")
 	int32 BeamIDNumber;
@@ -1518,6 +1521,7 @@ struct FElectromagneticEmissionBeamData
 
 	FElectromagneticEmissionBeamData()
 	{
+		BeamDataLength = 0;
 		BeamIDNumber = 0;
 		BeamParameterIndex = 0;
 		BeamFunction = EBeamFunction::Other;
@@ -1528,6 +1532,7 @@ struct FElectromagneticEmissionBeamData
 
 	void SetupFromOpenDIS(const DIS::ElectromagneticEmissionBeamData& Data)
 	{
+		BeamDataLength = Data.getBeamDataLength();
 		BeamIDNumber = Data.getBeamIDNumber();
 		BeamParameterIndex = Data.getBeamParameterIndex();
 		FundamentalParameterData = Data.getFundamentalParameterData();
@@ -1547,6 +1552,7 @@ struct FElectromagneticEmissionBeamData
 	{
 		DIS::ElectromagneticEmissionBeamData outBeamData;
 
+		outBeamData.setBeamDataLength(BeamDataLength);
 		outBeamData.setBeamIDNumber(BeamIDNumber);
 		outBeamData.setBeamParameterIndex(BeamParameterIndex);
 		outBeamData.setFundamentalParameterData(FundamentalParameterData.ToOpenDIS());

@@ -52,6 +52,7 @@ void ADISGameManager::BeginPlay()
 	GetGameInstance()->GetSubsystem<UPDUProcessor>()->OnStopFreezePDUProcessed.AddDynamic(this, &ADISGameManager::HandleStopFreezePDU);
 	GetGameInstance()->GetSubsystem<UPDUProcessor>()->OnStartResumePDUProcessed.AddDynamic(this, &ADISGameManager::HandleStartResumePDU);
 	GetGameInstance()->GetSubsystem<UPDUProcessor>()->OnElectromagneticEmissionsPDUProcessed.AddDynamic(this, &ADISGameManager::HandleElectromagneticEmissionsPDU);
+	GetGameInstance()->GetSubsystem<UPDUProcessor>()->OnSignalPDUProcessed.AddDynamic(this, &ADISGameManager::HandleSignalPDU);
 
 	GeoReferencingSystem = AGeoReferencingSystem::GetGeoReferencingSystem(Cast<UObject>(GetWorld()));
 
@@ -279,7 +280,6 @@ void ADISGameManager::HandleElectromagneticEmissionsPDU(FElectromagneticEmission
 
 void ADISGameManager::HandleSignalPDU(FSignalPDU SignalPDUIn)
 {
-	UE_LOG(LogDISGameManager, Error, TEXT("Processed Signal PDU!!"));
 	//Verify that we are the appropriate sim to handle the ElectromagneticEmissionsPDUIn
 	if (SignalPDUIn.ExerciseID == ExerciseID)
 	{
