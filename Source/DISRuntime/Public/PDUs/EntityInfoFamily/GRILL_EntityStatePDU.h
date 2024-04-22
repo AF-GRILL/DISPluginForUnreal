@@ -114,8 +114,10 @@ struct FEntityStatePDU : public FEntityInformationFamilyPDU
 
 		//Articulation Parameters
 		ArticulationParameters.Empty();
-		for (const auto& ArtParamIn : EntityStatePDUIn.getArticulationParameters())
+		for (int i = 0; i < EntityStatePDUIn.getNumberOfArticulationParameters(); i++)
 		{
+			DIS::ArticulationParameter ArtParamIn = EntityStatePDUIn.getArticulationParameters()[i];
+
 			FArticulationParameters newArtParam;
 			newArtParam.ParameterTypeDesignator = ArtParamIn.getParameterTypeDesignator();
 			newArtParam.ChangeIndicator = ArtParamIn.getChangeIndicator();

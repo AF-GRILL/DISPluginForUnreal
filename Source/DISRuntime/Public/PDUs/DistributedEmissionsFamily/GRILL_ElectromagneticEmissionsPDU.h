@@ -29,8 +29,10 @@ struct FElectromagneticEmissionsPDU : public FDistributedEmissionsFamilyPDU
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|Structs|PDUs|ElectromagneticEmissions")
 		TArray<FElectromagneticEmissionSystemData> Systems;
 
-	FElectromagneticEmissionsPDU() : FDistributedEmissionsFamilyPDU(EPDUType::ElectromagneticEmission)
+	FElectromagneticEmissionsPDU() : FDistributedEmissionsFamilyPDU()
 	{
+		PduType = EPDUType::ElectromagneticEmission;
+
 		StateUpdateIndicator = EStateUpdateIndicator::HeartbeatUpdate;
 		PaddingForEmissionsPDU = 0;
 	}
@@ -45,9 +47,10 @@ struct FElectromagneticEmissionsPDU : public FDistributedEmissionsFamilyPDU
 		PaddingForEmissionsPDU = ElectromagneticEmissionsPDUIn.getPaddingForEmissionsPdu();
 
 		Systems.Empty();
-		for (const auto& SystemIn : ElectromagneticEmissionsPDUIn.getSystems()) {
+		for (int i = 0; i < ElectromagneticEmissionsPDUIn.getNumberOfSystems(); i++)
+		{
 			FElectromagneticEmissionSystemData System;
-			System.SetupFromOpenDIS(SystemIn);
+			System.SetupFromOpenDIS(ElectromagneticEmissionsPDUIn.getSystems()[i]);
 			Systems.Add(System);
 		}
 	}

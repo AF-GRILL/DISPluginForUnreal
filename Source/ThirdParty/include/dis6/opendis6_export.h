@@ -9,10 +9,10 @@
 #  ifndef OPENDIS6_EXPORT
 #    ifdef OpenDIS6_EXPORTS
         /* We are building this library */
-#      define OPENDIS6_EXPORT 
+#      define OPENDIS6_EXPORT __declspec(dllexport)
 #    else
         /* We are using this library */
-#      define OPENDIS6_EXPORT 
+#      define OPENDIS6_EXPORT __declspec(dllimport)
 #    endif
 #  endif
 

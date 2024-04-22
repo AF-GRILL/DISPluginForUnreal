@@ -31,6 +31,8 @@ struct FSignalPDU : public FRadioCommunicationsFamilyPDU
 
 	FSignalPDU() : FRadioCommunicationsFamilyPDU()
 	{
+		PduType = EPDUType::Signal;
+
 		TDLType = ETDLType::Other;
 		SampleRate = 0;
 		Samples = 0;
@@ -48,9 +50,9 @@ struct FSignalPDU : public FRadioCommunicationsFamilyPDU
 		Samples = SignalPDUIn.getSamples();
 
 		Data.Empty();
-		for (const auto& DataParamIn : SignalPDUIn.getData())
+		for (int i = 0; i < SignalPDUIn.getDataLength(); i++)
 		{
-			Data.Add(DataParamIn);
+			Data.Add(SignalPDUIn.getData()[i]);
 		}
 	}
 

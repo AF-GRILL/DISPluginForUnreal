@@ -17,11 +17,6 @@ struct FDistributedEmissionsFamilyPDU : public FPDU
 	{
 	}
 
-	FDistributedEmissionsFamilyPDU(EPDUType Type) : FPDU()
-	{
-		PduType = Type;
-	}
-
 	virtual ~FDistributedEmissionsFamilyPDU() {}
 
 	void SetupFromOpenDIS(const DIS::DistributedEmissionsFamilyPdu& DistributedEmissionsFamilyPDUIn)

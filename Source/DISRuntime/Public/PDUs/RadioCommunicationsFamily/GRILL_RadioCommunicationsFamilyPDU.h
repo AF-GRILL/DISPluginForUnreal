@@ -22,7 +22,7 @@ struct FRadioCommunicationsFamilyPDU : public FPDU
 
 	FRadioCommunicationsFamilyPDU() : FPDU()
 	{
-
+		RadioID = 0;
 	}
 
 	virtual ~FRadioCommunicationsFamilyPDU() {}
