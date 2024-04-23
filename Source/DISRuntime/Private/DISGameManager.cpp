@@ -180,7 +180,7 @@ void ADISGameManager::HandleEntityStateUpdatePDU(FEntityStateUpdatePDU EntitySta
 	{
 		// NOTE: Entity State Update PDUs do not contain an Entity Type, so we cannot spawn an entity from one
 
-		//Get associated OpenDISComponent and relay information
+		//Get associated DISComponent and relay information
 		UDISReceiveComponent* DISComponent = GetAssociatedDISComponent(EntityStateUpdatePDUIn.EntityID);
 
 		if (DISComponent != nullptr)
@@ -194,7 +194,7 @@ void ADISGameManager::HandleFirePDU(FFirePDU FirePDUIn)
 {
 	if (FirePDUIn.ExerciseID == ExerciseID)
 	{
-		//Get associated OpenDISComponent and relay information
+		//Get associated DISComponent and relay information
 		UDISReceiveComponent* DISComponent = GetAssociatedDISComponent(FirePDUIn.FiringEntityID);
 
 		if (DISComponent != nullptr)
@@ -208,12 +208,20 @@ void ADISGameManager::HandleDetonationPDU(FDetonationPDU DetonationPDUIn)
 {	
 	if (DetonationPDUIn.ExerciseID == ExerciseID)
 	{
-		//Get associated OpenDISComponent and relay information
-		UDISReceiveComponent* DISComponent = GetAssociatedDISComponent(DetonationPDUIn.MunitionEntityID);
-
-		if (DISComponent != nullptr)
+		if (DetonationPDUIn.MunitionEntityID == FEntityID())
 		{
-			DISComponent->HandleDetonationPDU(DetonationPDUIn);
+			//DetonationPDU Munition ID is set to NO_SPECIFIC_ENTITY. Call a generic handle.
+			OnNoSpecificEntityDetonationPDUReceived.Broadcast(DetonationPDUIn);
+		}
+		else
+		{
+			//Get associated DISComponent and relay information
+			UDISReceiveComponent* DISComponent = GetAssociatedDISComponent(DetonationPDUIn.MunitionEntityID);
+
+			if (DISComponent != nullptr)
+			{
+				DISComponent->HandleDetonationPDU(DetonationPDUIn);
+			}
 		}
 	}
 }
@@ -223,7 +231,7 @@ void ADISGameManager::HandleRemoveEntityPDU(FRemoveEntityPDU RemoveEntityPDUIn)
 	//Verify that we are the appropriate sim to handle the RemoveEntityPDU
 	if (RemoveEntityPDUIn.ExerciseID == ExerciseID && RemoveEntityPDUIn.ReceivingEntityID.Site == SiteID && RemoveEntityPDUIn.ReceivingEntityID.Application == ApplicationID)
 	{
-		//Get associated OpenDISComponent and relay information
+		//Get associated DISComponent and relay information
 		UDISReceiveComponent* DISComponent = GetAssociatedDISComponent(RemoveEntityPDUIn.ReceivingEntityID);
 
 		if (DISComponent != nullptr)
@@ -238,7 +246,7 @@ void ADISGameManager::HandleStopFreezePDU(FStopFreezePDU StopFreezePDUIn)
 	//Verify that we are the appropriate sim to handle the StopFreezePDU
 	if (StopFreezePDUIn.ExerciseID == ExerciseID && StopFreezePDUIn.ReceivingEntityID.Site == SiteID && StopFreezePDUIn.ReceivingEntityID.Application == ApplicationID)
 	{
-		//Get associated OpenDISComponent and relay information
+		//Get associated DISComponent and relay information
 		UDISReceiveComponent* DISComponent = GetAssociatedDISComponent(StopFreezePDUIn.ReceivingEntityID);
 
 		if (DISComponent != nullptr)
@@ -253,7 +261,7 @@ void ADISGameManager::HandleStartResumePDU(FStartResumePDU StartResumePDUIn)
 	//Verify that we are the appropriate sim to handle the StartResumePDU
 	if (StartResumePDUIn.ExerciseID == ExerciseID && StartResumePDUIn.ReceivingEntityID.Site == SiteID && StartResumePDUIn.ReceivingEntityID.Application == ApplicationID)
 	{
-		//Get associated OpenDISComponent and relay information
+		//Get associated DISComponent and relay information
 		UDISReceiveComponent* DISComponent = GetAssociatedDISComponent(StartResumePDUIn.ReceivingEntityID);
 
 		if (DISComponent != nullptr)
@@ -268,7 +276,7 @@ void ADISGameManager::HandleElectromagneticEmissionsPDU(FElectromagneticEmission
 	//Verify that we are the appropriate sim to handle the ElectromagneticEmissionsPDUIn
 	if (ElectromagneticEmissionsPDUIn.ExerciseID == ExerciseID)
 	{
-		//Get associated OpenDISComponent and relay information
+		//Get associated DISComponent and relay information
 		UDISReceiveComponent* DISComponent = GetAssociatedDISComponent(ElectromagneticEmissionsPDUIn.EmittingEntityID);
 
 		if (DISComponent != nullptr)
@@ -283,7 +291,7 @@ void ADISGameManager::HandleSignalPDU(FSignalPDU SignalPDUIn)
 	//Verify that we are the appropriate sim to handle the ElectromagneticEmissionsPDUIn
 	if (SignalPDUIn.ExerciseID == ExerciseID)
 	{
-		//Get associated OpenDISComponent and relay information
+		//Get associated DISComponent and relay information
 		UDISReceiveComponent* DISComponent = GetAssociatedDISComponent(SignalPDUIn.EntityID);
 
 		if (DISComponent != nullptr)

@@ -17,6 +17,8 @@ class UDISReceiveComponent;
 
 DECLARE_LOG_CATEGORY_EXTERN(LogDISGameManager, Log, All);
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FNoSpecificEntityDetonationPDUReceived, FDetonationPDU, DetonationPDU);
+
 DECLARE_STATS_GROUP(TEXT("DISGameManager_Game"), STATGROUP_DISGameManager, STATCAT_Advanced);
 DECLARE_CYCLE_STAT(TEXT("GetAssociatedDISComponent"), STAT_GetAssociatedDISComponent, STATGROUP_DISGameManager);
 
@@ -87,6 +89,12 @@ public:
 	ADISGameManager();
 
 	TMap<AActor*, FInitialDISConditions> InitialEntityConditions;
+	/**
+	 * Called after a Detonation PDU with NO_SPECIFIC_ENTITY as its Munition ID is received.
+	 * Passes the Detonation PDU as a parameter.
+	 */
+	UPROPERTY(BlueprintAssignable, Category = "GRILL DIS|PDU Processor|Events")
+	FNoSpecificEntityDetonationPDUReceived OnNoSpecificEntityDetonationPDUReceived;
 
 	/**
 	 * Gets a reference to the DIS Game Manager actor in the current open level.
