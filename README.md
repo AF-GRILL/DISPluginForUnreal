@@ -36,6 +36,8 @@ The GRILL DIS for Unreal plugin currently supports the below PDUs:
 - Detonate
 - Start Resume
 - Stop Freeze
+- Signal
+- Electromagnetic Emissions
 
 If additional PDU support is desired a few steps need to be taken:
 1. Make a new Unreal Engine C++ class to contain the PDU information
@@ -127,6 +129,7 @@ _**Additional info for all of these topics can be found in their respective sect
 # DIS Game Manager
 
 - The DIS Game Manager is responsible for creating/removing DIS entities as packets are processed by the PDU Processor Subsystem. It also informs the appropriate DIS Entities when DIS packets are received that impact them. This is done through notifying their associated DIS Component.
+    - It also handles broadcasting events for received PDUs that are not associated with a specific entity (Ex: Detonation PDUs with NO_SPECIFIC_ENTITY set as the Munition ID).
 - The DIS Game Manager has the following settings:
     - **DIS Enumeration Mappings**: Contains desired actor to DIS Enumeration mappings.
         - _**NOTE:**_ The actors tied to DIS Enumerations have to implement the DIS Interface supplied by the GRILL DIS for Unreal plugin and also should have a DIS Component attached to them. Implement the DIS Interface functions to return the associated DIS component of the actor. Refer to the _**DIS Interface**_ section below.
@@ -177,6 +180,7 @@ _**Additional info for all of these topics can be found in their respective sect
     - Add DIS Entity to Map
     - Remove DIS Entity from Map
 	- Event for managing dead reckoning on all entities in the level.
+- Contains event bindings for received PDUs that are not associated with a specific entity.
 
 ![DISGameManagerFunctions](Resources/ReadMeImages/DISGameManagerFunctions.png)
 
