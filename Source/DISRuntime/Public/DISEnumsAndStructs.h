@@ -21,6 +21,7 @@
 #include <dis6/ElectromagneticEmissionSystemData.h> 
 #include <dis6/ElectromagneticEmissionBeamData.h> 
 
+#include "EmitterNameEnum.h"
 #include "Kismet/KismetStringLibrary.h"
 #include "CoreMinimal.h"
 #include "DISEnumsAndStructs.generated.h"
@@ -287,7 +288,7 @@ enum class EEncodingType : uint8
 	ADPCM,
 	SixteenBitLinearPcmTwosComplement_BigEndian,
 	EightBitLinearPcmUnsigned,
-	VectorQuantization,
+	VectorQuantization_Deprecated,
 	GsmFull_Rate = 8U,
 	GsmHalfRate,
 	SpeexNarrowBand,
@@ -318,7 +319,8 @@ enum class ETDLType : uint8
 	OTHGOLD,
 	TACELINT,
 	WeaponsDataLink_AWW13,
-	EnhancedPositionLocationReportingSystem = 22U,
+	AbbreviatedCommandAndControl_Deprecated,
+	EnhancedPositionLocationReportingSystem,
 	PositionLocationReportingSystem,
 	SINCGARS,
 	HaveQuickI,
@@ -425,22 +427,22 @@ enum class EEmitterSystemFunction : uint8
 	GunLayBeacon,
 	GroundMapping,
 	HarborSurveillance,
-	IdentifyFriendOrFoe,
+	IdentifyFriendOrFoe_Deprecated,
 	InstrumentLandingSystem,
 	IonosphericSound,
 	Interrogator, 
-	BarrageJamming,
-	ClickJamming,
-	DeceptiveJamming,
-	FrequencySweptJamming,
+	BarrageJamming_Deprecated,
+	ClickJamming_Deprecated,
+	DeceptiveJamming_Deprecated,
+	FrequencySweptJamming_Deprecated,
 	Jammer,
-	NoiseJamming,
-	PulsedJamming,
-	RepeaterJamming,
-	SpotNoiseJamming,
+	NoiseJamming_Deprecated,
+	PulsedJamming_Deprecated,
+	RepeaterJamming_Deprecated,
+	SpotNoiseJamming_Deprecated,
 	MissileAcquisition,
 	MissileDownlink,
-	Meteorological,
+	Meteorological_Deprecated,
 	Space,
 	SurfaceSearch,
 	ShellTracking,
@@ -451,14 +453,15 @@ enum class EEmitterSystemFunction : uint8
 	MissileGuidance,
 	MissileHoming,
 	MissileTracking,
-	JammingNoise = 64U,
-	JammingDeception,
-	Decoy,
+	JammingNoise_Deprecated = 64U,
+	JammingDeception_Deprecated,
+	Decoy_Deprecated,
 	Navigation_DistanceMeasuringEquipment = 71U,
 	TerrainFollowing,
 	WeatherAvoidance,
 	ProximityFuse,
-	Radiosonde = 76U,
+	Instrumentation_Deprecated,
+	Radiosonde,
 	Sonobuoy,
 	BathythermalSensor,
 	TowedCounterMeasure,
@@ -471,13 +474,6 @@ enum class EHighDensityTrackJam : uint8
 {
 	NotSelected,
 	Selected
-};
-
-UENUM(BlueprintType)
-enum class EEmitterName : uint8
-{
-	Other,
-	TBD
 };
 
 USTRUCT(BlueprintType)
