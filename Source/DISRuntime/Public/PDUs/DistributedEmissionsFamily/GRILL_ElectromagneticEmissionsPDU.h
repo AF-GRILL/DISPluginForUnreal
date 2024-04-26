@@ -25,7 +25,7 @@ struct FElectromagneticEmissionsPDU : public FDistributedEmissionsFamilyPDU
 	/** Padding */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|Structs|PDUs|ElectromagneticEmissions")
 		int32 PaddingForEmissionsPDU;
-	/** Electromagnetic emmissions systems */
+	/** Electromagnetic emissions systems */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|Structs|PDUs|ElectromagneticEmissions")
 		TArray<FElectromagneticEmissionSystemData> Systems;
 
@@ -36,6 +36,8 @@ struct FElectromagneticEmissionsPDU : public FDistributedEmissionsFamilyPDU
 		StateUpdateIndicator = EStateUpdateIndicator::HeartbeatUpdate;
 		PaddingForEmissionsPDU = 0;
 	}
+
+	virtual ~FElectromagneticEmissionsPDU() {}
 
 	void SetupFromOpenDIS(const DIS::ElectromagneticEmissionsPdu& ElectromagneticEmissionsPDUIn)
 	{

@@ -93,7 +93,7 @@ public:
 	 * Called after a Detonation PDU with NO_SPECIFIC_ENTITY as its Munition ID is received.
 	 * Passes the Detonation PDU as a parameter.
 	 */
-	UPROPERTY(BlueprintAssignable, Category = "GRILL DIS|PDU Processor|Events")
+	UPROPERTY(BlueprintAssignable, Category = "GRILL DIS|Game Manager|Events")
 	FNoSpecificEntityDetonationPDUReceived OnNoSpecificEntityDetonationPDUReceived;
 
 	/**

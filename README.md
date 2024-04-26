@@ -24,7 +24,7 @@
 
 - The DIS Game Manager actor is also required in the level and is built into the GRILL DIS for Unreal plugin.
 	- This actor stores the DIS Enumeration to class mappings and other various DIS information.
-	- More information on the actor itself can be found in the **DIS Game Manager section** below
+	- More information on the actor itself can be found in the [**DIS Game Manager section**](#dis-game-manager) below
 
 # Implemented DIS PDUs
 
@@ -132,7 +132,7 @@ _**Additional info for all of these topics can be found in their respective sect
     - It also handles broadcasting events for received PDUs that are not associated with a specific entity (Ex: Detonation PDUs with NO_SPECIFIC_ENTITY set as the Munition ID).
 - The DIS Game Manager has the following settings:
     - **DIS Enumeration Mappings**: Contains desired actor to DIS Enumeration mappings.
-        - _**NOTE:**_ The actors tied to DIS Enumerations have to implement the DIS Interface supplied by the GRILL DIS for Unreal plugin and also should have a DIS Component attached to them. Implement the DIS Interface functions to return the associated DIS component of the actor. Refer to the _**DIS Interface**_ section below.
+        - _**NOTE:**_ The actors tied to DIS Enumerations have to implement the DIS Interface supplied by the GRILL DIS for Unreal plugin and also should have a DIS Component attached to them. Implement the DIS Interface functions to return the associated DIS component of the actor. Refer to the [_**DIS Interface**_](#dis-interface) section below.
     - **Exercise ID**: The exercise ID of the DIS sim this project will be associated with.
     - **Site ID**: The site ID of this DIS sim.
     - **Application ID**: The application ID of this DIS sim. 
@@ -354,7 +354,7 @@ _**Additional info for all of these topics can be found in their respective sect
         - Friendly name of this mapping for easy user lookup
     - DIS Entity
         - The Unreal Engine actor that this mapping should point to.
-        - _**NOTE**_: In order for actors to appear in this section, they need to implement the DIS Interface. See the _**DIS Interface**_ section above.
+        - _**NOTE**_: In order for actors to appear in this section, they need to implement the DIS Interface. See the [_**DIS Interface**_](#dis-interface) section above.
     - Associated DIS Enumerations
         - All desired DIS Enumerations that should point to this actor.
         - _**NOTE**_: If duplicate enumerations are found across multiple entities, an appropriate message is logged and the most recent encountered actor to enumeration mapping is used.

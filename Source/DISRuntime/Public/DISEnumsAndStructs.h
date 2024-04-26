@@ -1240,8 +1240,10 @@ struct FEncodingScheme
 {
 	GENERATED_BODY()
 
+	/** This field shall the following encoding class of the encoding scheme. */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|Structs")
 	EEncodingClass EncodingClass;
+	/** This field shall represent the encoding type of the encoding scheme. */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|Structs")
 	EEncodingType EncodingType;
 
@@ -1276,7 +1278,7 @@ struct FBeamData
 {
 	GENERATED_BODY()
 
-	/** Specifies the beam azimuth an elevation centers and corresponding half-angles     to describe the scan volume */
+	/** Specifies the beam azimuth an elevation centers and corresponding half-angles to describe the scan volume */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|Structs")
 	float BeamAzimuthCenter;
 	/** Specifies the beam azimuth sweep to determine scan volume */
@@ -1329,13 +1331,13 @@ struct FFundamentalParameterData
 {
 	GENERATED_BODY()
 
-	/** center frequency of the emission in hertz. */
+	/** Center frequency of the emission in hertz. */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|Structs")
 	float Frequency;
 	/** Bandwidth of the frequencies corresponding to the fequency field. */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|Structs")
 	float FrequencyRange;
-	/** Effective radiated power for the emission in DdBm. For a      radar noise jammer, indicates the peak of the transmitted power. */
+	/** Effective radiated power for the emission in DdBm. For a radar noise jammer, indicates the peak of the transmitted power. */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|Structs")
 	float EffectiveRadiatedPower;
 	/** Average repetition frequency of the emission in hertz. */
@@ -1344,7 +1346,7 @@ struct FFundamentalParameterData
 	/** Average pulse width  of the emission in microseconds. */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|Structs")
 	float PulseWidth;
-	/** Specifies the beam azimuth an elevation centers and corresponding half-angles     to describe the scan volume */
+	/** Specifies the beam azimuth an elevation centers and corresponding half-angles to describe the scan volume */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|Structs")
 	float BeamAzimuthCenter;
 	/** Specifies the beam azimuth sweep to determine scan volume */
@@ -1452,8 +1454,14 @@ struct FEmitterSystem
 {
 	GENERATED_BODY()
 
+	/** This field shall specify the emitter name for a particular emitter. */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|Structs")
 	EEmitterName EmitterName;
+	/** This field shall specify the function for a particular emitter.  This field is intended to help receiving entities determine if the Electromagnetic Emission PDU is of interest to the systems simulated by that entity. */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|Structs")
 	EEmitterSystemFunction Function;
+	/** This field shall specify the emitter identification number for a specific emitter system. */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|Structs")
 	int32 EmitterIDNumber;
 
 	FEmitterSystem()
