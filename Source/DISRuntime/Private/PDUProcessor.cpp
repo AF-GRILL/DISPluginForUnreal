@@ -254,7 +254,7 @@ bool UPDUProcessor::CheckSignalPDUProperLength(const TArray<uint8>& InData)
 	//Get the data length in bytes
 	const int dataLength = static_cast<int>(InData[28] << 8 | (InData[29])) / 8;
 	//Get padding needed to round data length up to the closest multiple of 4 bytes
-	const int paddingSize = 4 - (dataLength % 4);
+	const int paddingSize = ceil(dataLength / 4.f) * 4 - dataLength;
 
 	return (SIGNAL_PDU_BYTES + dataLength + paddingSize) == bytesArrayLength;
 }
