@@ -2,8 +2,8 @@
 
 #pragma once
 #include "CoreMinimal.h"
-//#include "EmitterNameEnum.generated.h"
 
+//Blueprints don't currently support non-uint8 enums.
 enum class EEmitterName : uint16
 {
 	Other = 0U,

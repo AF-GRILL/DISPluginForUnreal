@@ -96,6 +96,7 @@ struct FDetonationPDU : public FWarfareFamilyPDU
 		Pad = DetonationPDUIn.getPad();
 
 		//Articulation Parameters
+		ArticulationParameters.Empty();
 		for (int i = 0; i < DetonationPDUIn.getNumberOfArticulationParameters(); i++)
 		{
 			DIS::ArticulationParameter tempArtParam = DetonationPDUIn.getArticulationParameters()[i];
