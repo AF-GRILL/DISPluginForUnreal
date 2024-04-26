@@ -1454,8 +1454,8 @@ struct FEmitterSystem
 {
 	GENERATED_BODY()
 
+	//UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|Structs") --- Blueprints don't currently support non-uint8 enums.
 	/** This field shall specify the emitter name for a particular emitter. */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|Structs")
 	EEmitterName EmitterName;
 	/** This field shall specify the function for a particular emitter.  This field is intended to help receiving entities determine if the Electromagnetic Emission PDU is of interest to the systems simulated by that entity. */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|Structs")
