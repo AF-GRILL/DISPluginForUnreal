@@ -42,7 +42,7 @@ struct FEntityStatePDU : public FEntityInformationFamilyPDU
 		FEntityAppearance EntityAppearance;
 	/** A series of enumerations used to describe the capabilities of the entity according to SISO-REF-010-2015 UID 55. */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|Structs|PDUs|EntityState")
-		int32 Capabilities;
+		EEntityCapabilities Capabilities;
 	/** The type of the entity as it should appear to entities of other forces. */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|Structs|PDUs|EntityState")
 		FEntityType AlternativeEntityType;
@@ -59,7 +59,7 @@ struct FEntityStatePDU : public FEntityInformationFamilyPDU
 		EcefLocation = FVector(0, 0, 0);
 		EntityOrientation = FRotator(0, 0, 0);
 		EntityLinearVelocity = FVector(0, 0, 0);
-		Capabilities = 0;
+		Capabilities = EEntityCapabilities::LandPlatformEntityCapabilities;
 		ArticulationParameters = TArray<FArticulationParameters>();
 	}
 
@@ -97,7 +97,7 @@ struct FEntityStatePDU : public FEntityInformationFamilyPDU
 		Marking = FString(EntityStatePDUIn.getMarking().getCharacters());
 		Marking.LeftInline(11);
 		EntityAppearance = EntityStatePDUIn.getEntityAppearance();
-		Capabilities = EntityStatePDUIn.getCapabilities();
+		Capabilities = static_cast<EEntityCapabilities>(EntityStatePDUIn.getCapabilities());
 
 		//Entity type
 		EntityType = EntityStatePDUIn.getEntityType();
@@ -149,7 +149,7 @@ struct FEntityStatePDU : public FEntityInformationFamilyPDU
 		OutMarking.setCharacters(TCHAR_TO_ANSI(*Marking.Left(11)));
 		EntityStatePDUOut.setMarking(OutMarking);
 
-		EntityStatePDUOut.setCapabilities(Capabilities);
+		EntityStatePDUOut.setCapabilities(static_cast<int>(Capabilities));
 
 		std::vector<DIS::ArticulationParameter> OutArtParams;
 		for (FArticulationParameters Param : ArticulationParameters)

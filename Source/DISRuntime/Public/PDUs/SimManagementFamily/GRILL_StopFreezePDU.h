@@ -21,12 +21,12 @@ struct FStopFreezePDU : public FSimulationManagementFamilyPDU
 		EReason Reason;
 	/** Specification of the internal behavior of the simulation and its appearance while frozen to other participants of the exercise */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|Structs|PDUs|StopFreeze")
-		int32 FrozenBehavior;
+		EFrozenBehavior FrozenBehavior;
 	/** Unused padding */
 	UPROPERTY()
 		int32 PaddingOne;
 	/** The specific and unique stop/freeze request being made by the simulation */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|Structs|PDUs|StopFreeze")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ClampMin = "0", ClampMax = "4294967295"), Category = "GRILL DIS|Structs|PDUs|StopFreeze")
 		int64 RequestID;
 
 	FStopFreezePDU() : FSimulationManagementFamilyPDU()
@@ -34,7 +34,7 @@ struct FStopFreezePDU : public FSimulationManagementFamilyPDU
 		PduType = EPDUType::Stop_Freeze;
 
 		Reason = EReason::Other;
-		FrozenBehavior = 0;
+		FrozenBehavior = EFrozenBehavior::RunSimulationClock;
 		PaddingOne = 0;
 		RequestID = 0;
 	}
@@ -52,7 +52,7 @@ struct FStopFreezePDU : public FSimulationManagementFamilyPDU
 		RealWorldTime.TimePastHour = tempRealWorldTime.getTimePastHour();
 
 		Reason = static_cast<EReason>(StopFreezePDUIn.getReason());
-		FrozenBehavior = StopFreezePDUIn.getFrozenBehavior();
+		FrozenBehavior = static_cast<EFrozenBehavior>(StopFreezePDUIn.getFrozenBehavior());
 		PaddingOne = StopFreezePDUIn.getPadding1();
 		RequestID = StopFreezePDUIn.getRequestID();
 	}
@@ -68,7 +68,7 @@ struct FStopFreezePDU : public FSimulationManagementFamilyPDU
 		// Specific PDU setup
 		StopFreezePDUOut.setRealWorldTime(RealWorldTime.ToOpenDIS());
 		StopFreezePDUOut.setReason(static_cast<unsigned char>(Reason));
-		StopFreezePDUOut.setFrozenBehavior(FrozenBehavior);
+		StopFreezePDUOut.setFrozenBehavior(static_cast<unsigned char>(FrozenBehavior));
 		StopFreezePDUOut.setPadding1(PaddingOne);
 		StopFreezePDUOut.setRequestID(RequestID);
 	}

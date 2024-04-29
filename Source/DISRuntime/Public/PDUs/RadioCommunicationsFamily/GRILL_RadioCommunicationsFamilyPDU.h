@@ -17,7 +17,7 @@ struct FRadioCommunicationsFamilyPDU : public FPDU
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|Structs|PDUs|RadioCommunicationsFamily")
 		FEntityID EntityID;
 	/** The particular radio within an entity */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|Structs|PDUs|RadioCommunicationsFamily")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ClampMin = "0", ClampMax = "65535"), Category = "GRILL DIS|Structs|PDUs|RadioCommunicationsFamily")
 		int32 RadioID;
 
 	FRadioCommunicationsFamilyPDU() : FPDU()

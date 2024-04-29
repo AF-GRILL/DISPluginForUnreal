@@ -20,7 +20,7 @@ struct FStartResumePDU : public FSimulationManagementFamilyPDU
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|Structs|PDUs|StartResume")
 		FClockTime SimulationTime;
 	/** The specific and unique start/resume request being made by the simulation. */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|Structs|PDUs|StartResume")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ClampMin = "0", ClampMax = "4294967295"), Category = "GRILL DIS|Structs|PDUs|StartResume")
 		int64 RequestID;
 
 	FStartResumePDU() : FSimulationManagementFamilyPDU()

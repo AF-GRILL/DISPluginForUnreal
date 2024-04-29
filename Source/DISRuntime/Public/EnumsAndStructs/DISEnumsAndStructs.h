@@ -105,6 +105,19 @@ enum class EForceID : uint8
 };
 
 UENUM(BlueprintType)
+enum class EProtocolVersion : uint8
+{
+	Other,
+	DISPDUVersion1_May92 UMETA(DisplayName = "DIS PDU version 1.0 (May 92)"),
+	IEEE12781993 UMETA(DisplayName = "IEEE 1278-1993"),
+	DISPDUVersion2_ThirdDraftMay93 UMETA(DisplayName = "DIS PDU version 2.0 - third draft (May 93)"),
+	DISPDUVersion2_FourthDraftRevised_March161994 UMETA(DisplayName = "DIS PDU version 2.0 - fourth draft (revised) March 16, 1994"),
+	IEEE1278_1_1995 UMETA(DisplayName = "IEEE 1278.1-1995"),
+	IEEE1278_1A_1998 UMETA(DisplayName = "IEEE 1278.1A-1998"),
+	IEEE1278_1_2012 UMETA(DisplayName = "IEEE 1278.1-2012"),
+};
+
+UENUM(BlueprintType)
 enum class EPDUType : uint8
 {
 	Other,
@@ -183,6 +196,42 @@ enum class EPDUType : uint8
 };
 
 UENUM(BlueprintType)
+enum class EProtocolFamily : uint8
+{
+	Other,
+	EntityInformation_Interaction UMETA(DisplayName = "Entity Information/Interaction"),
+	Warfare UMETA(DisplayName = "Warfare"),
+	Logistics UMETA(DisplayName = "Logistics"),
+	RadioCommunication UMETA(DisplayName = "Radio Communication"),
+	SimulationManagement UMETA(DisplayName = "Simulation Management"),
+	DistributedEmissionRegeneration UMETA(DisplayName = "Distributed Emission Regeneration"),
+	EntityManagement UMETA(DisplayName = "Entity Management"),
+	Minefield UMETA(DisplayName = "Minefield"),
+	SyntheticEnvironment UMETA(DisplayName = "Synthetic Environment"),
+	SimulationManagementWithReliability UMETA(DisplayName = "Simulation Management With Reliability"),
+	LiveEntity UMETA(DisplayName = "Live Entity"),
+	NonRealTime UMETA(DisplayName = "Non-Real Time")
+};
+
+UENUM(BlueprintType)
+enum class EEntityCapabilities : uint8
+{
+	LandPlatformEntityCapabilities UMETA(DisplayName = "Land Platform Entity Capabilities"),
+	AirPlatformEntityCapabilities UMETA(DisplayName = "Air Platform Entity Capabilities"),
+	SurfacePlatformEntityCapabilities UMETA(DisplayName = "Surface Platform Entity Capabilities"),
+	SubsurfacePlatformEntityCapabilities UMETA(DisplayName = "Subsurface Platform Entity Capabilities"),
+	SpacePlatformEntityCapabilities UMETA(DisplayName = "Space Platform Entity Capabilities"),
+	MunitionEntityCapabilities UMETA(DisplayName = "Munition Entity Capabilities"),
+	LifeFormsEntityCapabilities UMETA(DisplayName = "Life Forms Entity Capabilities"),
+	EnvironmentalEntityCapabilities UMETA(DisplayName = "Environmental Entity Capabilities"),
+	CulturalFeatureEntityCapabilities UMETA(DisplayName = "Cultural Feature Entity Capabilities"),
+	SupplyEntityCapabilities UMETA(DisplayName = "Supply Entity Capabilities"),
+	RadioEntityCapabilities UMETA(DisplayName = "Radio Entity Capabilities"),
+	ExpendableEntityCapabilities UMETA(DisplayName = "Expendable Entity Capabilities"),
+	Sensor_EmitterEntityCapabilities UMETA(DisplayName = "Sensor/Emitter Entity Capabilities"),
+};
+
+UENUM(BlueprintType)
 enum class EReason : uint8
 {
 	Other,
@@ -194,6 +243,14 @@ enum class EReason : uint8
 	StopForReset,
 	StopForRestart,
 	AbortTrainingReturnToTacticalOperations
+};
+
+UENUM(BlueprintType)
+enum class EFrozenBehavior : uint8
+{
+	RunSimulationClock UMETA(Tooltip = "Describes whether a simulation application should run the internal simulation clock or not"),
+	TransmitUpdates UMETA(Tooltip = "Describes whether a simulation application should transmit updates and interactions or not"),
+	ProcessUpdates UMETA(Tooltip = "Describes whether a simulation application should update simulation models of other entities via received updates or interactions")
 };
 
 UENUM(BlueprintType)

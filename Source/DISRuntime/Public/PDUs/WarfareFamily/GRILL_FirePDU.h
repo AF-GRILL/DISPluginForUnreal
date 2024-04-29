@@ -14,8 +14,8 @@ struct FFirePDU : public FWarfareFamilyPDU
 	GENERATED_BODY()
 
 	/** The index number of the fire mission */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|Structs|PDUs|Fire")
-		int32 FireMissionIndex;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ClampMin = "0", ClampMax = "4294967295"), Category = "GRILL DIS|Structs|PDUs|Fire")
+		int64 FireMissionIndex;
 	/** The entity id of the fired munition or expendable */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|Structs|PDUs|Fire")
 		FEntityID MunitionEntityID;

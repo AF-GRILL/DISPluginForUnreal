@@ -20,10 +20,10 @@ struct FSignalPDU : public FRadioCommunicationsFamilyPDU
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|Structs|PDUs|RadioCommunicationsFamily|Signal")
 		ETDLType TDLType;
 	/** This field shall specify either (1) the sample rate in samples per second if the encoding class is encoded audio or (2) the data rate in bits per second for data transmissions. If the Encoding Class is database index, this field shall be zero. */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|Structs|PDUs|RadioCommunicationsFamily|Signal")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ClampMin = "0", ClampMax = "4294967295"), Category = "GRILL DIS|Structs|PDUs|RadioCommunicationsFamily|Signal")
 		int64 SampleRate;
 	/** This field shall specify the number of samples in this PDU. If the Encoding Class is not encoded audio, this field shall be zero. */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|Structs|PDUs|RadioCommunicationsFamily|Signal")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ClampMin = "0", ClampMax = "65535"), Category = "GRILL DIS|Structs|PDUs|RadioCommunicationsFamily|Signal")
 		int32 Samples;
 	/** This field shall specify the audio or digital data conveyed by the radio transmission. The interpretation of the Data field depends on the value of the Encoding Scheme and TDL Type fields. */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|Structs|PDUs|RadioCommunicationsFamily|Signal")

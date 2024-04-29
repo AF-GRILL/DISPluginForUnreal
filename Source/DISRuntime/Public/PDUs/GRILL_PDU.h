@@ -15,7 +15,7 @@ struct FPDU
 
 	/** The version of the protocol. 5=DIS-1995, 6=DIS-1998. */
 	UPROPERTY()
-		uint8 ProtocolVersion;
+		EProtocolVersion ProtocolVersion;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|Structs|PDUs")
 		uint8 ExerciseID;
@@ -25,14 +25,14 @@ struct FPDU
 
 	/** Value that refers to the protocol family, e.g. SimulationManagement, etc. */
 	UPROPERTY()
-		uint8 ProtocolFamily;
+		EProtocolFamily ProtocolFamily;
 
-	UPROPERTY()
-		uint8 Timestamp;
+	UPROPERTY(meta = (ClampMin = "0", ClampMax = "4294967295"))
+		int64 Timestamp;
 
 	/** Length, in bytes, of the PDU */
-	UPROPERTY()
-		uint8 Length;
+	UPROPERTY(meta = (ClampMin = "0", ClampMax = "65535"))
+		int32 Length;
 
 	/** Zero-filled array of padding */
 	UPROPERTY()
@@ -40,10 +40,10 @@ struct FPDU
 
 	FPDU()
 	{
-		ProtocolVersion = 6;
+		ProtocolVersion = EProtocolVersion::IEEE1278_1A_1998;
 		ExerciseID = 0;
 		PduType = EPDUType::Other;
-		ProtocolFamily = 0;
+		ProtocolFamily = EProtocolFamily::Other;
 		Timestamp = 0;
 		Length = 0;
 		Padding = 0;
@@ -53,10 +53,10 @@ struct FPDU
 
 	void SetupFromOpenDIS(const DIS::Pdu& PDUIn)
 	{
-		ProtocolVersion = PDUIn.getProtocolVersion();
+		ProtocolVersion = static_cast<EProtocolVersion>(PDUIn.getProtocolVersion());
 		ExerciseID = PDUIn.getExerciseID();
 		PduType = static_cast<EPDUType>(PDUIn.getPduType());
-		ProtocolFamily = PDUIn.getProtocolFamily();
+		ProtocolFamily = static_cast<EProtocolFamily>(PDUIn.getProtocolFamily());
 		Timestamp = PDUIn.getTimestamp();
 		Length = PDUIn.getLength();
 		Padding = PDUIn.getPadding();
@@ -64,9 +64,10 @@ struct FPDU
 
 	void ToOpenDIS(DIS::Pdu& PDUOut)
 	{
-		PDUOut.setProtocolVersion(ProtocolVersion);
+		PDUOut.setProtocolVersion(static_cast<unsigned char>(ProtocolVersion));
 		PDUOut.setExerciseID(ExerciseID);
 		PDUOut.setPduType(static_cast<unsigned char>(PduType));
+		PDUOut.setProtocolFamily(static_cast<unsigned char>(ProtocolFamily));
 		PDUOut.setTimestamp(Timestamp);
 		PDUOut.setLength(Length);
 		PDUOut.setPadding(Padding);
