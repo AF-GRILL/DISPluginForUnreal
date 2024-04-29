@@ -109,7 +109,7 @@ enum class EProtocolVersion : uint8
 {
 	Other,
 	DISPDUVersion1_May92 UMETA(DisplayName = "DIS PDU version 1.0 (May 92)"),
-	IEEE12781993 UMETA(DisplayName = "IEEE 1278-1993"),
+	IEEE1278_1993 UMETA(DisplayName = "IEEE 1278-1993"),
 	DISPDUVersion2_ThirdDraftMay93 UMETA(DisplayName = "DIS PDU version 2.0 - third draft (May 93)"),
 	DISPDUVersion2_FourthDraftRevised_March161994 UMETA(DisplayName = "DIS PDU version 2.0 - fourth draft (revised) March 16, 1994"),
 	IEEE1278_1_1995 UMETA(DisplayName = "IEEE 1278.1-1995"),
@@ -1072,7 +1072,7 @@ struct FArticulationParameters
 {
 	GENERATED_BODY()
 
-	/**  Identification of whether the Parameter Type Record is for an articulated (0) or attached part (1) shall be designated by this field */
+	/** Identification of the Parameter Type Record shall be designated by this field */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|Structs")
 	EVariableParameterRecordType ParameterTypeDesignator;
 	/** Indicates the change of any paramater for any articulated part. Increments by 1 for each change. */
