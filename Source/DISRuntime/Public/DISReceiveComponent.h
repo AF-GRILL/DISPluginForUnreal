@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
-#include "DISEnumsAndStructs.h"
+#include "EnumsAndStructs/DISEnumsAndStructs.h"
 #include "PDUMasterInclude.h"
 #include "GeoReferencingSystem.h"
 #include "DISReceiveComponent.generated.h"

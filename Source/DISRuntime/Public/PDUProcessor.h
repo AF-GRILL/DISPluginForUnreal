@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "DISEnumsAndStructs.h"
+#include "EnumsAndStructs/DISEnumsAndStructs.h"
 
 #include "CoreMinimal.h"
 #include "PDUMasterInclude.h"

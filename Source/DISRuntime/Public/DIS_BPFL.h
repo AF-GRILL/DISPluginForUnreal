@@ -5,7 +5,7 @@
 
 #include <glm/gtx/quaternion.hpp>
 #include "CoreMinimal.h"
-#include "DISEnumsAndStructs.h"
+#include "EnumsAndStructs/DISEnumsAndStructs.h"
 #include "PDUMasterInclude.h"
 #include "Kismet/BlueprintFunctionLibrary.h"
 #include "GeoReferencingSystem.h"

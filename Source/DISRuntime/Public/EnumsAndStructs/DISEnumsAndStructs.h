@@ -21,7 +21,10 @@
 #include <dis6/ElectromagneticEmissionSystemData.h> 
 #include <dis6/ElectromagneticEmissionBeamData.h> 
 
-#include "EmitterNameEnum.h"
+#include "EnumsAndStructs/Enums/EmitterName.h"
+#include "EnumsAndStructs/Enums/FuseType.h"
+#include "EnumsAndStructs/Enums/VariableRecordTypes.h"
+#include "EnumsAndStructs/Enums/WarheadType.h"
 #include "Kismet/KismetStringLibrary.h"
 #include "CoreMinimal.h"
 #include "DISEnumsAndStructs.generated.h"
@@ -239,6 +242,43 @@ enum class EEntityDamage : uint8
 	SlightDamage,
 	ModerateDamage,
 	Destroyed
+};
+
+UENUM(BlueprintType)
+enum class EPaintScheme : uint8
+{
+	UniformColor,
+	Camouflage
+};
+
+UENUM(BlueprintType)
+enum class ETrailingEffects : uint8
+{
+	None,
+	Small,
+	Medium,
+	Large
+};
+
+UENUM(BlueprintType)
+enum class EHatchState : uint8
+{
+	NotApplicable,
+	Closed,
+	Popped,
+	PoppedAndPersonVisible,
+	Open,
+	OpenAndPersonVisible
+};
+
+UENUM(BlueprintType)
+enum class EVariableParameterRecordType : uint8
+{
+	ArticulatedPart,
+	AttachedPart,
+	Separation,
+	EntityType,
+	EntityAssociation
 };
 
 UENUM(BlueprintType)
@@ -976,8 +1016,8 @@ struct FArticulationParameters
 	GENERATED_BODY()
 
 	/**  Identification of whether the Parameter Type Record is for an articulated (0) or attached part (1) shall be designated by this field */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ClampMin = "0", ClampMax = "1"), Category = "GRILL DIS|Structs")
-	int32 ParameterTypeDesignator;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|Structs")
+	EVariableParameterRecordType ParameterTypeDesignator;
 	/** Indicates the change of any paramater for any articulated part. Increments by 1 for each change. */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ClampMin = "0", ClampMax = "255"), Category = "GRILL DIS|Structs")
 	int32 ChangeIndicator;
@@ -987,6 +1027,7 @@ struct FArticulationParameters
 	/** The type class (multiples of 32 in the range 1,024 - 4,294,967,264) and type metric (0 - 31) of the articulated part. */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|Structs")
 	int32 ParameterType;
+	//EVariableRecordTypes ParameterType;
 	/** The parameter value as defined by the ParameterType variable. Will only be utilized if the Parameter Type Designator is an articulated part (0). */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|Structs")
 	float ParameterValue;
@@ -996,22 +1037,42 @@ struct FArticulationParameters
 
 	FArticulationParameters()
 	{
-		ParameterTypeDesignator = 0;
+		ParameterTypeDesignator = EVariableParameterRecordType::ArticulatedPart;
 		ChangeIndicator = 0;
 		PartAttachedTo = 0;
 		ParameterType = 0;
+		//ParameterType = EVariableRecordTypes::Other_Zero;
 		ParameterValue = 0.f;
+	}
+
+	FArticulationParameters(DIS::ArticulationParameter ArticulatedPart)
+	{
+		ParameterTypeDesignator = static_cast<EVariableParameterRecordType>(ArticulatedPart.getParameterTypeDesignator());
+		ChangeIndicator = ArticulatedPart.getChangeIndicator();
+		PartAttachedTo = ArticulatedPart.getPartAttachedTo();
+		ParameterType = ArticulatedPart.getParameterType();
+		//ParameterType = static_cast<EVariableRecordTypes>(ArticulatedPart.getParameterType());
+
+		if (ParameterTypeDesignator == EVariableParameterRecordType::ArticulatedPart)
+		{
+			ParameterValue = ArticulatedPart.getParameterValue();
+		}
+		else
+		{
+			AttachedPartType = ArticulatedPart.getParameterValue();
+		}
 	}
 
 	DIS::ArticulationParameter ToOpenDIS() const
 	{
 		DIS::ArticulationParameter OutParam;
-		OutParam.setParameterTypeDesignator(ParameterTypeDesignator);
+		OutParam.setParameterTypeDesignator(static_cast<unsigned char>(ParameterTypeDesignator));
 		OutParam.setChangeIndicator(ChangeIndicator);
 		OutParam.setPartAttachedTo(PartAttachedTo);
 		OutParam.setParameterType(ParameterType);
+		//OutParam.setParameterType(static_cast<int>(ParameterType));
 
-		if (ParameterTypeDesignator == 0)
+		if (ParameterTypeDesignator == EVariableParameterRecordType::ArticulatedPart)
 		{
 			OutParam.setParameterValue(ParameterValue);
 		}
@@ -1035,9 +1096,11 @@ struct FBurstDescriptor
 	/** The type of warhead (0 - 65,535) */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ClampMin = "0", ClampMax = "65535"), Category = "GRILL DIS|Structs")
 	int32 Warhead;
+	//EWarheadType Warhead;
 	/** The type of fuse (0 - 65,535) */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ClampMin = "0", ClampMax = "65535"), Category = "GRILL DIS|Structs")
 	int32 Fuse;
+	//EFuseType Fuse;
 	/** The number of bursts represented (0 - 65,535) */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ClampMin = "0", ClampMax = "65535"), Category = "GRILL DIS|Structs")
 	int32 Quantity;
@@ -1048,9 +1111,22 @@ struct FBurstDescriptor
 	FBurstDescriptor()
 	{
 		Warhead = 0;
+		//Warhead = EWarheadType::Other;
 		Fuse = 0;
+		//Fuse = EFuseType::Other;
 		Quantity = 0;
 		Rate = 0;
+	}
+
+	FBurstDescriptor(DIS::BurstDescriptor BurstDescriptor)
+	{
+		EntityType = BurstDescriptor.getMunition();
+		Warhead = BurstDescriptor.getWarhead();
+		//Warhead = static_cast<EWarheadType>(BurstDescriptor.getWarhead());
+		Fuse = BurstDescriptor.getFuse();
+		//Fuse = static_cast<EFuseType>(BurstDescriptor.getFuse());
+		Quantity = BurstDescriptor.getQuantity();
+		Rate = BurstDescriptor.getRate();
 	}
 
 	DIS::BurstDescriptor ToOpenDIS() const
@@ -1058,7 +1134,9 @@ struct FBurstDescriptor
 		DIS::BurstDescriptor OutDescriptor;
 		OutDescriptor.setMunition(EntityType.ToOpenDIS());
 		OutDescriptor.setWarhead(Warhead);
+		//OutDescriptor.setWarhead(static_cast<unsigned short>(Warhead));
 		OutDescriptor.setFuse(Fuse);
+		//OutDescriptor.setFuse(static_cast<unsigned short>(Fuse));
 		OutDescriptor.setQuantity(Quantity);
 		OutDescriptor.setRate(Rate);
 		return OutDescriptor;
@@ -1091,6 +1169,18 @@ struct FDeadReckoningParameters
 		EntityAngularVelocity = FVector(0, 0, 0);
 	}
 
+	FDeadReckoningParameters(DIS::DeadReckoningParameter DeadReckoningParameter)
+	{
+		DeadReckoningAlgorithm = static_cast<EDeadReckoningAlgorithm>(DeadReckoningParameter.getDeadReckoningAlgorithm());
+		OtherParameters = TArray<uint8>(reinterpret_cast<const uint8*>(DeadReckoningParameter.getOtherParameters()), 15);
+		EntityLinearAcceleration[0] = DeadReckoningParameter.getEntityLinearAcceleration().getX();
+		EntityLinearAcceleration[1] = DeadReckoningParameter.getEntityLinearAcceleration().getY();
+		EntityLinearAcceleration[2] = DeadReckoningParameter.getEntityLinearAcceleration().getZ();
+		EntityAngularVelocity[0] = DeadReckoningParameter.getEntityAngularVelocity().getX();
+		EntityAngularVelocity[1] = DeadReckoningParameter.getEntityAngularVelocity().getY();
+		EntityAngularVelocity[2] = DeadReckoningParameter.getEntityAngularVelocity().getZ();
+	}
+
 	DIS::DeadReckoningParameter ToOpenDIS() const
 	{
 		DIS::DeadReckoningParameter OutParam;
@@ -1110,13 +1200,14 @@ struct FDeadReckoningParameters
 	}
 };
 
+//Only common entity appearance fields as this is dependant on domain
 USTRUCT(BlueprintType)
 struct FEntityAppearance
 {
 	GENERATED_BODY()
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|Structs")
-	bool PaintScheme;
+	EPaintScheme PaintScheme;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|Structs")
 	bool MobilityKilled;
@@ -1164,7 +1255,7 @@ struct FEntityAppearance
 
 	FEntityAppearance() 
 	{
-		PaintScheme = false;
+		PaintScheme = EPaintScheme::UniformColor;
 		MobilityKilled = false;
 		FirePowerKilled = false;
 		Damage = EEntityDamage::NoDamage;
@@ -1186,7 +1277,7 @@ struct FEntityAppearance
 	FEntityAppearance(uint32 val)
 		: RawVal(val)
 	{
-		PaintScheme = getField(val, 0);
+		PaintScheme = static_cast<EPaintScheme>(getField(val, 0));
 		MobilityKilled = getField(val, 1);
 		FirePowerKilled = getField(val, 2);
 		Damage = static_cast<EEntityDamage>(getField(val, 0b11, 3));
@@ -1216,7 +1307,7 @@ struct FEntityAppearance
 
 	int32 UpdateValue()
 	{
-		RawVal |= PaintScheme << 0;
+		RawVal |= bool(PaintScheme) << 0;
 		RawVal |= MobilityKilled << 1;
 		RawVal |= FirePowerKilled << 2;
 		RawVal |= int(Damage) << 3;

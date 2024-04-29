@@ -5,7 +5,7 @@
 #include "CoreMinimal.h"
 #include "UObject/NoExportTypes.h"
 #include <dis6/Pdu.h>
-#include "DISEnumsAndStructs.h"
+#include "EnumsAndStructs/DISEnumsAndStructs.h"
 #include "GRILL_PDU.generated.h"
 
 USTRUCT(BlueprintType)

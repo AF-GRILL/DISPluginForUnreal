@@ -5,7 +5,7 @@
 #include <map>
 
 #include "CoreMinimal.h"
-#include "DISEnumsAndStructs.h"
+#include "EnumsAndStructs/DISEnumsAndStructs.h"
 #include "PDUMasterInclude.h"
 #include "DISClassEnumMappings.h"
 #include "UDPSubsystem.h"

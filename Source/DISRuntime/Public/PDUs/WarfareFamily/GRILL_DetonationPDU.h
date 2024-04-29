@@ -85,11 +85,7 @@ struct FDetonationPDU : public FWarfareFamilyPDU
 		LocationInEntityCoords[2] = DetonationPDUIn.getLocationInEntityCoordinates().getZ();
 
 		//burst descriptor
-		BurstDescriptor.Warhead = DetonationPDUIn.getBurstDescriptor().getWarhead();
-		BurstDescriptor.Fuse = DetonationPDUIn.getBurstDescriptor().getFuse();
-		BurstDescriptor.Rate = DetonationPDUIn.getBurstDescriptor().getRate();
-		BurstDescriptor.Quantity = DetonationPDUIn.getBurstDescriptor().getQuantity();
-		BurstDescriptor.EntityType = DetonationPDUIn.getBurstDescriptor().getMunition();
+		BurstDescriptor = DetonationPDUIn.getBurstDescriptor();
 
 		//single vars
 		DetonationResult = static_cast<EDetonationResult>(DetonationPDUIn.getDetonationResult());
@@ -99,23 +95,7 @@ struct FDetonationPDU : public FWarfareFamilyPDU
 		ArticulationParameters.Empty();
 		for (int i = 0; i < DetonationPDUIn.getNumberOfArticulationParameters(); i++)
 		{
-			DIS::ArticulationParameter tempArtParam = DetonationPDUIn.getArticulationParameters()[i];
-			FArticulationParameters newArtParam;
-			newArtParam.ParameterTypeDesignator = tempArtParam.getParameterTypeDesignator();
-			newArtParam.ChangeIndicator = tempArtParam.getChangeIndicator();
-			newArtParam.PartAttachedTo = tempArtParam.getPartAttachedTo();
-			newArtParam.ParameterType = tempArtParam.getParameterType();
-
-			if (newArtParam.ParameterTypeDesignator == 0)
-			{
-				newArtParam.ParameterValue = tempArtParam.getParameterValue();
-			}
-			else
-			{
-				newArtParam.AttachedPartType = tempArtParam.getParameterValue();
-			}
-
-			ArticulationParameters.Add(newArtParam);
+			ArticulationParameters.Add(DetonationPDUIn.getArticulationParameters()[i]);
 		}
 	}
 

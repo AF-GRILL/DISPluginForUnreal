@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Kismet/BlueprintFunctionLibrary.h"
-#include "DISEnumsAndStructs.h"
+#include "EnumsAndStructs/DISEnumsAndStructs.h"
 #include "PDUMasterInclude.h"
 #include "DIS_BPFL.h"
 #include "glm/gtx/quaternion.hpp"

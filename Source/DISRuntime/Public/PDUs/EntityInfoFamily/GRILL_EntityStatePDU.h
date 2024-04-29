@@ -90,14 +90,7 @@ struct FEntityStatePDU : public FEntityInformationFamilyPDU
 		EntityLinearVelocity[2] = EntityStatePDUIn.getEntityLinearVelocity().getZ();
 
 		//Dead reckoning
-		DeadReckoningParameters.DeadReckoningAlgorithm = static_cast<EDeadReckoningAlgorithm>(EntityStatePDUIn.getDeadReckoningParameters().getDeadReckoningAlgorithm());
-		DeadReckoningParameters.OtherParameters = TArray<uint8>(reinterpret_cast<const uint8*>(EntityStatePDUIn.getDeadReckoningParameters().getOtherParameters()), 15);
-		DeadReckoningParameters.EntityLinearAcceleration[0] = EntityStatePDUIn.getDeadReckoningParameters().getEntityLinearAcceleration().getX();
-		DeadReckoningParameters.EntityLinearAcceleration[1] = EntityStatePDUIn.getDeadReckoningParameters().getEntityLinearAcceleration().getY();
-		DeadReckoningParameters.EntityLinearAcceleration[2] = EntityStatePDUIn.getDeadReckoningParameters().getEntityLinearAcceleration().getZ();
-		DeadReckoningParameters.EntityAngularVelocity[0] = EntityStatePDUIn.getDeadReckoningParameters().getEntityAngularVelocity().getX();
-		DeadReckoningParameters.EntityAngularVelocity[1] = EntityStatePDUIn.getDeadReckoningParameters().getEntityAngularVelocity().getY();
-		DeadReckoningParameters.EntityAngularVelocity[2] = EntityStatePDUIn.getDeadReckoningParameters().getEntityAngularVelocity().getZ();
+		DeadReckoningParameters = EntityStatePDUIn.getDeadReckoningParameters();
 
 		//single vars
 		ForceID = static_cast<EForceID>(EntityStatePDUIn.getForceId());
@@ -116,24 +109,7 @@ struct FEntityStatePDU : public FEntityInformationFamilyPDU
 		ArticulationParameters.Empty();
 		for (int i = 0; i < EntityStatePDUIn.getNumberOfArticulationParameters(); i++)
 		{
-			DIS::ArticulationParameter ArtParamIn = EntityStatePDUIn.getArticulationParameters()[i];
-
-			FArticulationParameters newArtParam;
-			newArtParam.ParameterTypeDesignator = ArtParamIn.getParameterTypeDesignator();
-			newArtParam.ChangeIndicator = ArtParamIn.getChangeIndicator();
-			newArtParam.PartAttachedTo = ArtParamIn.getPartAttachedTo();
-			newArtParam.ParameterType = ArtParamIn.getParameterType();
-
-			if (newArtParam.ParameterTypeDesignator == 0)
-			{
-				newArtParam.ParameterValue = ArtParamIn.getParameterValue();
-			}
-			else
-			{
-				newArtParam.AttachedPartType = ArtParamIn.getParameterValue();
-			}
-
-			ArticulationParameters.Add(newArtParam);
+			ArticulationParameters.Add(EntityStatePDUIn.getArticulationParameters()[i]);
 		}
 	}
 

@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "TimerManager.h"
-#include "DISEnumsAndStructs.h"
+#include "EnumsAndStructs/DISEnumsAndStructs.h"
 #include "PDUMasterInclude.h"
 #include "UDPSubsystem.h"
 #include "Components/ActorComponent.h"

@@ -89,11 +89,7 @@ struct FFirePDU : public FWarfareFamilyPDU
 		EventID = FirePDUIn.getEventID();
 
 		//burst descriptor
-		BurstDescriptor.Warhead = FirePDUIn.getBurstDescriptor().getWarhead();
-		BurstDescriptor.Fuse = FirePDUIn.getBurstDescriptor().getFuse();
-		BurstDescriptor.Rate = FirePDUIn.getBurstDescriptor().getRate();
-		BurstDescriptor.Quantity = FirePDUIn.getBurstDescriptor().getQuantity();
-		BurstDescriptor.EntityType = FirePDUIn.getBurstDescriptor().getMunition();
+		BurstDescriptor = FirePDUIn.getBurstDescriptor();
 	}
 
 	void ToOpenDIS(DIS::FirePdu& FirePDUOut)

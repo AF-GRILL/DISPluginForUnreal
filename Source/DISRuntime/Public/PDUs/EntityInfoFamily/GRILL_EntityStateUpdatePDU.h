@@ -79,23 +79,7 @@ struct FEntityStateUpdatePDU : public FEntityInformationFamilyPDU
 		//Articulation Parameters
 		for (int i = 0; i < EntityStateUpdatePDUIn.getNumberOfArticulationParameters(); i++)
 		{
-			DIS::ArticulationParameter tempArtParam = EntityStateUpdatePDUIn.getArticulationParameters()[i];
-			FArticulationParameters newArtParam;
-			newArtParam.ParameterTypeDesignator = tempArtParam.getParameterTypeDesignator();
-			newArtParam.ChangeIndicator = tempArtParam.getChangeIndicator();
-			newArtParam.PartAttachedTo = tempArtParam.getPartAttachedTo();
-			newArtParam.ParameterType = tempArtParam.getParameterType();
-
-			if (newArtParam.ParameterTypeDesignator == 0)
-			{
-				newArtParam.ParameterValue = tempArtParam.getParameterValue();
-			}
-			else
-			{
-				newArtParam.AttachedPartType = tempArtParam.getParameterValue();
-			}
-
-			ArticulationParameters.Add(newArtParam);
+			ArticulationParameters.Add(EntityStateUpdatePDUIn.getArticulationParameters()[i]);
 		}
 	}
 
