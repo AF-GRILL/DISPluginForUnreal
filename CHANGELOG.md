@@ -1,23 +1,40 @@
-# Beta 0.6.1
+# Changelog
+
+## Beta 0.7.1
+
+- Add in additional enums and structs to better support DIS structure.
+- Handle Detonation PDUs that have NO_SPECIFIC_ENTITY as their Munition ID.
+- Update UPROPERTIES of various variables.
+	- Add in range clamps to limit input to that expected of the DIS protocol.
+- Update some variables to be uint8 rather than integers clamped to the range of 0-255.
+
+## Beta 0.7.0
+
+- Add in support for Signal PDUs.
+- Add in sending capabilities for Electromagnetic Emissions PDU.
+- Finish implementing Electromagnetic Emissions PDU.
+- Update Open DIS libraries to most recent version (v1.0.1).
+
+## Beta 0.6.1
 
 - Fixed race condition in UDPReceiver on game start.
 - Added in verification of PDU lengths prior to unmarshalling them.
 - Updated support URL to point to a valid website.
 
-# Beta 0.6.0
+## Beta 0.6.0
 
 - Added in handlers for Electromagnetic Emission PDUs.
 - Clean up decoding of Entity Appearance.
 - Updated Ground Clamping implementation to return whether or not it was attempted.
 - Fixed Entity State PDU automatic location updates happening more than once.
 
-# Beta 0.5.0
+## Beta 0.5.0
 
 - Added option to apply Entity State PDU location and rotation to owner automatically.
 - Added Entity Appearance struct.
 - Fixed memory leak when decoding a PDU.
 
-# Beta 0.4.2
+## Beta 0.4.2
 
 - Updated conversions from LLA to/from ECEF to be more accurate.
 - Updated linear acceleration to be in ECEF.
@@ -25,7 +42,7 @@
 - Fix DIS Receive Component not having variables set properly prior to begin play.
 - Made send sockets non-blocking.
 
-# Beta 0.4.1
+## Beta 0.4.1
 
 - Updated Angular Velocity calculations to utilize quaternions rather than euler angles in the DIS Send Component. 
 - Moved ESPDU variable calculations in DIS Send Component for linear velocity, linear acceleration, and angular velocity to a timer to give user more flexibility over frequency of them.
@@ -38,7 +55,7 @@
 - Bug fix to invert Linear Velocity Z direction on forming ESPDU using Body DR algorithms. Also fix to Body DR algorithm if Angular Velocity is 0.
 - Fixed bug where Entity Marking would overflow when being converted from OpenDIS to UE4.
 
-# Beta 0.4.0
+## Beta 0.4.0
 
 - Separated DIS Component into two separate components (DIS Sender and DIS Receiver). 
 	- DIS Sender has built in default functionality for sending ESPDUs. 
@@ -48,7 +65,7 @@
 - Network DIS Entities are now spawned at proper ECEF/rotation as specified by the given ESPDU.
 - Updated articulated parameters to look at the Record Type when converting to/from Open DIS. The Parameter Value changes depending on the Record Type parameter.
 
-# Beta 0.3.0
+## Beta 0.3.0
 
 - Updated variable categories to all be under the same parent GRILL DIS category.
 - Removed project settings and toolbar button from the plugin.
@@ -56,7 +73,7 @@
 - Added in licensing files
 - Removed unit tests
 
-# Beta 0.2.0 -- Initial UE5 version
+## Beta 0.2.0 -- Initial UE5 version
 
 - Added in event handlers for start/resume PDUs and stop/freeze PDUs.
 - Updated Ground Clamping to be an enum in DIS Component.
@@ -80,12 +97,12 @@
 - Verify DeadReckoning is enabled/supported prior to trying to smooth.
 - Updated UDP sockets to allow for multiple different sockets to be able to be open at once. Moved UDP auto connect settings to DIS Game Manager.
 
-# Beta 0.1.2 -- Carried over from UE4 version
+## Beta 0.1.2 -- Carried over from UE4 version
 
 - Added in check for the DIS Class Enum Mapping to verify it has been set in the Game Manager prior to using.
 - Added in entity location smoothing
 
-# Beta 0.1.1 -- Carried over from UE4 version
+## Beta 0.1.1 -- Carried over from UE4 version
 
 - Small update to add in friendly names to the DIS Enumeration mappings.
 - Updated additional std::map variable I missed to utilize the std::map functions to avoid creating null entries.
@@ -97,7 +114,7 @@
 - Updated plugin enumeration mappings to be stored in a custom Unreal Engine asset named DISClassEnumMappings.
 - Updated DIS Game State to be DIS Game Manager and it is now of the AInfo class type rather than game state.
 
-# Beta 0.1.0 -- Carried over from UE4 version
+## Beta 0.1.0 -- Carried over from UE4 version
 
 - Added UPROPERTY tag to the PDU variables for MostRecentEntityState and DeadReckonedPDU. Fixes them being auto garbage collected.
 - Fixed race case with dead reckoning. Added in IsValid checks prior to using any UObject PDU.
@@ -108,7 +125,7 @@
 - Add STL maps for 64 bit mapping
 - Added in log warning if the user has multiple instances of the same enumeration.
 
-# Beta 0.0.1 -- Carried over from UE4 version
+## Beta 0.0.1 -- Carried over from UE4 version
 
 - Update functions to use hierarchical structs
 - Added missing DIS PDU variables and missing structs for inheritance. Added in additional PDU to bytes functions.
