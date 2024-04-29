@@ -313,7 +313,7 @@ _**Additional info for all of these topics can be found in their respective sect
 	- Entity State Calculation Rate
 		- The rate at which the Entity State parameters (angular velocity, linear velocity, linear acceleration) should be calculated. The more often, the more accurate sent Entity State PDUs will be.
     - Entity Appearance
-        - Represented as an int-32 field. Specifies the dynamic changes to the entities appearance attributes.
+        - Specifies the dynamic changes to the entities appearance attributes.
         - Refer to DIS Standard IEEE 1278.1 document for a breakdown.
     - Entity Capabilities
         - Represented as an int-32 field. A collection of fields which describe the capabilities of the Entity.
