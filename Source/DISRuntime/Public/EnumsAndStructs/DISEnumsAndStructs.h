@@ -845,26 +845,26 @@ struct FEntityType
 	GENERATED_BODY()
 
 	/** Kind of entity */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ClampMin = "0", ClampMax = "255"), Category = "GRILL DIS|Structs")
-	int32 EntityKind;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|Structs")
+	uint8 EntityKind;
 	/** Domain of entity (air, surface, subsurface, space, etc) */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ClampMin = "0", ClampMax = "255"), Category = "GRILL DIS|Structs")
-	int32 Domain;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|Structs")
+	uint8 Domain;
 	/** Country to which the design of the entity is attributed */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ClampMin = "0", ClampMax = "65535"), Category = "GRILL DIS|Structs")
 	int32 Country;
 	/** The main category that describes the entity */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ClampMin = "0", ClampMax = "255"), Category = "GRILL DIS|Structs")
-	int32 Category;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|Structs")
+	uint8 Category;
 	/** The particular subcategory to which the entity belongs based on the `Category` field */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ClampMin = "0", ClampMax = "255"), Category = "GRILL DIS|Structs")
-	int32 Subcategory;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|Structs")
+	uint8 Subcategory;
 	/** Specific information about the entity based on `Subcategory` field */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ClampMin = "0", ClampMax = "255"), Category = "GRILL DIS|Structs")
-	int32 Specific;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|Structs")
+	uint8 Specific;
 	/** Extra information required to describe a particular entity */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ClampMin = "0", ClampMax = "255"), Category = "GRILL DIS|Structs")
-	int32 Extra;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|Structs")
+	uint8 Extra;
 
 	FEntityType()
 	{
@@ -1076,8 +1076,8 @@ struct FArticulationParameters
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|Structs")
 	EVariableParameterRecordType ParameterTypeDesignator;
 	/** Indicates the change of any paramater for any articulated part. Increments by 1 for each change. */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ClampMin = "0", ClampMax = "255"), Category = "GRILL DIS|Structs")
-	int32 ChangeIndicator;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|Structs")
+	uint8 ChangeIndicator;
 	/** The ID of the part to which this part is attached */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ClampMin = "0", ClampMax = "65535"), Category = "GRILL DIS|Structs")
 	int32 PartAttachedTo;
@@ -1566,11 +1566,11 @@ struct FTrackJamTarget
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|Structs")
 	FEntityID TrackJam;
 	/** The Emitter Identifier shall be the Emitter ID number of the emitter for which the jamming emission is intended. */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ClampMin = "0", ClampMax = "255"), Category = "GRILL DIS|Structs")
-	int32 EmitterID;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|Structs")
+	uint8 EmitterID;
 	/** The Beam Identifier shall be Beam ID number of the emitter beam for which the jamming emission is intended. */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ClampMin = "0", ClampMax = "255"), Category = "GRILL DIS|Structs")
-	int32 BeamID;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|Structs")
+	uint8 BeamID;
 
 	FTrackJamTarget()
 	{
@@ -1605,12 +1605,13 @@ struct FEmitterSystem
 	/** This field shall specify the emitter name for a particular emitter. */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ClampMin = "0", ClampMax = "65535"), Category = "GRILL DIS|Structs")
 	int32 EmitterName;
+	//EEmitterName EmitterName;
 	/** This field shall specify the function for a particular emitter.  This field is intended to help receiving entities determine if the Electromagnetic Emission PDU is of interest to the systems simulated by that entity. */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|Structs")
 	EEmitterSystemFunction Function;
 	/** This field shall specify the emitter identification number for a specific emitter system. */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ClampMin = "0", ClampMax = "255"), Category = "GRILL DIS|Structs")
-	int32 EmitterIDNumber;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|Structs")
+	uint8 EmitterIDNumber;
 
 	FEmitterSystem()
 	{
@@ -1646,11 +1647,11 @@ struct FElectromagneticEmissionBeamData
 	GENERATED_BODY()
 	
 	/** This field shall specify the length of this beam's data (including track/jam information) in 32-bit words. */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ClampMin = "0", ClampMax = "255"), Category = "GRILL DIS|Structs|PDUs|ElectromagneticEmissions")
-	int32 BeamDataLength;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|Structs|PDUs|ElectromagneticEmissions")
+	uint8 BeamDataLength;
 	/** This field shall specify a unique emitter database number assigned to differentiate between otherwise similar or identical emitter beams within an emitter system. */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ClampMin = "0", ClampMax = "255"), Category = "GRILL DIS|Structs|PDUs|ElectromagneticEmissions")
-	int32 BeamIDNumber;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|Structs|PDUs|ElectromagneticEmissions")
+	uint8 BeamIDNumber;
 	/** This field shall specify a Beam Parameter Index number that shall be used by receiving entities in conjunction with the Emitter Name field to provide a pointer to the stored database parameters required to regenerate the beam. */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ClampMin = "0", ClampMax = "65535"), Category = "GRILL DIS|Structs|PDUs|ElectromagneticEmissions")
 	int32 BeamParameterIndex;
@@ -1732,8 +1733,8 @@ struct FElectromagneticEmissionSystemData
 	GENERATED_BODY()
 
 	/**  This field shall specify the length of this emitter system's data. */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ClampMin = "0", ClampMax = "255"), Category = "GRILL DIS|Structs|PDUs|ElectromagneticEmissions")
-	int32 SystemDataLength;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|Structs|PDUs|ElectromagneticEmissions")
+	uint8 SystemDataLength;
 	/** A 16 bit field of unused padding */
 	UPROPERTY()
 	int32 EmissionsPadding;

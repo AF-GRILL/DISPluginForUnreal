@@ -38,7 +38,7 @@ public:
 	 * @param NewEntityCapabilities The new DIS capabilities that the entity has.
 	*/
 	UFUNCTION(BlueprintCallable, Category = "GRILL DIS|DIS Send Component")
-		void SetEntityCapabilities(int32 NewEntityCapabilities);
+		void SetEntityCapabilities(EEntityCapabilities NewEntityCapabilities);
 
 	/**
 	 * Updates the appearance of the entity.
@@ -179,7 +179,7 @@ public:
 	 * The DIS Capabilities that the entity should have. Int representation of a collection of boolean fields which describe the capabilities of the entity.
 	*/
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "GRILL DIS|DIS Send Component|DIS Settings", Meta = (UIMin = 0, ClampMin = 0))
-		int32 EntityCapabilities = 0;
+		EEntityCapabilities EntityCapabilities = EEntityCapabilities::LandPlatformEntityCapabilities;
 
 	/**
 	 * The dead reckoning algorithm to use.

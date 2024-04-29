@@ -111,10 +111,10 @@ void UDISSendComponent::EndPlay(const EEndPlayReason::Type EndPlayReason)
 	Super::EndPlay(EndPlayReason);
 }
 
-void UDISSendComponent::SetEntityCapabilities(int32 NewEntityCapabilities)
+void UDISSendComponent::SetEntityCapabilities(EEntityCapabilities NewEntityCapabilities)
 {
 	//If the new entity capabilities differ, send out a new ESPDU
-	if (EntityStatePDUSendingMode == EEntityStateSendingMode::EntityStatePDU && NewEntityCapabilities != EntityCapabilities && NewEntityCapabilities >= 0)
+	if (EntityStatePDUSendingMode == EEntityStateSendingMode::EntityStatePDU && NewEntityCapabilities != EntityCapabilities)
 	{
 		EntityCapabilities = NewEntityCapabilities;
 
