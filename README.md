@@ -1,5 +1,7 @@
 [![DISPluginLogo](Resources/Icon128.png)](https://www.af-grill.com/)
 
+# _**This version of the DIS plugin is deprecated and will no longer be receiving updates. Please refer to the Unreal Engine 5 branch.**_
+
 # Getting Started
 
 - This plugin was made for Unreal Engine 4.27
