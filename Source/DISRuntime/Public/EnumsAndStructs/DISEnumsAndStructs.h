@@ -214,6 +214,13 @@ enum class EProtocolFamily : uint8
 };
 
 UENUM(BlueprintType)
+enum class ETimestampFormat : uint8
+{
+	Relative,
+	Absolute
+};
+
+UENUM(BlueprintType)
 enum class EEntityCapabilities : uint8
 {
 	LandPlatformEntityCapabilities UMETA(DisplayName = "Land Platform Entity Capabilities"),
@@ -713,6 +720,60 @@ struct FClockTime
 
 		return OutClockTime;
 	}
+};
+
+USTRUCT(BlueprintType)
+struct FTimestamp
+{
+	GENERATED_BODY()
+
+	//The format that this timestamp is represented in
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|Structs")
+	ETimestampFormat TimestampFormat;
+	//The minutes that have elapsed since the beginning of the current hour
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ClampMin = "0", ClampMax = "59"), Category = "GRILL DIS|Structs")
+	int32 Minutes;
+	//The seconds that have elapsed since the beginning of the current minute
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ClampMin = "0", ClampMax = "59"), Category = "GRILL DIS|Structs")
+	int32 Seconds;
+	//The milliseconds that have elapsed since the beginning of the current second
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ClampMin = "0", ClampMax = "999"), Category = "GRILL DIS|Structs")
+	int32 Milliseconds;
+
+	FTimestamp()
+	{
+		TimestampFormat = ETimestampFormat::Relative;
+		Minutes = 0;
+		Seconds = 0;
+		Milliseconds = 0;
+	}
+
+	FTimestamp(unsigned int Timestamp)
+	{
+		TimestampFormat = static_cast<ETimestampFormat>(Timestamp % 2);
+
+		//Take off format for conversion
+		float time = (Timestamp >> 1) * timeConversion;
+		float timeSeconds;
+		//Format data into minutes, seconds, milliseconds
+		Milliseconds = modf(time, &timeSeconds) * 1000;
+		Seconds = (int)timeSeconds % 60;
+		Minutes = timeSeconds / 60;
+	}
+
+	unsigned int ToOpenDIS() const
+	{
+		float timeSeconds = Milliseconds / 1000.f + Seconds + Minutes * 60;
+
+		unsigned int timestamp = timeSeconds / timeConversion;
+		//Add in timestamp format
+		timestamp = (timestamp << 1) | static_cast<unsigned int>(TimestampFormat);
+
+		return timestamp;
+	}
+
+private:
+	float timeConversion = (3600.f / pow(2, 31));
 };
 
 USTRUCT(BlueprintType)

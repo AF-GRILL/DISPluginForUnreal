@@ -14,7 +14,7 @@ struct FPDU
 	GENERATED_BODY()
 
 	/** The version of the protocol. 5=DIS-1995, 6=DIS-1998. */
-	UPROPERTY()
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|Structs|PDUs")
 		EProtocolVersion ProtocolVersion;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|Structs|PDUs")
@@ -24,11 +24,11 @@ struct FPDU
 	EPDUType PduType;
 
 	/** Value that refers to the protocol family, e.g. SimulationManagement, etc. */
-	UPROPERTY()
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|Structs|PDUs")
 		EProtocolFamily ProtocolFamily;
 
-	UPROPERTY(meta = (ClampMin = "0", ClampMax = "4294967295"))
-		int64 Timestamp;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ClampMin = "0", ClampMax = "4294967295"), Category = "GRILL DIS|Structs|PDUs")
+		FTimestamp Timestamp;
 
 	/** Length, in bytes, of the PDU */
 	UPROPERTY(meta = (ClampMin = "0", ClampMax = "65535"))
@@ -44,7 +44,6 @@ struct FPDU
 		ExerciseID = 0;
 		PduType = EPDUType::Other;
 		ProtocolFamily = EProtocolFamily::Other;
-		Timestamp = 0;
 		Length = 0;
 		Padding = 0;
 	}
@@ -68,7 +67,7 @@ struct FPDU
 		PDUOut.setExerciseID(ExerciseID);
 		PDUOut.setPduType(static_cast<unsigned char>(PduType));
 		PDUOut.setProtocolFamily(static_cast<unsigned char>(ProtocolFamily));
-		PDUOut.setTimestamp(Timestamp);
+		PDUOut.setTimestamp(Timestamp.ToOpenDIS());
 		PDUOut.setLength(Length);
 		PDUOut.setPadding(Padding);
 	}

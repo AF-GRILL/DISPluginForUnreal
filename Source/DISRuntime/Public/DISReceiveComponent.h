@@ -157,7 +157,7 @@ public:
 	 * The timestamp that the most recent Entity State PDU was received at by the DISComponent.
 	 */
 	UPROPERTY(BlueprintReadWrite, Category = "GRILL DIS|DIS Receive Component|DIS Info")
-		FDateTime LatestEntityStatePDUTimestamp;
+		FTimestamp LatestEntityStatePDUTimestamp;
 	/**
 	 * Whether or not the associated entity was spawned by the network or not.
 	 */

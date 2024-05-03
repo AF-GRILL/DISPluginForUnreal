@@ -114,7 +114,7 @@ void UDISReceiveComponent::HandleEntityStateUpdatePDU(FEntityStateUpdatePDU NewE
 
 void UDISReceiveComponent::UpdateCommonEntityStateInfo(FEntityStatePDU NewEntityStatePDU)
 {
-	LatestEntityStatePDUTimestamp = FDateTime::Now();
+	LatestEntityStatePDUTimestamp = NewEntityStatePDU.Timestamp;
 	DeltaTimeSinceLastPDU = 0;
 
 	//Get difference in ECEF between most recent dead reckoning location and last known Dead Reckoning location
