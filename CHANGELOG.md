@@ -7,6 +7,7 @@
 - Update UPROPERTIES of various variables.
 	- Add in range clamps to limit input to that expected of the DIS protocol.
 - Update some variables to be uint8 rather than integers clamped to the range of 0-255.
+- Added in timestamp struct for user friendly storing of PDU timestamps.
 
 ## Beta 0.7.0
 
