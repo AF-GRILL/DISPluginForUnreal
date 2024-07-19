@@ -754,7 +754,7 @@ struct FTimestamp
 
 		//Take off format for conversion
 		float time = (Timestamp >> 1) * timeConversion;
-		float timeSeconds;
+		double timeSeconds;
 		//Format data into minutes, seconds, milliseconds
 		Milliseconds = modf(time, &timeSeconds) * 1000;
 		Seconds = (int)timeSeconds % 60;
