@@ -802,6 +802,13 @@ struct FEntityID
 		this->Entity = EntityID.getEntity();
 	}
 
+	FEntityID(int32 SiteID, int32 ApplicationID, int32 EntityID)
+	{
+		this->Site = SiteID;
+		this->Application = ApplicationID;
+		this->Entity = EntityID;
+	}
+
 	bool operator== (const FEntityID other) const
 	{
 		return Site == other.Site
@@ -1064,8 +1071,8 @@ struct FEntityType
 
 	FString ToString() const
 	{
-		return FString::FromInt(EntityKind) + ":" + FString::FromInt(Domain) + ':' + FString::FromInt(Country) + ":" +
-			FString::FromInt(Category) + ":" + FString::FromInt(Subcategory) + ':' + FString::FromInt(Specific) + ":" + FString::FromInt(Extra);
+		return FString::FromInt(EntityKind) + "." + FString::FromInt(Domain) + '.' + FString::FromInt(Country) + "." +
+			FString::FromInt(Category) + "." + FString::FromInt(Subcategory) + '.' + FString::FromInt(Specific) + "." + FString::FromInt(Extra);
 	}
 
 	uint64 ToUInt64() const

@@ -32,7 +32,7 @@ struct FDetonationPDU : public FWarfareFamilyPDU
 	/** Description of the detonation in the form of a munition descriptor, an explosion descriptor, or an expendable descriptor */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|Structs|PDUs|Detonation")
 		FBurstDescriptor BurstDescriptor;
-	/** The location of the munition detonation, the expendaable detonation, or the non-munition explosion in the entity coordinate system (right-hand system) */
+	/** The location of the munition detonation, the expendable detonation, or the non-munition explosion in the entity coordinate system (right-hand system) */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|Structs|PDUs|Detonation")
 		FVector LocationInEntityCoords;
 	/** The result of the detonation as denoted in SISO-REF-010-2015 UID 62 */

@@ -88,7 +88,6 @@ void UDISSendComponent::EndPlay(const EEndPlayReason::Type EndPlayReason)
 	//Emit a final EntityStatePDU detailing that the entity has been deactivated
 	FEntityStatePDU finalESPDU = FEntityStatePDU();
 
-	finalESPDU.EntityID = EntityID;
 	finalESPDU.EntityType = EntityType;
 	finalESPDU.ForceID = EntityForceID;
 	finalESPDU.Marking = EntityMarking;
@@ -96,6 +95,7 @@ void UDISSendComponent::EndPlay(const EEndPlayReason::Type EndPlayReason)
 
 	if (IsValid(DISGameManager))
 	{
+		finalESPDU.EntityID = FEntityID(DISGameManager->SiteID, DISGameManager->ApplicationID, EntityID);
 		finalESPDU.ExerciseID = DISGameManager->ExerciseID;
 	}
 	else
@@ -163,7 +163,6 @@ FEntityStatePDU UDISSendComponent::FormEntityStatePDU()
 {
 	FEntityStatePDU newEntityStatePDU;
 
-	newEntityStatePDU.EntityID = EntityID;
 	newEntityStatePDU.EntityType = EntityType;
 	newEntityStatePDU.ForceID = EntityForceID;
 	newEntityStatePDU.Marking = EntityMarking;
@@ -174,6 +173,7 @@ FEntityStatePDU UDISSendComponent::FormEntityStatePDU()
 
 	if (IsValid(DISGameManager))
 	{
+		newEntityStatePDU.EntityID = FEntityID(DISGameManager->SiteID, DISGameManager->ApplicationID, EntityID);
 		newEntityStatePDU.ExerciseID = DISGameManager->ExerciseID;
 	}
 	else

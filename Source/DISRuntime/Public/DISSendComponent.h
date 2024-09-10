@@ -132,10 +132,10 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|DIS Send Component|DIS Info")
 		FEntityType EntityType;
 	/**
-	 * The Entity ID of the associated entity. Each Entity ID should be unique to an entity in the sim.
+	 * The Entity ID of the associated entity. Each Entity ID should be unique to an entity in the sim. The Site ID and Application ID will be retrieved from the DISGameManager.
 	 */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|DIS Send Component|DIS Info")
-		FEntityID EntityID;
+		int32 EntityID;
 	/**
 	 * The Force ID of the associated entity. Specifies the team or side the DIS entity is on.
 	 */

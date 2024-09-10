@@ -329,7 +329,7 @@ void ADISGameManager::SpawnNewEntityFromEntityState(FEntityStatePDU EntityStateP
 
 			if (associatedClass == nullptr)
 			{
-				UE_LOG(LogDISGameManager, Warning, TEXT("Mapping found, but points to a null class for the enumeration of: %s"), *EntityStatePDUIn.EntityType.ToString());
+				UE_LOG(LogDISGameManager, Warning, TEXT("Mapping found, but points to a null class for the enumeration of: %s. Received packet had a DIS Marking of: %s"), *EntityStatePDUIn.EntityType.ToString(), *EntityStatePDUIn.Marking);
 				return;
 			}
 		}
@@ -340,7 +340,7 @@ void ADISGameManager::SpawnNewEntityFromEntityState(FEntityStatePDU EntityStateP
 
 		if (associatedClass == nullptr) 
 		{
-			UE_LOG(LogDISGameManager, Warning, TEXT("Mapping points to a null class for the enumeration of: %s"), *EntityStatePDUIn.EntityType.ToString());
+			UE_LOG(LogDISGameManager, Warning, TEXT("Mapping points to a null class for the enumeration of: %s. Received packet had a DIS Marking of: %s"), *EntityStatePDUIn.EntityType.ToString(), *EntityStatePDUIn.Marking);
 			return;
 		}
 	}
@@ -382,7 +382,7 @@ void ADISGameManager::SpawnNewEntityFromEntityState(FEntityStatePDU EntityStateP
 	else
 	{
 		//Otherwise notify the user that no such mapping exists
-		UE_LOG(LogDISGameManager, Warning, TEXT("No mapping exists between an actor and the DIS enumeration of: %s"), *EntityStatePDUIn.EntityType.ToString());
+		UE_LOG(LogDISGameManager, Warning, TEXT("No mapping exists between an actor and the DIS enumeration of: %s. Received packet had a DIS Marking of: %s"), *EntityStatePDUIn.EntityType.ToString(), *EntityStatePDUIn.Marking);
 	}
 }
 
