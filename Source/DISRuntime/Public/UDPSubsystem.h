@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "Sockets/Public/IPAddress.h"
+#include "IPAddress.h"
 #include "Common/UdpSocketBuilder.h"
 #include "Common/UdpSocketReceiver.h"
 #include "Common/UdpSocketSender.h"
@@ -30,6 +30,10 @@ struct FSendSocketSettings
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|UDP Subsystem|Structs")
 		EConnectionType SendSocketConnectionType;
 
+	/** Time to Live for emitted packets if multicast is used. */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|UDP Subsystem|Structs")
+		uint8 MulticastTtl;
+
 	/** Friendly description of what this socket is to be used for. */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|UDP Subsystem|Structs")
 		FString SocketDescription;
@@ -41,6 +45,8 @@ struct FSendSocketSettings
 	FSendSocketSettings()
 	{
 		SendSocketConnectionType = EConnectionType::Broadcast;
+
+		MulticastTtl = 255;
 
 		SocketDescription = FString(TEXT("UE4-DIS-Send-Socket"));
 

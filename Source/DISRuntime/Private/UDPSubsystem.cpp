@@ -184,7 +184,7 @@ bool UUDPSubsystem::OpenSendSocket(FSendSocketSettings SocketSettings, int32& Se
 	{
 		FIPv4Address Addr;
 		FIPv4Address::Parse(IpToSendOn, Addr);
-		SenderSocket = SocketBuilder.JoinedToGroup(Addr);
+		SenderSocket = SocketBuilder.JoinedToGroup(Addr).WithMulticastTtl(SocketSettings.MulticastTtl);
 		break;
 	}
 	case EConnectionType::Unicast:
