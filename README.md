@@ -144,6 +144,8 @@ _**Additional info for all of these topics can be found in their respective sect
             - The port to send DIS packets on.
         - Send Socket Connection Type
             - The type of send socket to use. Options are: Broadcast, Multicast, and Unicast.
+        - Multicast Ttl
+            - The time to live for a packet if being sent with Multicast.
         - Socket Description
             - Friendly description for the the socket.
         - Buffer Size
@@ -288,7 +290,7 @@ _**Additional info for all of these topics can be found in their respective sect
 		- This record specifies the kind of entity, the country of design, the domain, the specific identification of the entity, and any extra information necessary for describing the entity.
         - This value should be set on the component and will be used when sending automatic PDU updates.
     - Entity ID
-		- This record specifies the site ID, application ID, and entity ID fields. They combine to form a unique identifier of the entity in the exercise.
+		- This record specifies the ID of the associated entity fields. When sending, this can be combined with the Site ID and Application ID stored in the DIS Game Manager to form the unique identifier of the entity in the exercise.
         - This value should be set on the component and will be used when sending automatic PDU updates.
     - Entity Force ID
 		- This field distinguishes the different teams or sides in a DIS exercise.
