@@ -228,7 +228,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|DIS Receive Component|DIS Settings")
 		TEnumAsByte<ETraceTypeQuery> GoundClampingCollisionChannel = UEngineTypes::ConvertToTraceType(ECollisionChannel::ECC_Visibility);
 	/**
-	 * To automatically apply entity states to the owner actor.
+	 * To automatically apply location/orientation updates to the owner actor. This will prioritize Ground Clamping first, then Dead Reckoning, then Entity State updates based on which is enabled/successful.
 	 */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|DIS Receive Component|DIS Settings")
 		bool ApplyToOwner = false;

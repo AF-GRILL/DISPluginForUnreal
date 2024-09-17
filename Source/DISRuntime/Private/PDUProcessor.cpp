@@ -217,6 +217,13 @@ bool UPDUProcessor::CheckPDUProperLengthWithArticulationParams(int BytesArrayLen
 bool UPDUProcessor::CheckElectromagneticEmissionPDUProperLength(const TArray<uint8>& InData)
 {
 	int bytesArrayLength = InData.Num();
+
+	//Check array length before accessing
+	if (bytesArrayLength < 25)
+	{
+		return false;
+	}
+
 	//Get the number of systems in the PDU
 	const int numberOfSystems = static_cast<int>(InData[25]);
 	const int lastIndexIfNoEmitterData = 27;
@@ -226,6 +233,13 @@ bool UPDUProcessor::CheckElectromagneticEmissionPDUProperLength(const TArray<uin
 	{
 		//Increment to get the number of beams in the current system
 		currentIndex += 2;
+
+		//Check array length before accessing
+		if (bytesArrayLength < currentIndex)
+		{
+			return false;
+		}
+
 		int numberOfBeams = static_cast<int>(InData[currentIndex]);
 
 		//Increment to get to the end of the emitter system data
@@ -235,6 +249,13 @@ bool UPDUProcessor::CheckElectromagneticEmissionPDUProperLength(const TArray<uin
 		{
 			//Increment to get the number of targets
 			currentIndex += 46;
+
+			//Check array length before accessing
+			if (bytesArrayLength < currentIndex)
+			{
+				return false;
+			}
+
 			int numberOfTargets = static_cast<int>(InData[currentIndex]);
 
 			//Increment to get to the end of the beam data
@@ -251,6 +272,13 @@ bool UPDUProcessor::CheckElectromagneticEmissionPDUProperLength(const TArray<uin
 bool UPDUProcessor::CheckSignalPDUProperLength(const TArray<uint8>& InData)
 {
 	int bytesArrayLength = InData.Num();
+
+	//Check array length before accessing
+	if (bytesArrayLength < 29)
+	{
+		return false;
+	}
+
 	//Get the data length in bytes
 	const int dataLength = static_cast<int>(InData[28] << 8 | (InData[29])) / 8;
 	//Get padding needed to round data length up to the closest multiple of 4 bytes
