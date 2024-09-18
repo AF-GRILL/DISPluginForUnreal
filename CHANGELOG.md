@@ -1,5 +1,16 @@
 # Changelog
 
+## Beta 0.8.1
+
+- Add array bounds checking when verifying PDU length.
+- Add more include statements into various classes to fix building for the Marketplace.
+- Fix large non-blueprint enums to be classified as UENUMS and build properly.
+
+## Beta 0.8.0
+
+- Upgrade plugin to be based on UE 5.4.
+- Added parameter to send sockets to allow for the multicast time to live to be specified.
+
 ## Beta 0.7.1
 
 - Add in additional enums and structs to better support DIS structure.
