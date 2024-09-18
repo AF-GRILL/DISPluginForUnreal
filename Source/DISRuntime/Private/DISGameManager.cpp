@@ -4,6 +4,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "DIS_BPFL.h"
 #include "Engine/Engine.h"
+#include "Engine/GameInstance.h"
 #include "PDUProcessor.h"
 
 DEFINE_LOG_CATEGORY(LogDISGameManager);

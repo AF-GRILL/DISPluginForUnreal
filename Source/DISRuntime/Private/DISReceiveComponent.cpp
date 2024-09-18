@@ -6,6 +6,7 @@
 #include "DISGameManager.h"
 #include "CollisionQueryParams.h"
 #include "Camera/PlayerCameraManager.h"
+#include "Engine/HitResult.h"
 #include "Engine/World.h"
 #include "GameFramework/PlayerController.h"
 #include "Kismet/KismetMathLibrary.h"

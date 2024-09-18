@@ -21,10 +21,12 @@
 #include <dis6/ElectromagneticEmissionSystemData.h> 
 #include <dis6/ElectromagneticEmissionBeamData.h> 
 
+//All instances of these enum classes are commented out as they are too large of enum classes to be supported in blueprints currently.
 #include "EnumsAndStructs/Enums/EmitterName.h"
 #include "EnumsAndStructs/Enums/FuseType.h"
 #include "EnumsAndStructs/Enums/VariableRecordTypes.h"
 #include "EnumsAndStructs/Enums/WarheadType.h"
+
 #include "Kismet/KismetStringLibrary.h"
 #include "CoreMinimal.h"
 #include "DISEnumsAndStructs.generated.h"

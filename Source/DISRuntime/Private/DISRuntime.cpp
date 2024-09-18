@@ -2,6 +2,7 @@
 
 #include "DISRuntime.h"
 #include "Interfaces/IPluginManager.h"
+#include "Windows/WindowsPlatformProcess.h"
 
 #define LOCTEXT_NAMESPACE "FDISRuntime"
 

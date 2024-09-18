@@ -2,6 +2,8 @@
 
 #include "PDUProcessor.h"
 #include "UDPSubsystem.h"
+#include "Engine/GameInstance.h"
+#include "Subsystems/SubsystemCollection.h"
 
 DEFINE_LOG_CATEGORY(LogPDUProcessor);
 

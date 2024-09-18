@@ -6,6 +6,8 @@
 #include "DISGameManager.h"
 #include "DeadReckoning_BPFL.h"
 #include "PDUConversions_BPFL.h"
+#include "Engine/GameInstance.h"
+#include "Engine/World.h"
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetMathLibrary.h"
 
