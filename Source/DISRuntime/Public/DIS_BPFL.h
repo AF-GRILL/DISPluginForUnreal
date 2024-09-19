@@ -73,20 +73,20 @@ public:
 	static glm::dmat3x3 CreateNCrossXMatrix(glm::dvec3 NVector);
 
 	/**
-	 * Converts DIS X, Y, Z coordinates (ECEF) to Latitude, Longitude, and Height (LLH) all in double (64-bit) precision
+	 * Converts DIS X, Y, Z coordinates (ECEF) to Latitude, Longitude, and Altitude (LLA) all in double (64-bit) precision
 	 * @param Ecef The ECEF location
-	 * @param OutLatLonHeightDegreesMeters The converted latitude (x) in degrees, longitude (y) in degrees, and height (z) in meters
+	 * @param OutLatLonAltDegressMeters The converted latitude in degrees, longitude in degrees, and altitude in meters
 	 */
 	UFUNCTION(BlueprintPure, Category = "GRILL DIS|Unit Conversions")
-		static void CalculateLatLonHeightFromEcefXYZ(const FVector Ecef, FVector& OutLatLonHeightDegreesMeters);
+		static void CalculateLatLonAltitudeFromEcefXYZ(const FVector Ecef, FGeographicCoordinates& OutLatLonAltDegressMeters);
 
 	/**
-	 * Converts Latitude (x), Longitude (y), and Height (z) (LLH) to DIS X, Y, Z coordinates (ECEF) all in double (64-bit) precision
-	 * @param LatLonHeightDegreesMeters The latitude in degrees, longitude in degrees, and height in meters
+	 * Converts Latitude, Longitude, and Altitude (LLA) to DIS X, Y, Z coordinates (ECEF) all in double (64-bit) precision
+	 * @param LatLonAltDegressMeters The latitude in degrees, longitude in degrees, and altitude in meters
 	 * @param OutEcef The converted ECEF location
 	 */
 	UFUNCTION(BlueprintPure, Category = "GRILL DIS|Unit Conversions")
-		static void CalculateEcefXYZFromLatLonHeight(const FVector LatLonHeightDegreesMeters, FVector& OutEcef);
+		static void CalculateEcefXYZFromLatLonAltitude(FGeographicCoordinates LatLonAltDegressMeters, FVector& OutEcef);
 
 	/**
 	 * Rotates the vector VectorToRotate around given axis AxisVector by Theta radians
@@ -139,101 +139,91 @@ public:
 
 	/**
 	 * Calculates the East, North, and Up vectors at given latitude and longitude.
-	 * @param LatitudeDegrees The target latitude given in degrees
-	 * @param LongitudeDegrees The target longitude given in degrees
+	 * @param LatLonAltDegreesMeters The target latitude given in degrees, longitude given in degrees, and altitude given in meters
 	 * @param OutNorthEastDownVectors The local vectors pointing North, pointing East, and toward the center of the Earth at the given latitude and longitude
 	 */
 	UFUNCTION(BlueprintPure, Category = "GRILL DIS|Unit Conversions")
-		static void CalculateNorthEastDownVectorsFromLatLon(const float LatitudeDegrees, const float LongitudeDegrees, FNorthEastDown& OutNorthEastDownVectors);
+		static void CalculateNorthEastDownVectorsFromLatLon(FGeographicCoordinates LatLonAltDegreesMeters, FNorthEastDown& OutNorthEastDownVectors);
 
 	/**
 	 * Calculates the latitude and longitude at the given East, North, and Up vectors.
 	 * @param NorthEastDownVectors The vectors pointing to the North, to the East, and toward the center of the Earth
-	 * @param LatitudeDegrees The target latitude given in degrees
-	 * @param LongitudeDegrees The target longitude given in degrees	 
+	 * @param LatLonAltDegreesMeters The target latitude given in degrees, longitude given in degrees, and altitude given in meters 
 	 */
 	UFUNCTION(BlueprintPure, Category = "GRILL DIS|Unit Conversions")
-		static void CalculateLatLonFromNorthEastDownVectors(FNorthEastDown NorthEastDownVectors, float& LatitudeDegrees, float& LongitudeDegrees);
+		static void CalculateLatLonFromNorthEastDownVectors(FNorthEastDown NorthEastDownVectors, FGeographicCoordinates& LatLonAltDegreesMeters);
 
 	/**
 	 * Calculates the DIS orientation values Psi, Theta, and Phi in degrees with the given Heading, Pitch, and Roll in degrees at the given Latitude and Longitude.
 	 * @param HeadingPitchRollDegrees The degrees from North of the facing direction (heading), the degrees rotated about the local Y axis (pitch), and the degrees rotated about the local X axis (roll)
-	 * @param LatitudeDegrees The target latitude given in degrees
-	 * @param LongitudeDegrees The target longitude given in degrees
+	 * @param LatLonAltDegreesMeters The target latitude given in degrees, longitude given in degrees, and altitude given in meters
 	 * @param PsiThetaPhiDegrees The rotation about the Z axis in degrees (Psi),the rotation about the Y axis in degrees (Theta), the rotation about the X axis in degrees (Phi)
 	 */
 	UFUNCTION(BlueprintPure, Category = "GRILL DIS|Unit Conversions")
-		static void CalculatePsiThetaPhiDegreesFromHeadingPitchRollDegreesAtLatLon(const FHeadingPitchRoll HeadingPitchRollDegrees, const float LatitudeDegrees, const float LongitudeDegrees, FPsiThetaPhi& PsiThetaPhiDegrees);
+		static void CalculatePsiThetaPhiDegreesFromHeadingPitchRollDegreesAtLatLon(const FHeadingPitchRoll HeadingPitchRollDegrees, FGeographicCoordinates LatLonAltDegreesMeters, FPsiThetaPhi& PsiThetaPhiDegrees);
 
 	/**
 	 * Calculates the DIS orientation values Psi, Theta, and Phi in radians with the given Heading, Pitch, and Roll in radians at the given Latitude and Longitude.
 	 * @param HeadingPitchRollRadians The radians from North of the facing direction (heading), the radians rotated about the local Y axis (pitch), and the radians rotated about the local X axis (roll)
-	 * @param LatitudeDegrees The target latitude given in degrees
-	 * @param LongitudeDegrees The target longitude given in degrees
+	 * @param LatLonAltDegreesMeters The target latitude given in degrees, longitude given in degrees, and altitude given in meters
 	 * @param PsiThetaPhiRadians The rotation about the Z axis in radians (Psi),the rotation about the Y axis in radians (Theta), the rotation about the X axis in radians (Phi)
 	 */
 	UFUNCTION(BlueprintPure, Category = "GRILL DIS|Unit Conversions")
-		static void CalculatePsiThetaPhiRadiansFromHeadingPitchRollRadiansAtLatLon(const FHeadingPitchRoll HeadingPitchRollRadians, const float LatitudeDegrees, const float LongitudeDegrees, FPsiThetaPhi& PsiThetaPhiRadians);
+		static void CalculatePsiThetaPhiRadiansFromHeadingPitchRollRadiansAtLatLon(const FHeadingPitchRoll HeadingPitchRollRadians, FGeographicCoordinates LatLonAltDegreesMeters, FPsiThetaPhi& PsiThetaPhiRadians);
 
 	/**
 	 * Calculates the DIS orientation values Psi, Theta, and Phi in radians with the given Heading, Pitch, and Roll in degrees at the given Latitude and Longitude.
 	 * @param HeadingPitchRollDegrees The degrees from North of the facing direction (heading), the degrees rotated about the local Y axis (pitch), and the degrees rotated about the local X axis (roll)
-	 * @param LatitudeDegrees The target latitude given in degrees
-	 * @param LongitudeDegrees The target longitude given in degrees
+	 * @param LatLonAltDegreesMeters The target latitude given in degrees, longitude given in degrees, and altitude given in meters
 	 * @param PsiThetaPhiRadians The rotation about the Z axis in radians (Psi),the rotation about the Y axis in radians (Theta), the rotation about the X axis in radians (Phi)
 	 */
 	UFUNCTION(BlueprintPure, Category = "GRILL DIS|Unit Conversions")
-		static void CalculatePsiThetaPhiRadiansFromHeadingPitchRollDegreesAtLatLon(const FHeadingPitchRoll HeadingPitchRollDegrees, const float LatitudeDegrees, const float LongitudeDegrees, FPsiThetaPhi& PsiThetaPhiRadians);
+		static void CalculatePsiThetaPhiRadiansFromHeadingPitchRollDegreesAtLatLon(const FHeadingPitchRoll HeadingPitchRollDegrees, FGeographicCoordinates LatLonAltDegreesMeters, FPsiThetaPhi& PsiThetaPhiRadians);
 
 	/**
 	 * Calculates the DIS orientation values Psi, Theta, and Phi in degrees with the given Heading, Pitch, and Roll in radians at the given Latitude and Longitude.
 	 * @param HeadingPitchRollRadians The radians from North of the facing direction (heading), the radians rotated about the local Y axis (pitch), and the radians rotated about the local X axis (roll)
-	 * @param LatitudeDegrees The target latitude given in degrees
-	 * @param LongitudeDegrees The target longitude given in degrees
+	 * @param LatLonAltDegreesMeters The target latitude given in degrees, longitude given in degrees, and altitude given in meters
 	 * @param PsiThetaPhiDegrees The rotation about the Z axis in degrees (Psi),the rotation about the Y axis in degrees (Theta), the rotation about the X axis in degrees (Phi)
 	 */
 	UFUNCTION(BlueprintPure, Category = "GRILL DIS|Unit Conversions")
-		static void CalculatePsiThetaPhiDegreesFromHeadingPitchRollRadiansAtLatLon(const FHeadingPitchRoll HeadingPitchRollRadians, const float LatitudeDegrees, const float LongitudeDegrees, FPsiThetaPhi& PsiThetaPhiDegrees);
+		static void CalculatePsiThetaPhiDegreesFromHeadingPitchRollRadiansAtLatLon(const FHeadingPitchRoll HeadingPitchRollRadians, FGeographicCoordinates LatLonAltDegreesMeters, FPsiThetaPhi& PsiThetaPhiDegrees);
 
 	/**
 	 * Calculates the Heading, Pitch, and Roll in degrees from the given DIS orientation values Psi, Theta, and Phi in degrees at the given Latitude and Longitude.
 	 * @param PsiThetaPhiDegrees The rotation about the Z axis in degrees (Psi),the rotation about the Y axis in degrees (Theta), the rotation about the X axis in degrees (Phi)
-	 * @param LatitudeDegrees The target latitude given in degrees
-	 * @param LongitudeDegrees The target longitude given in degrees
+	 * @param LatLonAltDegreesMeters The target latitude given in degrees, longitude given in degrees, and altitude given in meters
 	 * @param HeadingPitchRollDegrees The degrees from North of the facing direction (heading), the degrees rotated about the local Y axis (pitch), and the degrees rotated about the local X axis (roll)
 	 */
 	UFUNCTION(BlueprintPure, Category = "GRILL DIS|Unit Conversions")
-		static void CalculateHeadingPitchRollDegreesFromPsiThetaPhiDegreesAtLatLon(const FPsiThetaPhi PsiThetaPhiDegrees, const float LatitudeDegrees, const float LongitudeDegrees, FHeadingPitchRoll& HeadingPitchRollDegrees);
+		static void CalculateHeadingPitchRollDegreesFromPsiThetaPhiDegreesAtLatLon(const FPsiThetaPhi PsiThetaPhiDegrees, FGeographicCoordinates LatLonAltDegreesMeters, FHeadingPitchRoll& HeadingPitchRollDegrees);
 
 	/**
 	 * Calculates the Heading, Pitch, and Roll in radians from the given DIS orientation values Psi, Theta, and Phi in radians at the given Latitude and Longitude.
 	 * @param PsiThetaPhiRadians The rotation about the Z axis in radians (Psi),the rotation about the Y axis in radians (Theta), the rotation about the X axis in radians (Phi)
-	 * @param LatitudeDegrees The target latitude given in degrees
-	 * @param LongitudeDegrees The target longitude given in degrees
+	 * @param LatLonAltDegreesMeters The target latitude given in degrees, longitude given in degrees, and altitude given in meters
 	 * @param HeadingPitchRollRadians The radians from North of the facing direction (heading), the radians rotated about the local Y axis (pitch), and the radians rotated about the local X axis (roll)
 	 */
 	UFUNCTION(BlueprintPure, Category = "GRILL DIS|Unit Conversions")
-		static void CalculateHeadingPitchRollRadiansFromPsiThetaPhiRadiansAtLatLon(const FPsiThetaPhi PsiThetaPhiRadians, const float LatitudeDegrees, const float LongitudeDegrees, FHeadingPitchRoll& HeadingPitchRollRadians);
+		static void CalculateHeadingPitchRollRadiansFromPsiThetaPhiRadiansAtLatLon(const FPsiThetaPhi PsiThetaPhiRadians, FGeographicCoordinates LatLonAltDegreesMeters, FHeadingPitchRoll& HeadingPitchRollRadians);
 
 	/**
 	 * Calculates the Heading, Pitch, and Roll in degrees from the given DIS orientation values Psi, Theta, and Phi in radians at the given Latitude and Longitude.
 	 * @param PsiThetaPhiRadians The rotation about the Z axis in radians (Psi),the rotation about the Y axis in radians (Theta), the rotation about the X axis in radians (Phi)
-	 * @param LatitudeDegrees The target latitude given in degrees
-	 * @param LongitudeDegrees The target longitude given in degrees
+	 * @param LatLonAltDegreesMeters The target latitude given in degrees, longitude given in degrees, and altitude given in meters
 	 * @param HeadingPitchRollDegrees The degrees from North of the facing direction (heading), the degrees rotated about the local Y axis (pitch), and the degrees rotated about the local X axis (roll)
 	 */
 	UFUNCTION(BlueprintPure, Category = "GRILL DIS|Unit Conversions")
-		static void CalculateHeadingPitchRollDegreesFromPsiThetaPhiRadiansAtLatLon(const FPsiThetaPhi PsiThetaPhiRadians, const float LatitudeDegrees, const float LongitudeDegrees, FHeadingPitchRoll& HeadingPitchRollDegrees);
+		static void CalculateHeadingPitchRollDegreesFromPsiThetaPhiRadiansAtLatLon(const FPsiThetaPhi PsiThetaPhiRadians, FGeographicCoordinates LatLonAltDegreesMeters, FHeadingPitchRoll& HeadingPitchRollDegrees);
 
 	/**
 	 * Calculates the Heading, Pitch, and Roll in radians from the given DIS orientation values Psi, Theta, and Phi in degrees at the given Latitude and Longitude.
 	 * @param PsiThetaPhiDegrees The rotation about the Z axis in degrees (Psi),the rotation about the Y axis in degrees (Theta), the rotation about the X axis in degrees (Phi)
-	 * @param LatitudeDegrees The target latitude given in degrees
-	 * @param LongitudeDegrees The target longitude given in degrees
+	 * @param LatLonAltDegreesMeters The target latitude given in degrees, longitude given in degrees, and altitude given in meters
 	 * @param HeadingPitchRollRadians The radians from North of the facing direction (heading), the radians rotated about the local Y axis (pitch), and the radians rotated about the local X axis (roll)
 	 */
 	UFUNCTION(BlueprintPure, Category = "GRILL DIS|Unit Conversions")
-		static void CalculateHeadingPitchRollRadiansFromPsiThetaPhiDegreesAtLatLon(const FPsiThetaPhi PsiThetaPhiDegrees, const float LatitudeDegrees, const float LongitudeDegrees, FHeadingPitchRoll& HeadingPitchRollRadians);
+		static void CalculateHeadingPitchRollRadiansFromPsiThetaPhiDegreesAtLatLon(const FPsiThetaPhi PsiThetaPhiDegrees, FGeographicCoordinates LatLonAltDegreesMeters, FHeadingPitchRoll& HeadingPitchRollRadians);
 
 	/**
 	 * Calculate the ECEF location of the given Unreal location
@@ -245,66 +235,62 @@ public:
 		static void GetEcefXYZFromUnrealLocation(const FVector UnrealLocation, AGeoReferencingSystem* GeoReferencingSystem, FVector& ECEF);
 
 	/**
-	 * Calculate the latitude in degrees, longitude in degrees, and height in meters of the given Unreal location
-	 * @param UnrealLocation The Unreal location to convert to latitude, longitude, height.
+	 * Calculate the latitude in degrees, longitude in degrees, and altitude in meters of the given Unreal location
+	 * @param UnrealLocation The Unreal location to convert to latitude, longitude, altitude.
 	 * @param GeoReferencingSystem The GeoReferencing Subsystem reference.
-	 * @param LatLonHeightDegreesMeters The latitude (x) in degrees, longitude (y) in degrees, and height (z) in meters of the given Unreal location.
+	 * @param LatLonAltDegressMeters The latitude in degrees, longitude in degrees, and altitude in meters of the given Unreal location.
 	*/
 	UFUNCTION(BlueprintPure, Category = "GRILL DIS|Unit Conversions")
-		static void GetLatLonHeightFromUnrealLocation(const FVector UnrealLocation, AGeoReferencingSystem* GeoReferencingSystem, FVector& LatLonHeightDegreesMeters);
+		static void GetLatLonAltitudeFromUnrealLocation(const FVector UnrealLocation, AGeoReferencingSystem* GeoReferencingSystem, FGeographicCoordinates& LatLonAltDegressMeters);
 
 	/**
 	 * Get the Unreal rotation from the given Heading, Pitch, Roll rotation in degrees.
 	 * @param HeadingPitchRollDegrees The Heading, Pitch, Roll rotation in degrees to get the Unreal rotation from.
-	 * @param LatitudeDegrees The target latitude given in degrees
-	 * @param LongitudeDegrees The target longitude given in degrees
+	 * @param LatLonAltDegreesMeters The target latitude given in degrees, longitude given in degrees, and altitude given in meters
 	 * @param GeoReferencingSystem The GeoReferencing Subsystem reference.
 	 * @param UnrealRotation The Unreal rotation of the given Heading, Pitch, Roll rotation
 	*/
 	UFUNCTION(BlueprintPure, Category = "GRILL DIS|Unit Conversions")
-		static void GetUnrealRotationFromHeadingPitchRollDegreesAtLatLon(const FHeadingPitchRoll HeadingPitchRollDegrees, const float LatitudeDegrees, const float LongitudeDegrees, AGeoReferencingSystem* GeoReferencingSystem, FRotator& UnrealRotation);
+		static void GetUnrealRotationFromHeadingPitchRollDegreesAtLatLon(const FHeadingPitchRoll HeadingPitchRollDegrees, FGeographicCoordinates LatLonAltDegreesMeters, AGeoReferencingSystem* GeoReferencingSystem, FRotator& UnrealRotation);
 
 	/**
 	 * Get the Unreal rotation from the given Heading, Pitch, Roll rotation in radians.
 	 * @param HeadingPitchRollRadians The Heading, Pitch, Roll rotation in radians to get the Unreal rotation from.
-	 * @param LatitudeDegrees The target latitude given in degrees
-	 * @param LongitudeDegrees The target longitude given in degrees
+	 * @param LatLonAltDegreesMeters The target latitude given in degrees, longitude given in degrees, and altitude given in meters
 	 * @param GeoReferencingSystem The GeoReferencing Subsystem reference.
 	 * @param UnrealRotation The Unreal rotation of the given Heading, Pitch, Roll rotation
 	*/
 	UFUNCTION(BlueprintPure, Category = "GRILL DIS|Unit Conversions")
-		static void GetUnrealRotationFromHeadingPitchRollRadiansAtLatLon(const FHeadingPitchRoll HeadingPitchRollRadians, const float LatitudeDegrees, const float LongitudeDegrees, AGeoReferencingSystem* GeoReferencingSystem, FRotator& UnrealRotation);
+		static void GetUnrealRotationFromHeadingPitchRollRadiansAtLatLon(const FHeadingPitchRoll HeadingPitchRollRadians, FGeographicCoordinates LatLonAltDegreesMeters, AGeoReferencingSystem* GeoReferencingSystem, FRotator& UnrealRotation);
 
 	/**
 	 * Get the Unreal rotation from the given Psi, Theta, Phi rotation in degrees.
 	 * @param PsiThetaPhiDegrees The Psi, Theta, Phi rotation in degrees to get the Unreal rotation from.
-	 * @param LatitudeDegrees The target latitude given in degrees
-	 * @param LongitudeDegrees The target longitude given in degrees
+	 * @param LatLonAltDegreesMeters The target latitude given in degrees, longitude given in degrees, and altitude given in meters
 	 * @param GeoReferencingSystem The GeoReferencing Subsystem reference.
 	 * @param UnrealRotation The Unreal rotation of the given Psi, Theta, Phi rotation
 	*/
 	UFUNCTION(BlueprintPure, Category = "GRILL DIS|Unit Conversions")
-		static void GetUnrealRotationFromPsiThetaPhiDegreesAtLatLon(const FPsiThetaPhi PsiThetaPhiDegrees, const float LatitudeDegrees, const float LongitudeDegrees, AGeoReferencingSystem* GeoReferencingSystem, FRotator& UnrealRotation);
+		static void GetUnrealRotationFromPsiThetaPhiDegreesAtLatLon(const FPsiThetaPhi PsiThetaPhiDegrees, FGeographicCoordinates LatLonAltDegreesMeters, AGeoReferencingSystem* GeoReferencingSystem, FRotator& UnrealRotation);
 
 	/**
 	 * Get the Unreal rotation from the given Psi, Theta, Phi rotation in radians.
 	 * @param PsiThetaPhiRadians The Psi, Theta, Phi rotation in radians to get the Unreal rotation from.
-	 * @param LatitudeDegrees The target latitude given in degrees
-	 * @param LongitudeDegrees The target longitude given in degrees
+	 * @param LatLonAltDegreesMeters The target latitude given in degrees, longitude given in degrees, and altitude given in meters
 	 * @param GeoReferencingSystem The GeoReferencing Subsystem reference.
 	 * @param UnrealRotation The Unreal rotation of the given Psi, Theta, Phi rotation
 	*/
 	UFUNCTION(BlueprintPure, Category = "GRILL DIS|Unit Conversions")
-		static void GetUnrealRotationFromPsiThetaPhiRadiansAtLatLon(const FPsiThetaPhi PsiThetaPhiRadians, const float LatitudeDegrees, const float LongitudeDegrees, AGeoReferencingSystem* GeoReferencingSystem, FRotator& UnrealRotation);
+		static void GetUnrealRotationFromPsiThetaPhiRadiansAtLatLon(const FPsiThetaPhi PsiThetaPhiRadians, FGeographicCoordinates LatLonAltDegreesMeters, AGeoReferencingSystem* GeoReferencingSystem, FRotator& UnrealRotation);
 
 	/**
-	 * Get the Unreal location from the given latitude in degrees, longitude in degrees, and height in meters location.
-	 * @param LatLonHeightDegreesMeters The LLH location to get the Unreal location from.
+	 * Get the Unreal location from the given latitude in degrees, longitude in degrees, and altitude in meters location.
+	 * @param LatLonAltDegressMeters The LLA location to get the Unreal location from.
 	 * @param GeoReferencingSystem The GeoReferencing Subsystem reference.
-	 * @param UnrealLocation The Unreal location of the given LLH location
+	 * @param UnrealLocation The Unreal location of the given LLA location
 	*/
 	UFUNCTION(BlueprintPure, Category = "GRILL DIS|Unit Conversions")
-		static void GetUnrealLocationFromLatLonHeight(const FVector LatLonHeightDegreesMeters, AGeoReferencingSystem* GeoReferencingSystem, FVector& UnrealLocation);
+		static void GetUnrealLocationFromLatLonAltitude(const FVector LatLonAltDegressMeters, AGeoReferencingSystem* GeoReferencingSystem, FVector& UnrealLocation);
 
 	/**
 	 * Get the Unreal location from the given ECEF XYZ location

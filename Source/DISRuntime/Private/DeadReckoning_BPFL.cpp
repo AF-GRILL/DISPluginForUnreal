@@ -53,11 +53,11 @@ TArray<uint8> UDeadReckoning_BPFL::FormOtherParameters(EDeadReckoningAlgorithm D
 		otherParameters[1] = 0;
 		otherParameters[2] = 0;
 
-		FVector llh;
+		FGeographicCoordinates lla;
 		FHeadingPitchRoll hprRadians;
 		FPsiThetaPhi psiThetaPhiRadians = FPsiThetaPhi(EntityPsiThetaPhiRadians.Yaw, EntityPsiThetaPhiRadians.Pitch, EntityPsiThetaPhiRadians.Roll);
-		UDIS_BPFL::CalculateLatLonHeightFromEcefXYZ(EntityECEFLocation, llh);
-		UDIS_BPFL::CalculateHeadingPitchRollRadiansFromPsiThetaPhiRadiansAtLatLon(psiThetaPhiRadians, llh.X, llh.Y, hprRadians);
+		UDIS_BPFL::CalculateLatLonAltitudeFromEcefXYZ(EntityECEFLocation, lla);
+		UDIS_BPFL::CalculateHeadingPitchRollRadiansFromPsiThetaPhiRadiansAtLatLon(psiThetaPhiRadians, lla, hprRadians);
 
 		//Convert the floats to unsigned char arrays
 		memcpy(charHeading, &hprRadians.Heading, sizeof(hprRadians.Heading));
@@ -175,11 +175,11 @@ bool UDeadReckoning_BPFL::GetLocalEulerAngles(TArray<uint8> OtherDeadReckoningPa
 void UDeadReckoning_BPFL::ConvertLocalRotatorToPsiThetaPhiRadians(FVector ECEFLocation, FRotator LocalRotatorRadians, FPsiThetaPhi& PsiThetaPhiRadians)
 {
 	//Convert Local Rotator from Heading, Pitch, Roll to Psi, Theta, Phi
-	FVector llh;
-	UDIS_BPFL::CalculateLatLonHeightFromEcefXYZ(ECEFLocation, llh);
+	FGeographicCoordinates lla;
+	UDIS_BPFL::CalculateLatLonAltitudeFromEcefXYZ(ECEFLocation, lla);
 
 	FHeadingPitchRoll hprRadians = FHeadingPitchRoll(LocalRotatorRadians.Yaw, LocalRotatorRadians.Pitch, LocalRotatorRadians.Roll);
-	UDIS_BPFL::CalculatePsiThetaPhiRadiansFromHeadingPitchRollRadiansAtLatLon(hprRadians, llh.X, llh.Y, PsiThetaPhiRadians);
+	UDIS_BPFL::CalculatePsiThetaPhiRadiansFromHeadingPitchRollRadiansAtLatLon(hprRadians, lla, PsiThetaPhiRadians);
 }
 
 bool UDeadReckoning_BPFL::GetLocalQuaternionAngles(TArray<uint8> OtherDeadReckoningParameters, FQuat& EntityOrientation)

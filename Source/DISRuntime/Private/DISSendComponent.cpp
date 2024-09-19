@@ -193,12 +193,12 @@ FEntityStatePDU UDISSendComponent::FormEntityStatePDU()
 		newEntityStatePDU.EcefLocation = FVector(ecefLocation.X, ecefLocation.Y, ecefLocation.Z);
 
 		//Calculate the orientation of the entity in Psi, Theta, Phi
-		FVector latLonHeightMeters;
+		FGeographicCoordinates latLonAltDegreesMeters;
 		FHeadingPitchRoll headingPitchRollDegrees;
 		FPsiThetaPhi psiThetaPhiRadians;
-		UDIS_BPFL::GetLatLonHeightFromUnrealLocation(GetOwner()->GetActorLocation(), GeoReferencingSystem, latLonHeightMeters);
+		UDIS_BPFL::GetLatLonAltitudeFromUnrealLocation(GetOwner()->GetActorLocation(), GeoReferencingSystem, latLonAltDegreesMeters);
 		UDIS_BPFL::GetHeadingPitchRollFromUnrealRotation(GetOwner()->GetActorRotation(), GetOwner()->GetActorLocation(), GeoReferencingSystem, headingPitchRollDegrees);
-		UDIS_BPFL::CalculatePsiThetaPhiRadiansFromHeadingPitchRollDegreesAtLatLon(headingPitchRollDegrees, latLonHeightMeters.X, latLonHeightMeters.Y, psiThetaPhiRadians);
+		UDIS_BPFL::CalculatePsiThetaPhiRadiansFromHeadingPitchRollDegreesAtLatLon(headingPitchRollDegrees, latLonAltDegreesMeters, psiThetaPhiRadians);
 
 		newEntityStatePDU.EntityOrientation = FRotator(psiThetaPhiRadians.Theta, psiThetaPhiRadians.Psi, psiThetaPhiRadians.Phi);
 	}
@@ -273,13 +273,13 @@ bool UDISSendComponent::CheckOrientationQuaternionThreshold()
 	if (IsValid(GeoReferencingSystem))
 	{
 		//Calculate the orientation of the entity in Psi, Theta, Phi
-		FVector latLonHeightMeters;
+		FGeographicCoordinates latLonAltDegreesMeters;
 		FHeadingPitchRoll headingPitchRollDegrees;
 		FPsiThetaPhi psiThetaPhiRadians;
 
-		UDIS_BPFL::GetLatLonHeightFromUnrealLocation(GetOwner()->GetActorLocation(), GeoReferencingSystem, latLonHeightMeters);
+		UDIS_BPFL::GetLatLonAltitudeFromUnrealLocation(GetOwner()->GetActorLocation(), GeoReferencingSystem, latLonAltDegreesMeters);
 		UDIS_BPFL::GetHeadingPitchRollFromUnrealRotation(GetOwner()->GetActorRotation(), GetOwner()->GetActorLocation(), GeoReferencingSystem, headingPitchRollDegrees);
-		UDIS_BPFL::CalculatePsiThetaPhiRadiansFromHeadingPitchRollDegreesAtLatLon(headingPitchRollDegrees, latLonHeightMeters.X, latLonHeightMeters.Y, psiThetaPhiRadians);
+		UDIS_BPFL::CalculatePsiThetaPhiRadiansFromHeadingPitchRollDegreesAtLatLon(headingPitchRollDegrees, latLonAltDegreesMeters, psiThetaPhiRadians);
 		// Get the entity's current orientation quaternion
 		actualOrientationQuaternion = UDeadReckoning_BPFL::GetEntityOrientationQuaternion(psiThetaPhiRadians.Psi, psiThetaPhiRadians.Theta, psiThetaPhiRadians.Phi);
 	}
@@ -318,13 +318,13 @@ bool UDISSendComponent::CheckOrientationMatrixThreshold()
 	if (IsValid(GeoReferencingSystem))
 	{
 		//Calculate the orientation of the entity in Psi, Theta, Phi
-		FVector latLonHeightMeters;
+		FGeographicCoordinates latLonAltDegreesMeters;
 		FHeadingPitchRoll headingPitchRollDegrees;
 		FPsiThetaPhi psiThetaPhiRadians;
 
-		UDIS_BPFL::GetLatLonHeightFromUnrealLocation(GetOwner()->GetActorLocation(), GeoReferencingSystem, latLonHeightMeters);
+		UDIS_BPFL::GetLatLonAltitudeFromUnrealLocation(GetOwner()->GetActorLocation(), GeoReferencingSystem, latLonAltDegreesMeters);
 		UDIS_BPFL::GetHeadingPitchRollFromUnrealRotation(GetOwner()->GetActorRotation(), GetOwner()->GetActorLocation(), GeoReferencingSystem, headingPitchRollDegrees);
-		UDIS_BPFL::CalculatePsiThetaPhiRadiansFromHeadingPitchRollDegreesAtLatLon(headingPitchRollDegrees, latLonHeightMeters.X, latLonHeightMeters.Y, psiThetaPhiRadians);
+		UDIS_BPFL::CalculatePsiThetaPhiRadiansFromHeadingPitchRollDegreesAtLatLon(headingPitchRollDegrees, latLonAltDegreesMeters, psiThetaPhiRadians);
 		// Get the entity's current orientation matrix
 		ActualOrientationMatrix = UDeadReckoning_BPFL::GetEntityOrientationMatrix(psiThetaPhiRadians.Psi, psiThetaPhiRadians.Theta, psiThetaPhiRadians.Phi);
 	}

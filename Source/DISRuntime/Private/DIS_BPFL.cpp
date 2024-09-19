@@ -6,7 +6,7 @@
 
 DEFINE_LOG_CATEGORY(LogDIS_BPFL);
 
-void UDIS_BPFL::CalculateLatLonHeightFromEcefXYZ(const FVector Ecef, FVector& OutLatLonHeightDegreesMeters)
+void UDIS_BPFL::CalculateLatLonAltitudeFromEcefXYZ(const FVector Ecef, FGeographicCoordinates& OutLatLonAltDegreesMeters)
 {
 	constexpr double earthEquitorialRadiusMeters = 6378137;
 	constexpr double earthPolarRadiusMeters = 6356752.3142;
@@ -32,12 +32,12 @@ void UDIS_BPFL::CalculateLatLonHeightFromEcefXYZ(const FVector Ecef, FVector& Ou
 	double V = FMath::Sqrt(FMath::Square(p - eSquared * rNot) + (1 - eSquared) * FMath::Square(Ecef.Z));
 	double zNot = (earthPolarRadiusMetersSquared * Ecef.Z) / (earthEquitorialRadiusMeters * V);
 
-	OutLatLonHeightDegreesMeters.Z = U * (1 - earthPolarRadiusMetersSquared / (earthEquitorialRadiusMeters * V));
-	OutLatLonHeightDegreesMeters.X = glm::degrees(FMath::Atan((Ecef.Z + ePrimeSquared * zNot) / p));
-	OutLatLonHeightDegreesMeters.Y = glm::degrees(FMath::Atan2(Ecef.Y, Ecef.X));
+	OutLatLonAltDegreesMeters.Altitude = U * (1 - earthPolarRadiusMetersSquared / (earthEquitorialRadiusMeters * V));
+	OutLatLonAltDegreesMeters.Latitude = glm::degrees(FMath::Atan((Ecef.Z + ePrimeSquared * zNot) / p));
+	OutLatLonAltDegreesMeters.Longitude = glm::degrees(FMath::Atan2(Ecef.Y, Ecef.X));
 }
 
-void UDIS_BPFL::CalculateEcefXYZFromLatLonHeight(const FVector LatLonHeightDegreesMeters, FVector& OutEcef)
+void UDIS_BPFL::CalculateEcefXYZFromLatLonAltitude(FGeographicCoordinates LatLonAltDegreesMeters, FVector& OutEcef)
 {
 	double earthEquitorialRadiusMeters = 6378137;
 	double earthPolarRadiusMeters = 6356752.3142;
@@ -48,14 +48,14 @@ void UDIS_BPFL::CalculateEcefXYZFromLatLonHeight(const FVector LatLonHeightDegre
 	double eSquared = 1 - earthPolarRadiusMetersSquared / earthEquitorialRadiusMetersSquared;
 	double f = 1 - earthPolarRadiusMeters / earthEquitorialRadiusMeters;
 
-	double nLat = earthEquitorialRadiusMeters / FMath::Sqrt(1 - eSquared * FMath::Square(FMath::Sin(glm::radians(LatLonHeightDegreesMeters.X))));
+	double nLat = earthEquitorialRadiusMeters / FMath::Sqrt(1 - eSquared * FMath::Square(FMath::Sin(glm::radians(LatLonAltDegreesMeters.Latitude))));
 
-	double latRadians = glm::radians(LatLonHeightDegreesMeters.X);
-	double lonRadians = glm::radians(LatLonHeightDegreesMeters.Y);
+	double latRadians = glm::radians(LatLonAltDegreesMeters.Latitude);
+	double lonRadians = glm::radians(LatLonAltDegreesMeters.Longitude);
 
-	OutEcef.X = (nLat + LatLonHeightDegreesMeters.Z) * FMath::Cos(latRadians) * FMath::Cos(lonRadians);
-	OutEcef.Y = (nLat + LatLonHeightDegreesMeters.Z) * FMath::Cos(latRadians) * FMath::Sin(lonRadians);
-	OutEcef.Z = (FMath::Square(1 - f) * nLat + LatLonHeightDegreesMeters.Z) * FMath::Sin(latRadians);
+	OutEcef.X = (nLat + LatLonAltDegreesMeters.Altitude) * FMath::Cos(latRadians) * FMath::Cos(lonRadians);
+	OutEcef.Y = (nLat + LatLonAltDegreesMeters.Altitude) * FMath::Cos(latRadians) * FMath::Sin(lonRadians);
+	OutEcef.Z = (FMath::Square(1 - f) * nLat + LatLonAltDegreesMeters.Altitude) * FMath::Sin(latRadians);
 }
 
 FMatrix UDIS_BPFL::CreateNCrossXMatrix(const FVector NVector)
@@ -162,29 +162,29 @@ void UDIS_BPFL::ApplyHeadingPitchRollToNorthEastDownVector(const FHeadingPitchRo
 	ApplyRollToNorthEastDownVector(HeadingPitchRollDegrees.Roll, FNorthEastDown(OutX, OutY, OutZ), OutX, OutY, OutZ);
 }
 
-void UDIS_BPFL::CalculateNorthEastDownVectorsFromLatLon(const float LatitudeDegrees, const float LongitudeDegrees, FNorthEastDown& NorthEastDownVectors)
+void UDIS_BPFL::CalculateNorthEastDownVectorsFromLatLon(FGeographicCoordinates LatLonAltDegreesMeters, FNorthEastDown& NorthEastDownVectors)
 {
 	NorthEastDownVectors.NorthVector = FVector::ZAxisVector;
 	NorthEastDownVectors.EastVector = FVector::YAxisVector;
 	NorthEastDownVectors.DownVector = -FVector::XAxisVector;
 
-	RotateVectorAroundAxisByDegrees(NorthEastDownVectors.EastVector, LongitudeDegrees, NorthEastDownVectors.NorthVector, NorthEastDownVectors.EastVector);
-	RotateVectorAroundAxisByDegrees(NorthEastDownVectors.DownVector, LongitudeDegrees, NorthEastDownVectors.NorthVector, NorthEastDownVectors.DownVector);
+	RotateVectorAroundAxisByDegrees(NorthEastDownVectors.EastVector, LatLonAltDegreesMeters.Longitude, NorthEastDownVectors.NorthVector, NorthEastDownVectors.EastVector);
+	RotateVectorAroundAxisByDegrees(NorthEastDownVectors.DownVector, LatLonAltDegreesMeters.Longitude, NorthEastDownVectors.NorthVector, NorthEastDownVectors.DownVector);
 
-	RotateVectorAroundAxisByDegrees(NorthEastDownVectors.NorthVector, LatitudeDegrees, -NorthEastDownVectors.EastVector, NorthEastDownVectors.NorthVector);
-	RotateVectorAroundAxisByDegrees(NorthEastDownVectors.DownVector, LatitudeDegrees, -NorthEastDownVectors.EastVector, NorthEastDownVectors.DownVector);
+	RotateVectorAroundAxisByDegrees(NorthEastDownVectors.NorthVector, LatLonAltDegreesMeters.Latitude, -NorthEastDownVectors.EastVector, NorthEastDownVectors.NorthVector);
+	RotateVectorAroundAxisByDegrees(NorthEastDownVectors.DownVector, LatLonAltDegreesMeters.Latitude, -NorthEastDownVectors.EastVector, NorthEastDownVectors.DownVector);
 }
 
-void UDIS_BPFL::CalculateLatLonFromNorthEastDownVectors(const FNorthEastDown NorthEastDownVectors, float& LatitudeDegrees, float& LongitudeDegrees)
+void UDIS_BPFL::CalculateLatLonFromNorthEastDownVectors(const FNorthEastDown NorthEastDownVectors, FGeographicCoordinates& LatLonAltDegreesMeters)
 {
-	LongitudeDegrees = FMath::RadiansToDegrees(FMath::Acos(FVector::DotProduct(FVector::YAxisVector, NorthEastDownVectors.EastVector) / NorthEastDownVectors.EastVector.Size()));
-	LatitudeDegrees = FMath::RadiansToDegrees(FMath::Acos(FVector::DotProduct(FVector::ZAxisVector, NorthEastDownVectors.NorthVector) / NorthEastDownVectors.NorthVector.Size()));
+	LatLonAltDegreesMeters.Longitude = FMath::RadiansToDegrees(FMath::Acos(FVector::DotProduct(FVector::YAxisVector, NorthEastDownVectors.EastVector) / NorthEastDownVectors.EastVector.Size()));
+	LatLonAltDegreesMeters.Latitude = FMath::RadiansToDegrees(FMath::Acos(FVector::DotProduct(FVector::ZAxisVector, NorthEastDownVectors.NorthVector) / NorthEastDownVectors.NorthVector.Size()));
 }
 
-void UDIS_BPFL::CalculatePsiThetaPhiDegreesFromHeadingPitchRollDegreesAtLatLon(const FHeadingPitchRoll HeadingPitchRollDegrees, const float LatitudeDegrees, const float LongitudeDegrees, FPsiThetaPhi& PsiThetaPhiDegrees)
+void UDIS_BPFL::CalculatePsiThetaPhiDegreesFromHeadingPitchRollDegreesAtLatLon(const FHeadingPitchRoll HeadingPitchRollDegrees, FGeographicCoordinates LatLonAltDegreesMeters, FPsiThetaPhi& PsiThetaPhiDegrees)
 {
 	FNorthEastDown NorthEastDownVectors;
-	CalculateNorthEastDownVectorsFromLatLon(LatitudeDegrees, LongitudeDegrees, NorthEastDownVectors);
+	CalculateNorthEastDownVectorsFromLatLon(LatLonAltDegreesMeters, NorthEastDownVectors);
 
 	FVector X, Y, Z, X2, Y2, Z2;
 	ApplyHeadingPitchRollToNorthEastDownVector(HeadingPitchRollDegrees, NorthEastDownVectors, X, Y, Z);
@@ -205,40 +205,40 @@ void UDIS_BPFL::CalculatePsiThetaPhiDegreesFromHeadingPitchRollDegreesAtLatLon(c
 	PsiThetaPhiDegrees.Phi = FMath::RadiansToDegrees(FMath::Atan2(FVector::DotProduct(Y, Z2), FVector::DotProduct(Y, Y2)));
 }
 
-void UDIS_BPFL::CalculatePsiThetaPhiRadiansFromHeadingPitchRollRadiansAtLatLon(const FHeadingPitchRoll HeadingPitchRollRadians, const float LatitudeDegrees, const float LongitudeDegrees, FPsiThetaPhi& PsiThetaPhiRadians)
+void UDIS_BPFL::CalculatePsiThetaPhiRadiansFromHeadingPitchRollRadiansAtLatLon(const FHeadingPitchRoll HeadingPitchRollRadians, FGeographicCoordinates LatLonAltDegreesMeters, FPsiThetaPhi& PsiThetaPhiRadians)
 {
 	FHeadingPitchRoll HeadingPitchRollDegrees;
 	HeadingPitchRollDegrees.Heading = FMath::RadiansToDegrees(HeadingPitchRollRadians.Heading);
 	HeadingPitchRollDegrees.Pitch = FMath::RadiansToDegrees(HeadingPitchRollRadians.Pitch);
 	HeadingPitchRollDegrees.Roll = FMath::RadiansToDegrees(HeadingPitchRollRadians.Roll);
 
-	CalculatePsiThetaPhiRadiansFromHeadingPitchRollDegreesAtLatLon(HeadingPitchRollDegrees, LatitudeDegrees, LongitudeDegrees, PsiThetaPhiRadians);
+	CalculatePsiThetaPhiRadiansFromHeadingPitchRollDegreesAtLatLon(HeadingPitchRollDegrees, LatLonAltDegreesMeters, PsiThetaPhiRadians);
 }
 
-void UDIS_BPFL::CalculatePsiThetaPhiRadiansFromHeadingPitchRollDegreesAtLatLon(const FHeadingPitchRoll HeadingPitchRollDegrees, const float LatitudeDegrees, const float LongitudeDegrees, FPsiThetaPhi& PsiThetaPhiRadians)
+void UDIS_BPFL::CalculatePsiThetaPhiRadiansFromHeadingPitchRollDegreesAtLatLon(const FHeadingPitchRoll HeadingPitchRollDegrees, FGeographicCoordinates LatLonAltDegreesMeters, FPsiThetaPhi& PsiThetaPhiRadians)
 {
 	FPsiThetaPhi PsiThetaPhiDegrees;
-	CalculatePsiThetaPhiDegreesFromHeadingPitchRollDegreesAtLatLon(HeadingPitchRollDegrees, LatitudeDegrees, LongitudeDegrees, PsiThetaPhiDegrees);
+	CalculatePsiThetaPhiDegreesFromHeadingPitchRollDegreesAtLatLon(HeadingPitchRollDegrees, LatLonAltDegreesMeters, PsiThetaPhiDegrees);
 
 	PsiThetaPhiRadians.Psi = FMath::DegreesToRadians(PsiThetaPhiDegrees.Psi);
 	PsiThetaPhiRadians.Theta = FMath::DegreesToRadians(PsiThetaPhiDegrees.Theta);
 	PsiThetaPhiRadians.Phi = FMath::DegreesToRadians(PsiThetaPhiDegrees.Phi);
 }
 
-void UDIS_BPFL::CalculatePsiThetaPhiDegreesFromHeadingPitchRollRadiansAtLatLon(const FHeadingPitchRoll HeadingPitchRollRadians, const float LatitudeDegrees, const float LongitudeDegrees, FPsiThetaPhi& PsiThetaPhiDegrees)
+void UDIS_BPFL::CalculatePsiThetaPhiDegreesFromHeadingPitchRollRadiansAtLatLon(const FHeadingPitchRoll HeadingPitchRollRadians, FGeographicCoordinates LatLonAltDegreesMeters, FPsiThetaPhi& PsiThetaPhiDegrees)
 {
 	FHeadingPitchRoll headingPitchRollDegrees;
 	headingPitchRollDegrees.Heading = FMath::RadiansToDegrees(HeadingPitchRollRadians.Heading);
 	headingPitchRollDegrees.Pitch = FMath::RadiansToDegrees(HeadingPitchRollRadians.Pitch);
 	headingPitchRollDegrees.Roll = FMath::RadiansToDegrees(HeadingPitchRollRadians.Roll);
 
-	CalculatePsiThetaPhiDegreesFromHeadingPitchRollDegreesAtLatLon(headingPitchRollDegrees, LatitudeDegrees, LongitudeDegrees, PsiThetaPhiDegrees);
+	CalculatePsiThetaPhiDegreesFromHeadingPitchRollDegreesAtLatLon(headingPitchRollDegrees, LatLonAltDegreesMeters, PsiThetaPhiDegrees);
 }
 
-void UDIS_BPFL::CalculateHeadingPitchRollDegreesFromPsiThetaPhiDegreesAtLatLon(const FPsiThetaPhi PsiThetaPhiDegrees, const float LatitudeDegrees, const float LongitudeDegrees, FHeadingPitchRoll& HeadingPitchRollDegrees)
+void UDIS_BPFL::CalculateHeadingPitchRollDegreesFromPsiThetaPhiDegreesAtLatLon(const FPsiThetaPhi PsiThetaPhiDegrees, FGeographicCoordinates LatLonAltDegreesMeters, FHeadingPitchRoll& HeadingPitchRollDegrees)
 {
 	FNorthEastDown NorthEastDownVectors;
-	CalculateNorthEastDownVectorsFromLatLon(LatitudeDegrees, LongitudeDegrees, NorthEastDownVectors);
+	CalculateNorthEastDownVectorsFromLatLon(LatLonAltDegreesMeters, NorthEastDownVectors);
 
 	const auto X0 = FVector(1, 0, 0);
 	const auto Y0 = FVector(0, 1, 0);
@@ -259,31 +259,31 @@ void UDIS_BPFL::CalculateHeadingPitchRollDegreesFromPsiThetaPhiDegreesAtLatLon(c
 	HeadingPitchRollDegrees.Roll = FMath::RadiansToDegrees(FMath::Atan2(FVector::DotProduct(Y3, Z2), FVector::DotProduct(Y3, Y2)));
 }
 
-void UDIS_BPFL::CalculateHeadingPitchRollRadiansFromPsiThetaPhiRadiansAtLatLon(const FPsiThetaPhi PsiThetaPhiRadians, const float LatitudeDegrees, const float LongitudeDegrees, FHeadingPitchRoll& HeadingPitchRollRadians)
+void UDIS_BPFL::CalculateHeadingPitchRollRadiansFromPsiThetaPhiRadiansAtLatLon(const FPsiThetaPhi PsiThetaPhiRadians, FGeographicCoordinates LatLonAltDegreesMeters, FHeadingPitchRoll& HeadingPitchRollRadians)
 {
 	FPsiThetaPhi psiThetaPhiDegrees;
 	psiThetaPhiDegrees.Psi = FMath::RadiansToDegrees(PsiThetaPhiRadians.Psi);
 	psiThetaPhiDegrees.Theta = FMath::RadiansToDegrees(PsiThetaPhiRadians.Theta);
 	psiThetaPhiDegrees.Phi = FMath::RadiansToDegrees(PsiThetaPhiRadians.Phi);
 
-	CalculateHeadingPitchRollRadiansFromPsiThetaPhiDegreesAtLatLon(psiThetaPhiDegrees, LatitudeDegrees, LongitudeDegrees, HeadingPitchRollRadians);
+	CalculateHeadingPitchRollRadiansFromPsiThetaPhiDegreesAtLatLon(psiThetaPhiDegrees, LatLonAltDegreesMeters, HeadingPitchRollRadians);
 }
 
-void UDIS_BPFL::CalculateHeadingPitchRollDegreesFromPsiThetaPhiRadiansAtLatLon(const FPsiThetaPhi PsiThetaPhiRadians, const float LatitudeDegrees, const float LongitudeDegrees, FHeadingPitchRoll& HeadingPitchRollDegrees)
+void UDIS_BPFL::CalculateHeadingPitchRollDegreesFromPsiThetaPhiRadiansAtLatLon(const FPsiThetaPhi PsiThetaPhiRadians, FGeographicCoordinates LatLonAltDegreesMeters, FHeadingPitchRoll& HeadingPitchRollDegrees)
 {
 	FPsiThetaPhi psiThetaPhiDegrees;
 	psiThetaPhiDegrees.Psi = FMath::RadiansToDegrees(PsiThetaPhiRadians.Psi);
 	psiThetaPhiDegrees.Theta = FMath::RadiansToDegrees(PsiThetaPhiRadians.Theta);
 	psiThetaPhiDegrees.Phi = FMath::RadiansToDegrees(PsiThetaPhiRadians.Phi);
 
-	CalculateHeadingPitchRollDegreesFromPsiThetaPhiDegreesAtLatLon(psiThetaPhiDegrees, LatitudeDegrees, LongitudeDegrees, HeadingPitchRollDegrees);
+	CalculateHeadingPitchRollDegreesFromPsiThetaPhiDegreesAtLatLon(psiThetaPhiDegrees, LatLonAltDegreesMeters, HeadingPitchRollDegrees);
 }
 
-void UDIS_BPFL::CalculateHeadingPitchRollRadiansFromPsiThetaPhiDegreesAtLatLon(const FPsiThetaPhi PsiThetaPhiDegrees, const float LatitudeDegrees, const float LongitudeDegrees, FHeadingPitchRoll& HeadingPitchRollRadians)
+void UDIS_BPFL::CalculateHeadingPitchRollRadiansFromPsiThetaPhiDegreesAtLatLon(const FPsiThetaPhi PsiThetaPhiDegrees, FGeographicCoordinates LatLonAltDegreesMeters, FHeadingPitchRoll& HeadingPitchRollRadians)
 {
 	FHeadingPitchRoll HeadingPitchRollDegrees;
 
-	CalculateHeadingPitchRollDegreesFromPsiThetaPhiDegreesAtLatLon(PsiThetaPhiDegrees, LatitudeDegrees, LongitudeDegrees, HeadingPitchRollDegrees);
+	CalculateHeadingPitchRollDegreesFromPsiThetaPhiDegreesAtLatLon(PsiThetaPhiDegrees, LatLonAltDegreesMeters, HeadingPitchRollDegrees);
 	HeadingPitchRollRadians.Heading = FMath::DegreesToRadians(HeadingPitchRollDegrees.Heading);
 	HeadingPitchRollRadians.Pitch = FMath::DegreesToRadians(HeadingPitchRollDegrees.Pitch);
 	HeadingPitchRollRadians.Roll = FMath::DegreesToRadians(HeadingPitchRollDegrees.Roll);
@@ -301,11 +301,11 @@ void UDIS_BPFL::GetEcefXYZFromUnrealLocation(const FVector UnrealLocation, AGeoR
 	GeoReferencingSystem->EngineToECEF(UnrealLocation, ECEF);
 }
 
-void UDIS_BPFL::GetLatLonHeightFromUnrealLocation(const FVector UnrealLocation, AGeoReferencingSystem* GeoReferencingSystem, FVector& LatLonHeightDegreesMeters)
+void UDIS_BPFL::GetLatLonAltitudeFromUnrealLocation(const FVector UnrealLocation, AGeoReferencingSystem* GeoReferencingSystem, FGeographicCoordinates& LatLonAltDegreesMeters)
 {
 	if (!IsValid(GeoReferencingSystem))
 	{
-		LatLonHeightDegreesMeters = FVector();
+		LatLonAltDegreesMeters = FGeographicCoordinates();
 		UE_LOG(LogDIS_BPFL, Warning, TEXT("Invalid GeoReference was passed to get lat, lon, height from. Returning lat, lon, height of (0, 0, 0)."));
 		return;
 	}
@@ -313,10 +313,10 @@ void UDIS_BPFL::GetLatLonHeightFromUnrealLocation(const FVector UnrealLocation, 
 	FVector ecefLoc;
 	GeoReferencingSystem->EngineToECEF(UnrealLocation, ecefLoc);
 
-	CalculateLatLonHeightFromEcefXYZ(ecefLoc, LatLonHeightDegreesMeters);
+	CalculateLatLonAltitudeFromEcefXYZ(ecefLoc, LatLonAltDegreesMeters);
 }
 
-void UDIS_BPFL::GetUnrealRotationFromHeadingPitchRollDegreesAtLatLon(const FHeadingPitchRoll HeadingPitchRollDegrees, const float LatitudeDegrees, const float LongitudeDegrees, AGeoReferencingSystem* GeoReferencingSystem, FRotator& UnrealRotation)
+void UDIS_BPFL::GetUnrealRotationFromHeadingPitchRollDegreesAtLatLon(const FHeadingPitchRoll HeadingPitchRollDegrees, FGeographicCoordinates LatLonAltDegreesMeters, AGeoReferencingSystem* GeoReferencingSystem, FRotator& UnrealRotation)
 {
 	if (!IsValid(GeoReferencingSystem))
 	{
@@ -330,10 +330,10 @@ void UDIS_BPFL::GetUnrealRotationFromHeadingPitchRollDegreesAtLatLon(const FHead
 	headingPitchRollRadians.Pitch = FMath::DegreesToRadians(HeadingPitchRollDegrees.Pitch);
 	headingPitchRollRadians.Roll = FMath::DegreesToRadians(HeadingPitchRollDegrees.Roll);
 
-	GetUnrealRotationFromHeadingPitchRollRadiansAtLatLon(headingPitchRollRadians, LatitudeDegrees, LongitudeDegrees, GeoReferencingSystem, UnrealRotation);
+	GetUnrealRotationFromHeadingPitchRollRadiansAtLatLon(headingPitchRollRadians, LatLonAltDegreesMeters, GeoReferencingSystem, UnrealRotation);
 }
 
-void UDIS_BPFL::GetUnrealRotationFromHeadingPitchRollRadiansAtLatLon(const FHeadingPitchRoll HeadingPitchRollRadians, const float LatitudeDegrees, const float LongitudeDegrees, AGeoReferencingSystem* GeoReferencingSystem, FRotator& UnrealRotation)
+void UDIS_BPFL::GetUnrealRotationFromHeadingPitchRollRadiansAtLatLon(const FHeadingPitchRoll HeadingPitchRollRadians, FGeographicCoordinates LatLonAltDegreesMeters, AGeoReferencingSystem* GeoReferencingSystem, FRotator& UnrealRotation)
 {
 	if (!IsValid(GeoReferencingSystem))
 	{
@@ -343,12 +343,12 @@ void UDIS_BPFL::GetUnrealRotationFromHeadingPitchRollRadiansAtLatLon(const FHead
 	}
 
 	FPsiThetaPhi psiThetaPhiRadians;
-	CalculatePsiThetaPhiRadiansFromHeadingPitchRollRadiansAtLatLon(HeadingPitchRollRadians, LatitudeDegrees, LongitudeDegrees, psiThetaPhiRadians);
+	CalculatePsiThetaPhiRadiansFromHeadingPitchRollRadiansAtLatLon(HeadingPitchRollRadians, LatLonAltDegreesMeters, psiThetaPhiRadians);
 
-	GetUnrealRotationFromPsiThetaPhiRadiansAtLatLon(psiThetaPhiRadians, LatitudeDegrees, LongitudeDegrees, GeoReferencingSystem, UnrealRotation);
+	GetUnrealRotationFromPsiThetaPhiRadiansAtLatLon(psiThetaPhiRadians, LatLonAltDegreesMeters, GeoReferencingSystem, UnrealRotation);
 }
 
-void UDIS_BPFL::GetUnrealRotationFromPsiThetaPhiDegreesAtLatLon(const FPsiThetaPhi PsiThetaPhiDegrees, const float LatitudeDegrees, const float LongitudeDegrees, AGeoReferencingSystem* GeoReferencingSystem, FRotator& UnrealRotation)
+void UDIS_BPFL::GetUnrealRotationFromPsiThetaPhiDegreesAtLatLon(const FPsiThetaPhi PsiThetaPhiDegrees, FGeographicCoordinates LatLonAltDegreesMeters, AGeoReferencingSystem* GeoReferencingSystem, FRotator& UnrealRotation)
 {
 	if (!IsValid(GeoReferencingSystem))
 	{
@@ -362,10 +362,10 @@ void UDIS_BPFL::GetUnrealRotationFromPsiThetaPhiDegreesAtLatLon(const FPsiThetaP
 	psiThetaPhiRadians.Theta = FMath::DegreesToRadians(PsiThetaPhiDegrees.Theta);
 	psiThetaPhiRadians.Phi = FMath::DegreesToRadians(PsiThetaPhiDegrees.Phi);
 
-	GetUnrealRotationFromPsiThetaPhiRadiansAtLatLon(psiThetaPhiRadians, LatitudeDegrees, LongitudeDegrees, GeoReferencingSystem, UnrealRotation);
+	GetUnrealRotationFromPsiThetaPhiRadiansAtLatLon(psiThetaPhiRadians, LatLonAltDegreesMeters, GeoReferencingSystem, UnrealRotation);
 }
 
-void UDIS_BPFL::GetUnrealRotationFromPsiThetaPhiRadiansAtLatLon(const FPsiThetaPhi PsiThetaPhiRadians, const float LatitudeDegrees, const float LongitudeDegrees, AGeoReferencingSystem* GeoReferencingSystem, FRotator& UnrealRotation)
+void UDIS_BPFL::GetUnrealRotationFromPsiThetaPhiRadiansAtLatLon(const FPsiThetaPhi PsiThetaPhiRadians, FGeographicCoordinates LatLonAltDegreesMeters, AGeoReferencingSystem* GeoReferencingSystem, FRotator& UnrealRotation)
 {
 	if (!IsValid(GeoReferencingSystem))
 	{
@@ -375,7 +375,7 @@ void UDIS_BPFL::GetUnrealRotationFromPsiThetaPhiRadiansAtLatLon(const FPsiThetaP
 	}
 
 	FNorthEastDown NorthEastDownVectors;
-	CalculateNorthEastDownVectorsFromLatLon(LatitudeDegrees, LongitudeDegrees, NorthEastDownVectors);
+	CalculateNorthEastDownVectorsFromLatLon(LatLonAltDegreesMeters, NorthEastDownVectors);
 
 	//Get NED of the world origin
 	FNorthEastDown originNorthEastDown;
@@ -388,7 +388,7 @@ void UDIS_BPFL::GetUnrealRotationFromPsiThetaPhiRadiansAtLatLon(const FPsiThetaP
 	const auto ZAxisRotationAngle = FVector::DotProduct(NorthEastDownVectors.NorthVector, originNorthEastDown.NorthVector);
 
 	FHeadingPitchRoll HeadingPitchRollDegrees;
-	CalculateHeadingPitchRollDegreesFromPsiThetaPhiRadiansAtLatLon(PsiThetaPhiRadians, LatitudeDegrees, LongitudeDegrees, HeadingPitchRollDegrees);
+	CalculateHeadingPitchRollDegreesFromPsiThetaPhiRadiansAtLatLon(PsiThetaPhiRadians, LatLonAltDegreesMeters, HeadingPitchRollDegrees);
 
 	UnrealRotation.Roll = HeadingPitchRollDegrees.Roll + XAxisRotationAngle;
 	UnrealRotation.Pitch = HeadingPitchRollDegrees.Pitch + YAxisRotationAngle;
@@ -396,7 +396,7 @@ void UDIS_BPFL::GetUnrealRotationFromPsiThetaPhiRadiansAtLatLon(const FPsiThetaP
 	UnrealRotation.Yaw = HeadingPitchRollDegrees.Heading + ZAxisRotationAngle - 90;
 }
 
-void UDIS_BPFL::GetUnrealLocationFromLatLonHeight(const FVector LatLonHeightDegreesMeters, AGeoReferencingSystem* GeoReferencingSystem, FVector& UnrealLocation)
+void UDIS_BPFL::GetUnrealLocationFromLatLonAltitude(const FVector LatLonAltDegreesMeters, AGeoReferencingSystem* GeoReferencingSystem, FVector& UnrealLocation)
 {
 	if (!IsValid(GeoReferencingSystem))
 	{
@@ -406,7 +406,7 @@ void UDIS_BPFL::GetUnrealLocationFromLatLonHeight(const FVector LatLonHeightDegr
 	}
 
 	FVector ecefXYZFloat;
-	CalculateEcefXYZFromLatLonHeight(LatLonHeightDegreesMeters, ecefXYZFloat);
+	CalculateEcefXYZFromLatLonAltitude(LatLonAltDegreesMeters, ecefXYZFloat);
 
 	GetUnrealLocationFromEcefXYZ(ecefXYZFloat, GeoReferencingSystem, UnrealLocation);
 }
@@ -434,10 +434,10 @@ void UDIS_BPFL::GetUnrealRotationFromEntityStatePdu(const FEntityStatePDU Entity
 
 	FPsiThetaPhi PsiThetaPhiRadians = FPsiThetaPhi(EntityStatePdu.EntityOrientation);
 
-	FVector LatLonHeightDouble;
-	CalculateLatLonHeightFromEcefXYZ(EntityStatePdu.EcefLocation, LatLonHeightDouble);
+	FGeographicCoordinates LatLonAltDegreesMeters;
+	CalculateLatLonAltitudeFromEcefXYZ(EntityStatePdu.EcefLocation, LatLonAltDegreesMeters);
 
-	GetUnrealRotationFromPsiThetaPhiRadiansAtLatLon(PsiThetaPhiRadians, LatLonHeightDouble.X, LatLonHeightDouble.Y, GeoReferencingSystem, UnrealRotation);
+	GetUnrealRotationFromPsiThetaPhiRadiansAtLatLon(PsiThetaPhiRadians, LatLonAltDegreesMeters, GeoReferencingSystem, UnrealRotation);
 }
 
 void UDIS_BPFL::GetUnrealLocationFromEntityStatePdu(const FEntityStatePDU EntityStatePdu, AGeoReferencingSystem* GeoReferencingSystem, FVector& UnrealLocation)
@@ -517,21 +517,21 @@ void UDIS_BPFL::GetHeadingPitchRollFromUnrealRotation(const FRotator UnrealRotat
 void UDIS_BPFL::GetPsiThetaPhiDegreesFromUnrealRotation(const FRotator UnrealRotation, const FVector UnrealLocation, AGeoReferencingSystem* GeoReferencingSystem, FPsiThetaPhi& PsiThetaPhiDegrees)
 {
 	FHeadingPitchRoll headingPitchRollDegrees;
-	FVector latLonHeightDegrees;
+	FGeographicCoordinates latLonAltDegreesMeters;
 	GetHeadingPitchRollFromUnrealRotation(UnrealRotation, UnrealLocation, GeoReferencingSystem, headingPitchRollDegrees);
-	GetLatLonHeightFromUnrealLocation(UnrealLocation, GeoReferencingSystem, latLonHeightDegrees);
+	GetLatLonAltitudeFromUnrealLocation(UnrealLocation, GeoReferencingSystem, latLonAltDegreesMeters);
 
-	CalculatePsiThetaPhiDegreesFromHeadingPitchRollDegreesAtLatLon(headingPitchRollDegrees, latLonHeightDegrees.X, latLonHeightDegrees.Y, PsiThetaPhiDegrees);
+	CalculatePsiThetaPhiDegreesFromHeadingPitchRollDegreesAtLatLon(headingPitchRollDegrees, latLonAltDegreesMeters, PsiThetaPhiDegrees);
 }
 
 void UDIS_BPFL::GetPsiThetaPhiRadiansFromUnrealRotation(const FRotator UnrealRotation, const FVector UnrealLocation, AGeoReferencingSystem* GeoReferencingSystem, FPsiThetaPhi& PsiThetaPhiRadians)
 {
 	FHeadingPitchRoll headingPitchRollDegrees;
-	FVector latLonHeightDegrees;
+	FGeographicCoordinates latLonAltDegreesMeters;
 	GetHeadingPitchRollFromUnrealRotation(UnrealRotation, UnrealLocation, GeoReferencingSystem, headingPitchRollDegrees);
-	GetLatLonHeightFromUnrealLocation(UnrealLocation, GeoReferencingSystem, latLonHeightDegrees);
+	GetLatLonAltitudeFromUnrealLocation(UnrealLocation, GeoReferencingSystem, latLonAltDegreesMeters);
 
-	CalculatePsiThetaPhiRadiansFromHeadingPitchRollDegreesAtLatLon(headingPitchRollDegrees, latLonHeightDegrees.X, latLonHeightDegrees.Y, PsiThetaPhiRadians);
+	CalculatePsiThetaPhiRadiansFromHeadingPitchRollDegreesAtLatLon(headingPitchRollDegrees, latLonAltDegreesMeters, PsiThetaPhiRadians);
 }
 
 void UDIS_BPFL::GetEcefXYZAndPsiThetaPhiDegreesFromUnreal(const FRotator UnrealRotation, const FVector UnrealLocation, AGeoReferencingSystem* GeoReferencingSystem, FVector& EcefXYZ, FPsiThetaPhi& PsiThetaPhiDegrees)
