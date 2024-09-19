@@ -351,7 +351,7 @@ void ADISGameManager::SpawnNewEntityFromEntityState(FEntityStatePDU EntityStateP
 	{
 		FVector spawnLocation;
 		FRotator spawnRotation;
-		UDIS_BPFL::GetUnrealLocationAndOrientationFromEntityStatePdu(EntityStatePDUIn, GeoReferencingSystem, spawnLocation, spawnRotation);
+		UDIS_BPFL::GetUnrealLocationAndRotationFromEntityStatePdu(EntityStatePDUIn, GeoReferencingSystem, spawnLocation, spawnRotation);
 
 		FTransform spawnTransform = FTransform(spawnRotation, spawnLocation);
 

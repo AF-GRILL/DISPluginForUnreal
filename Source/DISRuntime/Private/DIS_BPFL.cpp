@@ -306,7 +306,7 @@ void UDIS_BPFL::GetLatLonAltitudeFromUnrealLocation(const FVector UnrealLocation
 	if (!IsValid(GeoReferencingSystem))
 	{
 		LatLonAltDegreesMeters = FGeographicCoordinates();
-		UE_LOG(LogDIS_BPFL, Warning, TEXT("Invalid GeoReference was passed to get lat, lon, height from. Returning lat, lon, height of (0, 0, 0)."));
+		UE_LOG(LogDIS_BPFL, Warning, TEXT("Invalid GeoReference was passed to get lat, lon, altitude from. Returning lat, lon, altitude of (0, 0, 0)."));
 		return;
 	}
 
@@ -379,13 +379,15 @@ void UDIS_BPFL::GetUnrealRotationFromPsiThetaPhiRadiansAtLatLon(const FPsiThetaP
 
 	//Get NED of the world origin
 	FNorthEastDown originNorthEastDown;
-	GeoReferencingSystem->GetENUVectorsAtEngineLocation(FVector(0, 0, 0), originNorthEastDown.EastVector, originNorthEastDown.NorthVector, originNorthEastDown.DownVector);
+	FVector originECEF;
+	GeoReferencingSystem->EngineToECEF(FVector(0, 0, 0), originECEF);
+	GeoReferencingSystem->GetECEFENUVectorsAtECEFLocation(originECEF, originNorthEastDown.EastVector, originNorthEastDown.NorthVector, originNorthEastDown.DownVector);
 	originNorthEastDown.DownVector *= -1;
 
 	// Get the rotational difference between calculated NED and Unreal origin NED
-	const auto XAxisRotationAngle = FVector::DotProduct(NorthEastDownVectors.EastVector, originNorthEastDown.EastVector);
-	const auto YAxisRotationAngle = FVector::DotProduct(NorthEastDownVectors.DownVector, originNorthEastDown.DownVector);
-	const auto ZAxisRotationAngle = FVector::DotProduct(NorthEastDownVectors.NorthVector, originNorthEastDown.NorthVector);
+	const auto XAxisRotationAngle = FMath::Acos(FVector::DotProduct(NorthEastDownVectors.EastVector, originNorthEastDown.EastVector));
+	const auto YAxisRotationAngle = FMath::Acos(FVector::DotProduct(NorthEastDownVectors.DownVector, originNorthEastDown.DownVector));
+	const auto ZAxisRotationAngle = FMath::Acos(FVector::DotProduct(NorthEastDownVectors.NorthVector, originNorthEastDown.NorthVector));
 
 	FHeadingPitchRoll HeadingPitchRollDegrees;
 	CalculateHeadingPitchRollDegreesFromPsiThetaPhiRadiansAtLatLon(PsiThetaPhiRadians, LatLonAltDegreesMeters, HeadingPitchRollDegrees);
@@ -452,7 +454,7 @@ void UDIS_BPFL::GetUnrealLocationFromEntityStatePdu(const FEntityStatePDU Entity
 	GeoReferencingSystem->ECEFToEngine(EntityStatePdu.EcefLocation, UnrealLocation);
 }
 
-void UDIS_BPFL::GetUnrealLocationAndOrientationFromEntityStatePdu(const FEntityStatePDU EntityStatePdu, AGeoReferencingSystem* GeoReferencingSystem, FVector& UnrealLocation, FRotator& UnrealRotation)
+void UDIS_BPFL::GetUnrealLocationAndRotationFromEntityStatePdu(const FEntityStatePDU EntityStatePdu, AGeoReferencingSystem* GeoReferencingSystem, FVector& UnrealLocation, FRotator& UnrealRotation)
 {
 	if (!IsValid(GeoReferencingSystem))
 	{

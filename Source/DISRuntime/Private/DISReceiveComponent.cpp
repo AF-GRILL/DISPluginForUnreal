@@ -300,6 +300,6 @@ void UDISReceiveComponent::ApplyToOwnerIfActivated(FEntityStatePDU const& StateP
 	}
 	FVector newLocation;
 	FRotator newRotation;
-	UDIS_BPFL::GetUnrealLocationAndOrientationFromEntityStatePdu(StatePDU, GeoReferencingSystem, newLocation, newRotation);
+	UDIS_BPFL::GetUnrealLocationAndRotationFromEntityStatePdu(StatePDU, GeoReferencingSystem, newLocation, newRotation);
 	GetOwner()->SetActorLocationAndRotation(newLocation, newRotation);
 }

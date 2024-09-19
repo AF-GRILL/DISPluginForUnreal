@@ -327,7 +327,7 @@ public:
 	 * @param UnrealRotation The rotation of the entity in Unreal
 	 */
 	UFUNCTION(BlueprintPure, Category = "GRILL DIS|Unit Conversions")
-		static void GetUnrealLocationAndOrientationFromEntityStatePdu(const FEntityStatePDU EntityStatePdu, AGeoReferencingSystem* GeoReferencingSystem, FVector& UnrealLocation, FRotator& UnrealRotation);
+		static void GetUnrealLocationAndRotationFromEntityStatePdu(const FEntityStatePDU EntityStatePdu, AGeoReferencingSystem* GeoReferencingSystem, FVector& UnrealLocation, FRotator& UnrealRotation);
 
 	/**
 	 * Gets the North, East, and Down vector representation of the given Unreal location
