@@ -53,9 +53,9 @@ private:
 	 * Rotates the given East, North, and Up vectors by the given Heading and Pitch
 	 * @param RollDegrees The degrees rotated about the local X axis (tilt left and right)
 	 * @param NorthEastDownVectors The vectors pointing to the North, to the East, and toward the center of the Earth
-	 * @param OutX The x axis (forward) vector with the heading and pitch applied
-	 * @param OutY The y axis (right) vector with the heading and pitch applied
-	 * @param OutZ the z axis (up) vector with the heading and pitch applied
+	 * @param OutX The x axis (forward) vector with the roll applied
+	 * @param OutY The y axis (right) vector with the roll applied
+	 * @param OutZ the z axis (up) vector with the roll applied
 	 */
 	static void ApplyRollToNorthEastDownVector(const float RollDegrees, const FNorthEastDown NorthEastDownVectors, FVector& OutX, FVector& OutY, FVector& OutZ);
 
@@ -107,6 +107,17 @@ public:
 	UFUNCTION(BlueprintPure, Category = "GRILL DIS|Unit Conversions")
 		static void RotateVectorAroundAxisByRadians(FVector VectorToRotate, float ThetaRadians, FVector AxisVector, FVector& OutRotatedVector);
 
+		/**
+		* Gets the rotational offset between the Unreal Origin NED vectors and the given destination NED vectors
+		* @param StartNEDVectors The North, East, Down vectors of the starting location
+		* @param DestinationNEDVectors The North, East, Down vectors of the destination location
+		* @param RollOffset The Unreal Engine Roll offset in degrees to go from the origin to the destination
+		* @param PitchOffset The Unreal Engine Pitch offset in degrees to go from the origin to the destination
+		* @param YawOffset The Unreal Engine Yaw offset in degrees to go from the origin to the destination
+		*/
+		UFUNCTION(BlueprintPure, Category = "GRILL DIS|Unit Conversions")
+		static void GetNEDVectorRotationOffset(const FNorthEastDown StartNEDVectors, const FNorthEastDown DestinationNEDVectors, double& RollOffset, double& PitchOffset, double& YawOffset);
+
 	/**
 	 * Rotates the vector VectorToRotate around given axis AxisVector by Theta degrees
 	 * @param VectorToRotate The target vector to rotate
@@ -130,9 +141,9 @@ public:
 	 * Applies the given heading, pitch, and roll in degrees to the local East North Down vectors
 	 * @param HeadingPitchRollDegrees The degrees from North of the facing direction (heading), the degrees rotated about the local Y axis (pitch), and the degrees rotated about the local X axis (roll)
 	 * @param NorthEastDownVectors The vectors pointing to the North, to the East, and toward the center of the Earth
-	 * @param OutX The x axis (forward) vector with the heading and pitch applied
-	 * @param OutY The y axis (right) vector with the heading and pitch applied
-	 * @param OutZ the z axis (down) vector with the heading and pitch applied
+	 * @param OutX The x axis (forward) vector with the heading, pitch, and roll applied
+	 * @param OutY The y axis (right) vector with the heading, pitch, and roll applied
+	 * @param OutZ the z axis (down) vector with the heading, pitch, and roll applied
 	 */
 	UFUNCTION(BlueprintPure, Category = "GRILL DIS|Unit Conversions")
 		static void ApplyHeadingPitchRollToNorthEastDownVector(const FHeadingPitchRoll HeadingPitchRollDegrees, const FNorthEastDown NorthEastDownVectors, FVector& OutX, FVector& OutY, FVector& OutZ);

@@ -128,6 +128,21 @@ void UDIS_BPFL::ApplyRollToNorthEastDownVector(const float RollDegrees, const FN
 	RotateVectorAroundAxisByDegrees(NorthEastDownVectors.DownVector, RollDegrees, NorthEastDownVectors.NorthVector, OutZ);
 }
 
+void UDIS_BPFL::GetNEDVectorRotationOffset(const FNorthEastDown StartNEDVectors, const FNorthEastDown DestinationNEDVectors, double& RollOffset, double& PitchOffset, double& YawOffset)
+{
+	//Make needed matrices entries
+	double offset_M11 = FVector::DotProduct(StartNEDVectors.EastVector, DestinationNEDVectors.EastVector);
+	double offset_M21 = FVector::DotProduct(-StartNEDVectors.NorthVector, DestinationNEDVectors.EastVector);
+	double offset_M31 = FVector::DotProduct(-StartNEDVectors.DownVector, DestinationNEDVectors.EastVector);
+	double offset_M32 = FVector::DotProduct(-StartNEDVectors.DownVector, -DestinationNEDVectors.NorthVector);
+	double offset_M33 = FVector::DotProduct(-StartNEDVectors.DownVector, -DestinationNEDVectors.DownVector);
+
+	//Use calculated matrices entries to find offsets of both origin and entity
+	RollOffset = FMath::RadiansToDegrees(FMath::Atan2(offset_M32, offset_M33));
+	PitchOffset = FMath::RadiansToDegrees(FMath::Atan2(offset_M31, FMath::Sqrt(FMath::Square(offset_M32) + FMath::Square(offset_M33))));
+	YawOffset = FMath::RadiansToDegrees(FMath::Atan2(offset_M21, offset_M11));
+}
+
 void UDIS_BPFL::RotateVectorAroundAxisByRadians(const glm::dvec3 VectorToRotate, const double ThetaRadians, const glm::dvec3 AxisVector, glm::dvec3& OutRotatedVector)
 {
 	auto RotationMatrix = glm::dmat3x3();
@@ -375,27 +390,39 @@ void UDIS_BPFL::GetUnrealRotationFromPsiThetaPhiRadiansAtLatLon(const FPsiThetaP
 	}
 
 	FNorthEastDown NorthEastDownVectors;
-	CalculateNorthEastDownVectorsFromLatLon(LatLonAltDegreesMeters, NorthEastDownVectors);
+	FVector entityEcef;
+	CalculateEcefXYZFromLatLonAltitude(LatLonAltDegreesMeters, entityEcef);
+	GeoReferencingSystem->GetENUVectorsAtECEFLocation(entityEcef, NorthEastDownVectors.EastVector, NorthEastDownVectors.NorthVector, NorthEastDownVectors.DownVector);
+	NorthEastDownVectors.DownVector *= -1;
 
 	//Get NED of the world origin
 	FNorthEastDown originNorthEastDown;
-	FVector originECEF;
-	GeoReferencingSystem->EngineToECEF(FVector(0, 0, 0), originECEF);
-	GeoReferencingSystem->GetECEFENUVectorsAtECEFLocation(originECEF, originNorthEastDown.EastVector, originNorthEastDown.NorthVector, originNorthEastDown.DownVector);
+	GeoReferencingSystem->GetENUVectorsAtEngineLocation(FVector(0, 0, 0), originNorthEastDown.EastVector, originNorthEastDown.NorthVector, originNorthEastDown.DownVector);
 	originNorthEastDown.DownVector *= -1;
 
 	// Get the rotational difference between calculated NED and Unreal origin NED
-	const auto XAxisRotationAngle = FMath::Acos(FVector::DotProduct(NorthEastDownVectors.EastVector, originNorthEastDown.EastVector));
-	const auto YAxisRotationAngle = FMath::Acos(FVector::DotProduct(NorthEastDownVectors.DownVector, originNorthEastDown.DownVector));
-	const auto ZAxisRotationAngle = FMath::Acos(FVector::DotProduct(NorthEastDownVectors.NorthVector, originNorthEastDown.NorthVector));
+	double XAxisRotationAngle;
+	double YAxisRotationAngle;
+	double ZAxisRotationAngle;
+	GetNEDVectorRotationOffset(originNorthEastDown, NorthEastDownVectors, XAxisRotationAngle, YAxisRotationAngle, ZAxisRotationAngle);
 
+	//Get the HPR that the entity would 
 	FHeadingPitchRoll HeadingPitchRollDegrees;
 	CalculateHeadingPitchRollDegreesFromPsiThetaPhiRadiansAtLatLon(PsiThetaPhiRadians, LatLonAltDegreesMeters, HeadingPitchRollDegrees);
-
-	UnrealRotation.Roll = HeadingPitchRollDegrees.Roll + XAxisRotationAngle;
-	UnrealRotation.Pitch = HeadingPitchRollDegrees.Pitch + YAxisRotationAngle;
 	//Heading of 0 is East, but heading of 0 in Unreal is North. Subtract 90 to make up for the offset
-	UnrealRotation.Yaw = HeadingPitchRollDegrees.Heading + ZAxisRotationAngle - 90;
+	HeadingPitchRollDegrees.Heading -= 90;
+
+	FVector unrealEntityLocation;
+	GetUnrealLocationFromEcefXYZ(entityEcef, GeoReferencingSystem, unrealEntityLocation);
+
+	FTransform entityTransform = FTransform(FRotator(YAxisRotationAngle, ZAxisRotationAngle, XAxisRotationAngle), unrealEntityLocation, FVector(1, 1, 1));
+	FTransform originTransformWithHPR = FTransform(FRotator(HeadingPitchRollDegrees.Pitch, HeadingPitchRollDegrees.Heading, HeadingPitchRollDegrees.Roll), FVector(0, 0, 0), FVector(1, 1, 1));
+
+	FTransform entityTransformWithHPR = originTransformWithHPR * entityTransform;
+
+	UnrealRotation.Roll = entityTransformWithHPR.GetRotation().Rotator().Roll;
+	UnrealRotation.Pitch = entityTransformWithHPR.GetRotation().Rotator().Pitch;
+	UnrealRotation.Yaw = entityTransformWithHPR.GetRotation().Rotator().Yaw;
 }
 
 void UDIS_BPFL::GetUnrealLocationFromLatLonAltitude(const FVector LatLonAltDegreesMeters, AGeoReferencingSystem* GeoReferencingSystem, FVector& UnrealLocation)
