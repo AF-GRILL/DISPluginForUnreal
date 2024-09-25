@@ -134,7 +134,7 @@ void UDIS_BPFL::GetNEDVectorRotationOffset(const FNorthEastDown StartNEDVectors,
 	double offset_M11 = FVector::DotProduct(StartNEDVectors.EastVector, DestinationNEDVectors.EastVector);
 	double offset_M21 = FVector::DotProduct(-StartNEDVectors.NorthVector, DestinationNEDVectors.EastVector);
 	double offset_M31 = FVector::DotProduct(-StartNEDVectors.DownVector, DestinationNEDVectors.EastVector);
-	double offset_M32 = FVector::DotProduct(-StartNEDVectors.DownVector, -DestinationNEDVectors.NorthVector);
+	double offset_M32 = FVector::DotProduct(-StartNEDVectors.DownVector, DestinationNEDVectors.NorthVector);
 	double offset_M33 = FVector::DotProduct(-StartNEDVectors.DownVector, -DestinationNEDVectors.DownVector);
 
 	//Use calculated matrices entries to find offsets of both origin and entity
