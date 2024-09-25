@@ -1,5 +1,12 @@
 # Changelog
 
+## Beta 0.9.0
+
+- Fixed rotation issues when an entity is far away from Unreal Engine origin.
+- Updated DIS_BPFL to use FGeographicCoordinates rather than individual floats for lat and lon.
+- Updated function names in DIS_BPFL to use altitude rather than height
+- Renamed GetUnrealLocationAndOrientationFromEntityStatePdu to GetUnrealLocationAndRotationFromEntityStatePdu to better align with other function names inside of DIS_BPFL.
+
 ## Beta 0.8.1
 
 - Add array bounds checking when verifying PDU length.
