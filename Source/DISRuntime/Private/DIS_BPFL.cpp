@@ -128,21 +128,6 @@ void UDIS_BPFL::ApplyRollToNorthEastDownVector(const float RollDegrees, const FN
 	RotateVectorAroundAxisByDegrees(NorthEastDownVectors.DownVector, RollDegrees, NorthEastDownVectors.NorthVector, OutZ);
 }
 
-void UDIS_BPFL::GetNEDVectorRotationOffset(const FNorthEastDown StartNEDVectors, const FNorthEastDown DestinationNEDVectors, double& RollOffset, double& PitchOffset, double& YawOffset)
-{
-	//Make needed matrices entries
-	double offset_M11 = FVector::DotProduct(StartNEDVectors.EastVector, DestinationNEDVectors.EastVector);
-	double offset_M21 = FVector::DotProduct(-StartNEDVectors.NorthVector, DestinationNEDVectors.EastVector);
-	double offset_M31 = FVector::DotProduct(-StartNEDVectors.DownVector, DestinationNEDVectors.EastVector);
-	double offset_M32 = FVector::DotProduct(-StartNEDVectors.DownVector, DestinationNEDVectors.NorthVector);
-	double offset_M33 = FVector::DotProduct(-StartNEDVectors.DownVector, -DestinationNEDVectors.DownVector);
-
-	//Use calculated matrices entries to find offsets of both origin and entity
-	RollOffset = FMath::RadiansToDegrees(FMath::Atan2(offset_M32, offset_M33));
-	PitchOffset = FMath::RadiansToDegrees(FMath::Atan2(offset_M31, FMath::Sqrt(FMath::Square(offset_M32) + FMath::Square(offset_M33))));
-	YawOffset = FMath::RadiansToDegrees(FMath::Atan2(offset_M21, offset_M11));
-}
-
 void UDIS_BPFL::RotateVectorAroundAxisByRadians(const glm::dvec3 VectorToRotate, const double ThetaRadians, const glm::dvec3 AxisVector, glm::dvec3& OutRotatedVector)
 {
 	auto RotationMatrix = glm::dmat3x3();
@@ -194,6 +179,21 @@ void UDIS_BPFL::CalculateLatLonFromNorthEastDownVectors(const FNorthEastDown Nor
 {
 	LatLonAltDegreesMeters.Longitude = FMath::RadiansToDegrees(FMath::Acos(FVector::DotProduct(FVector::YAxisVector, NorthEastDownVectors.EastVector) / NorthEastDownVectors.EastVector.Size()));
 	LatLonAltDegreesMeters.Latitude = FMath::RadiansToDegrees(FMath::Acos(FVector::DotProduct(FVector::ZAxisVector, NorthEastDownVectors.NorthVector) / NorthEastDownVectors.NorthVector.Size()));
+}
+
+void UDIS_BPFL::GetNEDVectorRotationOffset(const FNorthEastDown StartNEDVectors, const FNorthEastDown DestinationNEDVectors, double& RollOffset, double& PitchOffset, double& YawOffset)
+{
+	//Make needed matrices entries
+	double offset_M11 = FVector::DotProduct(StartNEDVectors.EastVector, DestinationNEDVectors.EastVector);
+	double offset_M21 = FVector::DotProduct(-StartNEDVectors.NorthVector, DestinationNEDVectors.EastVector);
+	double offset_M31 = FVector::DotProduct(-StartNEDVectors.DownVector, DestinationNEDVectors.EastVector);
+	double offset_M32 = FVector::DotProduct(-StartNEDVectors.DownVector, DestinationNEDVectors.NorthVector);
+	double offset_M33 = FVector::DotProduct(-StartNEDVectors.DownVector, -DestinationNEDVectors.DownVector);
+
+	//Use calculated matrices entries to find offsets of both origin and entity
+	RollOffset = FMath::RadiansToDegrees(FMath::Atan2(offset_M32, offset_M33));
+	PitchOffset = FMath::RadiansToDegrees(FMath::Atan2(offset_M31, FMath::Sqrt(FMath::Square(offset_M32) + FMath::Square(offset_M33))));
+	YawOffset = FMath::RadiansToDegrees(FMath::Atan2(offset_M21, offset_M11));
 }
 
 void UDIS_BPFL::CalculatePsiThetaPhiDegreesFromHeadingPitchRollDegreesAtLatLon(const FHeadingPitchRoll HeadingPitchRollDegrees, FGeographicCoordinates LatLonAltDegreesMeters, FPsiThetaPhi& PsiThetaPhiDegrees)

@@ -50,7 +50,7 @@ private:
 	static void ApplyHeadingPitchToNorthEastDownVector(const float HeadingDegrees, const float PitchDegrees, const FNorthEastDown NorthEastDownVectors, FVector& OutX, FVector& OutY, FVector& OutZ);
 
 	/**
-	 * Rotates the given East, North, and Up vectors by the given Heading and Pitch
+	 * Rotates the given East, North, and Up vectors by the given roll
 	 * @param RollDegrees The degrees rotated about the local X axis (tilt left and right)
 	 * @param NorthEastDownVectors The vectors pointing to the North, to the East, and toward the center of the Earth
 	 * @param OutX The x axis (forward) vector with the roll applied
@@ -107,17 +107,6 @@ public:
 	UFUNCTION(BlueprintPure, Category = "GRILL DIS|Unit Conversions")
 		static void RotateVectorAroundAxisByRadians(FVector VectorToRotate, float ThetaRadians, FVector AxisVector, FVector& OutRotatedVector);
 
-		/**
-		* Gets the rotational offset between the Unreal Origin NED vectors and the given destination NED vectors
-		* @param StartNEDVectors The North, East, Down vectors of the starting location
-		* @param DestinationNEDVectors The North, East, Down vectors of the destination location
-		* @param RollOffset The Unreal Engine Roll offset in degrees to go from the origin to the destination
-		* @param PitchOffset The Unreal Engine Pitch offset in degrees to go from the origin to the destination
-		* @param YawOffset The Unreal Engine Yaw offset in degrees to go from the origin to the destination
-		*/
-		UFUNCTION(BlueprintPure, Category = "GRILL DIS|Unit Conversions")
-		static void GetNEDVectorRotationOffset(const FNorthEastDown StartNEDVectors, const FNorthEastDown DestinationNEDVectors, double& RollOffset, double& PitchOffset, double& YawOffset);
-
 	/**
 	 * Rotates the vector VectorToRotate around given axis AxisVector by Theta degrees
 	 * @param VectorToRotate The target vector to rotate
@@ -163,6 +152,17 @@ public:
 	 */
 	UFUNCTION(BlueprintPure, Category = "GRILL DIS|Unit Conversions")
 		static void CalculateLatLonFromNorthEastDownVectors(FNorthEastDown NorthEastDownVectors, FGeographicCoordinates& LatLonAltDegreesMeters);
+
+	/**
+	* Gets the rotational offset between the Unreal Origin NED vectors and the given destination NED vectors
+	* @param StartNEDVectors The North, East, Down vectors of the starting location
+	* @param DestinationNEDVectors The North, East, Down vectors of the destination location
+	* @param RollOffset The Unreal Engine Roll offset in degrees to go from the origin to the destination
+	* @param PitchOffset The Unreal Engine Pitch offset in degrees to go from the origin to the destination
+	* @param YawOffset The Unreal Engine Yaw offset in degrees to go from the origin to the destination
+	*/
+	UFUNCTION(BlueprintPure, Category = "GRILL DIS|Unit Conversions")
+		static void GetNEDVectorRotationOffset(const FNorthEastDown StartNEDVectors, const FNorthEastDown DestinationNEDVectors, double& RollOffset, double& PitchOffset, double& YawOffset);
 
 	/**
 	 * Calculates the DIS orientation values Psi, Theta, and Phi in degrees with the given Heading, Pitch, and Roll in degrees at the given Latitude and Longitude.
