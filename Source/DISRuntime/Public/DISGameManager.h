@@ -201,13 +201,11 @@ protected:
 	 */
 	UPROPERTY(BlueprintReadOnly, Category = "GRILL DIS|Game Manager|Structs")
 		TMap<FEntityType, TSoftClassPtr<AActor>> DISClassMappings;
-	std::map<FEntityType, TSoftClassPtr<AActor>> RawDISClassMappings;
 	/**
 	 * The mapping between DIS Entity IDs and corresponding entity actors.
 	 */
 	UPROPERTY(BlueprintReadOnly, Category = "GRILL DIS|Game Manager|Structs")
 		TMap<FEntityID, AActor*> DISActorMappings;
-	std::map<FEntityID, AActor*> RawDISActorMappings;
 
 	//Whether or not to auto connect receive sockets
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "GRILL DIS|Game Manager|Networking")

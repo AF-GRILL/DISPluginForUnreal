@@ -60,7 +60,7 @@ void ADISGameManager::BeginPlay()
 	//Auto connect sockets if needed
 	if (AutoConnectReceiveAddresses) 
 	{
-		for (FReceiveSocketInfo socket : ReceiveSocketsToSetup)
+		for (const FReceiveSocketInfo& socket : ReceiveSocketsToSetup)
 		{
 			int SocketID;
 			GetGameInstance()->GetSubsystem<UUDPSubsystem>()->OpenReceiveSocket(socket.SocketSettings, SocketID, socket.IpAddress, socket.Port);
@@ -68,7 +68,7 @@ void ADISGameManager::BeginPlay()
 	}
 	if (AutoConnectSendAddresses)
 	{
-		for (FSendSocketInfo socket : SendSocketsToSetup)
+		for (const FSendSocketInfo& socket : SendSocketsToSetup)
 		{
 			int SocketID;
 			GetGameInstance()->GetSubsystem<UUDPSubsystem>()->OpenSendSocket(socket.SocketSettings, SocketID, socket.IpAddress, socket.Port);
@@ -78,20 +78,19 @@ void ADISGameManager::BeginPlay()
 	if (DISClassEnum) 
 	{
 		//Initialize DISClassMappings from the loaded settings
-		for (FDISClassEnumStruct DISMapping : DISClassEnum->DISClassEnumArray)
+		for (const FDISClassEnumStruct& DISMapping : DISClassEnum->DISClassEnumArray)
 		{
-			for (FEntityType EntityType : DISMapping.AssociatedDISEnumerations)
+			for (const FEntityType& EntityType : DISMapping.AssociatedDISEnumerations)
 			{
 				//Check to see if there is an associated actor for the entity type already
 				TSoftClassPtr<AActor>* associatedSoftClassReference = DISClassMappings.Find(EntityType);
 
-				if (associatedSoftClassReference != nullptr)
+				if (associatedSoftClassReference != nullptr && *associatedSoftClassReference != nullptr)
 				{
 					UE_LOG(LogDISGameManager, Warning, TEXT("A DIS Enumeration mapping already exists for %s and is linked to %s. This enumeration will now point to: %s"), *EntityType.ToString(), *associatedSoftClassReference->GetAssetName(), *DISMapping.DISEntity.GetAssetName());
 				}
 
 				DISClassMappings.Add(EntityType, DISMapping.DISEntity);
-				RawDISClassMappings.insert_or_assign(EntityType, DISMapping.DISEntity);
 			}
 		}
 	}
@@ -105,11 +104,11 @@ void ADISGameManager::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	for (std::pair<FEntityID, AActor*> DisEntity : RawDISActorMappings)
+	for (const TPair<FEntityID, AActor*>& Pair : DISActorMappings)
 	{
-		if (IsValid(DisEntity.second))
+		if (IsValid(Pair.Value))
 		{
-			UDISReceiveComponent* DISComponent = IDISInterface::Execute_GetActorDISReceiveComponent(DisEntity.second);
+			UDISReceiveComponent* DISComponent = IDISInterface::Execute_GetActorDISReceiveComponent(Pair.Value);
 
 			if (DISComponent)
 			{
@@ -117,12 +116,12 @@ void ADISGameManager::Tick(float DeltaTime)
 			}
 			else 
 			{
-				UE_LOG(LogDISGameManager, Warning, TEXT("Cannot find DISComponent on entity %s"), *DisEntity.second->GetName())
+				UE_LOG(LogDISGameManager, Warning, TEXT("Cannot find DISComponent on entity %s"), *Pair.Value->GetName())
 			}
 		}
 		else
 		{
-			UE_LOG(LogDISGameManager, Error, TEXT("Encountered null reference within RawDISActorMapping! Check C++ side usage of RawDISActorMapping to verify using properly!"));
+			UE_LOG(LogDISGameManager, Error, TEXT("Encountered null reference within DISActorMapping! Check C++ side usage of DISActorMapping to verify using properly!"));
 		}
 	}
 }
@@ -150,11 +149,11 @@ void ADISGameManager::HandleEntityStatePDU(FEntityStatePDU EntityStatePDUIn)
 	if (EntityStatePDUIn.ExerciseID == ExerciseID)
 	{
 		//Find associated actor in the DISActorMappings map -- If actor does not exist spawn one
-		auto associatedActor = RawDISActorMappings.find(EntityStatePDUIn.EntityID);
-		if (associatedActor != RawDISActorMappings.end())
+		auto associatedActor = DISActorMappings.Find(EntityStatePDUIn.EntityID);
+		if (associatedActor != nullptr && *associatedActor != nullptr)
 		{
 			//If an actor was found, relay information to the associated component
-			UDISReceiveComponent* DISComponent = IDISInterface::Execute_GetActorDISReceiveComponent(associatedActor->second);
+			UDISReceiveComponent* DISComponent = IDISInterface::Execute_GetActorDISReceiveComponent(*associatedActor);
 
 			if (DISComponent != nullptr)
 			{
@@ -304,29 +303,28 @@ void ADISGameManager::HandleSignalPDU(FSignalPDU SignalPDUIn)
 
 void ADISGameManager::SpawnNewEntityFromEntityState(FEntityStatePDU EntityStatePDUIn)
 {	
-	auto associatedSoftClassReference = RawDISClassMappings.find(EntityStatePDUIn.EntityType);
+	auto associatedSoftClassReference = DISClassMappings.Find(EntityStatePDUIn.EntityType);
 	UClass* associatedClass = nullptr;
 
 	//If an actor was not found, check to see if there is a wildcard mapping -- else, load the found actor
-	if (associatedSoftClassReference == RawDISClassMappings.end())
+	if (associatedSoftClassReference == nullptr)
 	{
-		std::map<FEntityType, TSoftClassPtr<AActor>> WildcardMappings;
-		for (std::pair<FEntityType, TSoftClassPtr<AActor>> Pair : RawDISClassMappings)
+		TMap<FEntityType, TSoftClassPtr<AActor>> WildcardMappings;
+		for (const TPair<FEntityType, TSoftClassPtr<AActor>>& Pair : DISClassMappings)
 		{
-			FEntityType Key = Pair.first;
-			FEntityType FilledKey = FEntityType(Pair.first).FillWildcards(EntityStatePDUIn.EntityType);
+			FEntityType Key = Pair.Key;
+			FEntityType FilledKey = FEntityType(Pair.Key).FillWildcards(EntityStatePDUIn.EntityType);
 			if (!(Key == FilledKey))
 			{
 				Key = FilledKey;
-				//WildcardMappings.Add(Key, Pair.Value);
-				WildcardMappings.insert({ Key, Pair.second });
+				WildcardMappings.Add(Key, Pair.Value);
 			}
 		}
 
-		auto NewSoftClassRef = WildcardMappings.find(EntityStatePDUIn.EntityType);
-		if (NewSoftClassRef != WildcardMappings.end()) 
+		auto NewSoftClassRef = WildcardMappings.Find(EntityStatePDUIn.EntityType);
+		if (NewSoftClassRef != nullptr) 
 		{
-			associatedClass = NewSoftClassRef->second.LoadSynchronous();
+			associatedClass = NewSoftClassRef->LoadSynchronous();
 
 			if (associatedClass == nullptr)
 			{
@@ -337,7 +335,7 @@ void ADISGameManager::SpawnNewEntityFromEntityState(FEntityStatePDU EntityStateP
 	}
 	else
 	{
-		associatedClass = associatedSoftClassReference->second.LoadSynchronous();
+		associatedClass = associatedSoftClassReference->LoadSynchronous();
 
 		if (associatedClass == nullptr) 
 		{
@@ -393,11 +391,11 @@ UDISReceiveComponent* ADISGameManager::GetAssociatedDISComponent(FEntityID Entit
 	UDISReceiveComponent* DISComponent = nullptr;
 
 	//Find associated actor in the DISActorMappings map
-	auto associatedActor = RawDISActorMappings.find(EntityIDIn);
-	if (associatedActor != RawDISActorMappings.end())
+	auto associatedActor = DISActorMappings.Find(EntityIDIn);
+	if (associatedActor != nullptr && *associatedActor != nullptr)
 	{
 		//If an actor was found, relay information to the associated component
-		DISComponent = IDISInterface::Execute_GetActorDISReceiveComponent(associatedActor->second);
+		DISComponent = IDISInterface::Execute_GetActorDISReceiveComponent(*associatedActor);
 	}
 
 	return DISComponent;
@@ -414,14 +412,13 @@ bool ADISGameManager::AddDISEntityToMap(FEntityID EntityIDToAdd, AActor* EntityT
 	}
 
 	//Check to see if there is an associated actor for the entity ID already
-	auto associatedActor = RawDISActorMappings.find(EntityIDToAdd);
-	if (associatedActor != RawDISActorMappings.end())
+	auto associatedActor = DISActorMappings.Find(EntityIDToAdd);
+	if (associatedActor != nullptr && *associatedActor != nullptr)
 	{
-		UE_LOG(LogDISGameManager, Warning, TEXT("A DIS Entity ID mapping already exists for %s and is linked to %s. This entity ID will now point to: %s"), *EntityIDToAdd.ToString(), *associatedActor->second->GetFName().ToString(), *EntityToAdd->GetFName().ToString());
+		UE_LOG(LogDISGameManager, Warning, TEXT("A DIS Entity ID mapping already exists for %s and is linked to %s. This entity ID will now point to: %s"), *EntityIDToAdd.ToString(), *(*associatedActor)->GetFName().ToString(), *EntityToAdd->GetFName().ToString());
 	}
 
 	DISActorMappings.Add(EntityIDToAdd, EntityToAdd);
-	RawDISActorMappings.insert_or_assign(EntityIDToAdd, EntityToAdd);
 	
 	successful = true;
 	return successful;
@@ -429,7 +426,6 @@ bool ADISGameManager::AddDISEntityToMap(FEntityID EntityIDToAdd, AActor* EntityT
 
 bool ADISGameManager::RemoveDISEntityFromMap(FEntityID EntityIDToRemove)
 {
-	DISActorMappings.Remove(EntityIDToRemove);
-	const int AmountRemoved = RawDISActorMappings.erase(EntityIDToRemove);
+	const int AmountRemoved = DISActorMappings.Remove(EntityIDToRemove);
 	return (AmountRemoved > 0);
 }

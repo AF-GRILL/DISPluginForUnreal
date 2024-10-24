@@ -914,37 +914,57 @@ struct FEntityType
 {
 	GENERATED_BODY()
 
+	/**
+	 * Boolean values for Entity Type wildcards.
+	 * If true, the related Entity Type value should be an exact match.
+	 * If false, the related Entity Type will be a wildcard and match all.
+	 */
+	UPROPERTY(EditAnywhere, Category = Wildcards, meta = (PinHiddenByDefault, InlineEditConditionToggle))
+	bool bUseSpecific_EntityKind = true;
+	UPROPERTY(EditAnywhere, Category = Wildcards, meta = (PinHiddenByDefault, InlineEditConditionToggle))
+	bool bUseSpecific_Domain = true;
+	UPROPERTY(EditAnywhere, Category = Wildcards, meta = (PinHiddenByDefault, InlineEditConditionToggle))
+	bool bUseSpecific_Country = true;
+	UPROPERTY(EditAnywhere, Category = Wildcards, meta = (PinHiddenByDefault, InlineEditConditionToggle))
+	bool bUseSpecific_Category = true;
+	UPROPERTY(EditAnywhere, Category = Wildcards, meta = (PinHiddenByDefault, InlineEditConditionToggle))
+	bool bUseSpecific_Subcategory = true;
+	UPROPERTY(EditAnywhere, Category = Wildcards, meta = (PinHiddenByDefault, InlineEditConditionToggle))
+	bool bUseSpecific_Specific = true;
+	UPROPERTY(EditAnywhere, Category = Wildcards, meta = (PinHiddenByDefault, InlineEditConditionToggle))
+	bool bUseSpecific_Extra = true;
+
 	/** Kind of entity */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|Structs")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (editcondition = "bUseSpecific_EntityKind"), Category = "GRILL DIS|Structs")
 	uint8 EntityKind;
 	/** Domain of entity (air, surface, subsurface, space, etc) */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|Structs")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (editcondition = "bUseSpecific_Domain"), Category = "GRILL DIS|Structs")
 	uint8 Domain;
 	/** Country to which the design of the entity is attributed */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ClampMin = "0", ClampMax = "65535"), Category = "GRILL DIS|Structs")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ClampMin = "0", ClampMax = "65535", editcondition = "bUseSpecific_Country"), Category = "GRILL DIS|Structs")
 	int32 Country;
 	/** The main category that describes the entity */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|Structs")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (editcondition = "bUseSpecific_Category"), Category = "GRILL DIS|Structs")
 	uint8 Category;
 	/** The particular subcategory to which the entity belongs based on the `Category` field */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|Structs")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (editcondition = "bUseSpecific_Subcategory"), Category = "GRILL DIS|Structs")
 	uint8 Subcategory;
 	/** Specific information about the entity based on `Subcategory` field */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|Structs")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (editcondition = "bUseSpecific_Specific"), Category = "GRILL DIS|Structs")
 	uint8 Specific;
 	/** Extra information required to describe a particular entity */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|Structs")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (editcondition = "bUseSpecific_Extra"), Category = "GRILL DIS|Structs")
 	uint8 Extra;
 
 	FEntityType()
 	{
-		EntityKind = -1;
-		Domain = -1;
-		Country = -1;
-		Category = -1;
-		Subcategory = -1;
-		Specific = -1;
-		Extra = -1;
+		EntityKind = 0;
+		Domain = 0;
+		Country = 0;
+		Category = 0;
+		Subcategory = 0;
+		Specific = 0;
+		Extra = 0;
 	}
 
 	FEntityType(DIS::EntityType EntityType)
@@ -966,13 +986,13 @@ struct FEntityType
 		{
 			UE_LOG(LogTemp, Error, TEXT("Failed to convert double to Entity Type. Resorting to default values."));
 
-			EntityKind = -1;
-			Domain = -1;
-			Country = -1;
-			Category = -1;
-			Subcategory = -1;
-			Specific = -1;
-			Extra = -1;
+			EntityKind = 0;
+			Domain = 0;
+			Country = 0;
+			Category = 0;
+			Subcategory = 0;
+			Specific = 0;
+			Extra = 0;
 
 			return;
 		}
@@ -988,31 +1008,31 @@ struct FEntityType
 
 	FEntityType FillWildcards(const FEntityType Other)
 	{
-		if (EntityKind == -1)
+		if (!bUseSpecific_EntityKind)
 		{
 			EntityKind = Other.EntityKind;
 		}
-		if (Domain == -1)
+		if (!bUseSpecific_Domain)
 		{
 			Domain = Other.Domain;
 		}
-		if (Country == -1)
+		if (!bUseSpecific_Country)
 		{
 			Country = Other.Country;
 		}
-		if (Category == -1)
+		if (!bUseSpecific_Category)
 		{
 			Category = Other.Category;
 		}
-		if (Subcategory == -1)
+		if (!bUseSpecific_Subcategory)
 		{
 			Subcategory = Other.Subcategory;
 		}
-		if (Specific == -1)
+		if (!bUseSpecific_Specific)
 		{
 			Specific = Other.Specific;
 		}
-		if (Extra == -1)
+		if (!bUseSpecific_Extra)
 		{
 			Extra = Other.Extra;
 		}
