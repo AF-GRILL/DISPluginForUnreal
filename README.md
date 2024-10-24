@@ -289,6 +289,7 @@ _**Additional info for all of these topics can be found in their respective sect
     - Entity Type
 		- This record specifies the kind of entity, the country of design, the domain, the specific identification of the entity, and any extra information necessary for describing the entity.
         - This value should be set on the component and will be used when sending automatic PDU updates.
+        - _**NOTE**_: The checkbox to the left of the Entity Type fields has no functionality in the DIS Send component outside of being able to edit the variable. This checkbox is used for Entity Type wildcards and only has functionality when receiving Entity Type info.
     - Entity ID
 		- This record specifies the ID of the associated entity fields. When sending, this can be combined with the Site ID and Application ID stored in the DIS Game Manager to form the unique identifier of the entity in the exercise.
         - This value should be set on the component and will be used when sending automatic PDU updates.
@@ -359,6 +360,10 @@ _**Additional info for all of these topics can be found in their respective sect
         - _**NOTE**_: In order for actors to appear in this section, they need to implement the DIS Interface. See the [_**DIS Interface**_](#dis-interface) section above.
     - Associated DIS Enumerations
         - All desired DIS Enumerations that should point to this actor.
+        - _**NOTE**_: The checkbox to the left of the Entity Type fields represents wildcards.
+            - If the checkbox is enabled, the specific value given will be referenced.
+            - If the checkbox is disabled, the value will be treated as a wildcard.
+            - Ex: The below image would use wildcards for the Specific and Extra fields.
         - _**NOTE**_: If duplicate enumerations are found across multiple entities, an appropriate message is logged and the most recent encountered actor to enumeration mapping is used.
         - _**NOTE**_: If a DIS Enumeration is received on the network and no mapping exists for it, an appropriate message is logged and the packet is ignored.
         - For a breakdown of the individual elements of a DIS Enumeration, refer to the [Naval Postgraduate School's Documentation](http://faculty.nps.edu/brutzman/vrtp/mil/navy/nps/disenumerations/jdbehtmlfiles/pdu/28.htm#:~:text=Description%3A%20The%20type%20of%20entity,necessary%20for%20describing%20the%20entity.).

@@ -1,8 +1,13 @@
 # Changelog
 
+## Beta 0.9.1 (untagged)
+
+- Fixed rotation issues when sending an entity that is far away from the Unreal Engine origin.
+- Implemented wildcards for Entity Types.
+
 ## Beta 0.9.0
 
-- Fixed rotation issues when an entity is far away from Unreal Engine origin.
+- Fixed rotation issues when receiving an entity is far away from Unreal Engine origin.
 - Updated DIS_BPFL to use FGeographicCoordinates rather than individual floats for lat and lon.
 - Updated function names in DIS_BPFL to use altitude rather than height
 - Renamed GetUnrealLocationAndOrientationFromEntityStatePdu to GetUnrealLocationAndRotationFromEntityStatePdu to better align with other function names inside of DIS_BPFL.
