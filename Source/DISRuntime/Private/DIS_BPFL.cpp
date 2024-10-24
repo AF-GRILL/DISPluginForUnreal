@@ -397,16 +397,15 @@ void UDIS_BPFL::GetUnrealRotationFromPsiThetaPhiRadiansAtLatLon(const FPsiThetaP
 
 	//Get NED of the world origin
 	FNorthEastDown originNorthEastDown;
-	GeoReferencingSystem->GetENUVectorsAtEngineLocation(FVector(0, 0, 0), originNorthEastDown.EastVector, originNorthEastDown.NorthVector, originNorthEastDown.DownVector);
-	originNorthEastDown.DownVector *= -1;
+	GetNorthEastDownVectorsFromUnrealLocation(FVector(0, 0, 0), GeoReferencingSystem, originNorthEastDown);
 
-	// Get the rotational difference between calculated NED and Unreal origin NED
 	double XAxisRotationAngle;
 	double YAxisRotationAngle;
 	double ZAxisRotationAngle;
+	//Get rotation difference going from world origin NED to entity location NED
 	GetNEDVectorRotationOffset(originNorthEastDown, NorthEastDownVectors, XAxisRotationAngle, YAxisRotationAngle, ZAxisRotationAngle);
 
-	//Get the HPR that the entity would 
+	//Get the HPR that the entity would have
 	FHeadingPitchRoll HeadingPitchRollDegrees;
 	CalculateHeadingPitchRollDegreesFromPsiThetaPhiRadiansAtLatLon(PsiThetaPhiRadians, LatLonAltDegreesMeters, HeadingPitchRollDegrees);
 	//Heading of 0 is East, but heading of 0 in Unreal is North. Subtract 90 to make up for the offset
@@ -528,19 +527,24 @@ void UDIS_BPFL::GetHeadingPitchRollFromUnrealRotation(const FRotator UnrealRotat
 	GetNorthEastDownVectorsFromUnrealLocation(UnrealLocation, GeoReferencingSystem, NorthEastDownVectors);
 
 	//Get NED of the world origin
-	FNorthEastDown OriginNorthEastDown;
-	GeoReferencingSystem->GetENUVectorsAtEngineLocation(FVector(0, 0, 0), OriginNorthEastDown.EastVector, OriginNorthEastDown.NorthVector, OriginNorthEastDown.DownVector);
-	OriginNorthEastDown.DownVector *= -1;
+	FNorthEastDown originNorthEastDown;
+	GetNorthEastDownVectorsFromUnrealLocation(FVector(0, 0, 0), GeoReferencingSystem, originNorthEastDown);
 
-	// Get the rotational difference between calculated NED and Unreal origin NED
-	const auto XAxisRotationAngle = FMath::Acos(FVector::DotProduct(NorthEastDownVectors.EastVector, OriginNorthEastDown.EastVector));
-	const auto YAxisRotationAngle = FMath::Acos(FVector::DotProduct(NorthEastDownVectors.DownVector, OriginNorthEastDown.DownVector));
-	const auto ZAxisRotationAngle = FMath::Acos(FVector::DotProduct(NorthEastDownVectors.NorthVector, OriginNorthEastDown.NorthVector));
+	double XAxisRotationAngle;
+	double YAxisRotationAngle;
+	double ZAxisRotationAngle;
+	//Get rotation difference going from entity location NED to world origin NED
+	GetNEDVectorRotationOffset(NorthEastDownVectors, originNorthEastDown, XAxisRotationAngle, YAxisRotationAngle, ZAxisRotationAngle);
 
-	HeadingPitchRollDegrees.Roll = UnrealRotation.Roll - XAxisRotationAngle;
-	HeadingPitchRollDegrees.Pitch = UnrealRotation.Pitch - YAxisRotationAngle;
+	FTransform entityTransform = FTransform(FRotator(YAxisRotationAngle, ZAxisRotationAngle, XAxisRotationAngle), UnrealLocation, FVector(1, 1, 1));
+	FTransform originTransformWithHPR = FTransform(FRotator(UnrealRotation.Pitch, UnrealRotation.Yaw, UnrealRotation.Roll), FVector(0, 0, 0), FVector(1, 1, 1));
+
+	FTransform entityTransformWithHPR = originTransformWithHPR * entityTransform;
+
+	HeadingPitchRollDegrees.Roll = entityTransformWithHPR.GetRotation().Rotator().Roll;
+	HeadingPitchRollDegrees.Pitch = entityTransformWithHPR.GetRotation().Rotator().Pitch;
 	//Heading of 0 is East, but heading of 0 in Unreal is North. Add 90 to make up for the offset
-	HeadingPitchRollDegrees.Heading = UnrealRotation.Yaw - ZAxisRotationAngle + 90;
+	HeadingPitchRollDegrees.Heading = entityTransformWithHPR.GetRotation().Rotator().Yaw + 90;
 }
 
 void UDIS_BPFL::GetPsiThetaPhiDegreesFromUnrealRotation(const FRotator UnrealRotation, const FVector UnrealLocation, AGeoReferencingSystem* GeoReferencingSystem, FPsiThetaPhi& PsiThetaPhiDegrees)
