@@ -20,6 +20,7 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FReceivedRemoveEntityPDU, FRemoveEnt
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FReceivedStopFreezePDU, FStopFreezePDU, StopFreezePDU);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FReceivedStartResumePDU, FStartResumePDU, StartResumePDU);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FReceivedElectromagneticEmissionsPDU, FElectromagneticEmissionsPDU, ElectromagneticEmissionsPDU);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FReceivedDesignatorPDU, FDesignatorPDU, DesignatorPDU);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FReceivedSignalPDU, FSignalPDU, SignalPDU);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FGroundClampingUpdate, TArray<FTransform>, ClampTransforms);
 
@@ -62,6 +63,7 @@ public:
 	void HandleStopFreezePDU(FStopFreezePDU StopFreezePDUIn);
 	void HandleStartResumePDU(FStartResumePDU StartResumePDUIn);
 	void HandleElectromagneticEmissionsPDU(FElectromagneticEmissionsPDU ElectromagneticEmissionsPDUIn);
+	void HandleDesignatorPDU(FDesignatorPDU DesignatorPDUIn);
 	void HandleSignalPDU(FSignalPDU SignalPDUIn);
 	void DoDeadReckoning(float DeltaTime);
 
@@ -78,6 +80,33 @@ public:
 	UPROPERTY(BlueprintAssignable, Category = "GRILL DIS|DIS Receive Component|Event")
 		FDeadReckoningUpdate OnDeadReckoningUpdate;
 	/**
+	 * Called after Ground Clamping is performed by the component.
+	 * Passes ground clamp transforms (if clamping multiple points) as a parameter.
+	 *
+	 * NOTE: Gets called after receiving Entity State PDUs or finishing Dead Reckoning Updates if Ground Clamping is enabled on the DISComponent.
+	 * Respective Entity State and Dead Reckoning events are called first. Implementing Ground Clamping location updates on top of these event may cause jitter in actor location.
+	 */
+	UPROPERTY(BlueprintAssignable, Category = "GRILL DIS|DIS Receive Component|Event")
+		FGroundClampingUpdate OnGroundClampingUpdate;
+	/**
+	 * Called after a Designator PDU is received by the component.
+	 * Passes the Designator PDU that was received as a parameter.
+	 */
+	UPROPERTY(BlueprintAssignable, Category = "GRILL DIS|DIS Receive Component|Event")
+		FReceivedDesignatorPDU OnReceivedDesignatorPDU;
+	/**
+	 * Called after a Detonation PDU is received by the component.
+	 * Passes the Detonation PDU that was received as a parameter.
+	 */
+	UPROPERTY(BlueprintAssignable, Category = "GRILL DIS|DIS Receive Component|Event")
+		FReceivedDetonationPDU OnReceivedDetonationPDU;
+	/**
+	 * Called after a ElectromagneticEmissions PDU is received by the component.
+	 * Passes the ElectromagneticEmissions PDU that was received as a parameter.
+	 */
+	UPROPERTY(BlueprintAssignable, Category = "GRILL DIS|DIS Receive Component|Event")
+		FReceivedElectromagneticEmissionsPDU OnReceivedElectromagneticEmissionsPDU;
+	/**
 	 * Called after an Entity State PDU is received by the component. The component updates associated variables prior to broadcasting this event.
 	 * Passes the Entity State PDU that was received as a parameter.
 	 */
@@ -89,12 +118,6 @@ public:
 	 */
 	UPROPERTY(BlueprintAssignable, Category = "GRILL DIS|DIS Receive Component|Event")
 		FReceivedEntityStateUpdatePDU OnReceivedEntityStateUpdatePDU;
-	/**
-	 * Called after a Detonation PDU is received by the component.
-	 * Passes the Detonation PDU that was received as a parameter.
-	 */
-	UPROPERTY(BlueprintAssignable, Category = "GRILL DIS|DIS Receive Component|Event")
-		FReceivedDetonationPDU OnReceivedDetonationPDU;
 	/**
 	 * Called after a Fire PDU is received by the component.
 	 * Passes the Fire PDU that was received as a parameter.
@@ -108,6 +131,12 @@ public:
 	UPROPERTY(BlueprintAssignable, Category = "GRILL DIS|DIS Receive Component|Event")
 		FReceivedRemoveEntityPDU OnReceivedRemoveEntityPDU;
 	/**
+	 * Called after a Signal PDU is received by the component.
+	 * Passes the Signal PDU that was received as a parameter.
+	 */
+	UPROPERTY(BlueprintAssignable, Category = "GRILL DIS|DIS Receive Component|Event")
+		FReceivedSignalPDU OnReceivedSignalPDU;
+	/**
 	 * Called after a Stop/Freeze PDU is received by the component.
 	 * Passes the Stop/Freeze PDU that was received as a parameter.
 	 */
@@ -119,27 +148,6 @@ public:
 	 */
 	UPROPERTY(BlueprintAssignable, Category = "GRILL DIS|DIS Receive Component|Event")
 		FReceivedStartResumePDU OnReceivedStartResumePDU;
-	/**
-	 * Called after a ElectromagneticEmissions PDU is received by the component.
-	 * Passes the ElectromagneticEmissions PDU that was received as a parameter.
-	 */
-	UPROPERTY(BlueprintAssignable, Category = "GRILL DIS|DIS Receive Component|Event")
-		FReceivedElectromagneticEmissionsPDU OnReceivedElectromagneticEmissionsPDU;
-	/**
-	 * Called after a Signal PDU is received by the component.
-	 * Passes the Signal PDU that was received as a parameter.
-	 */
-	UPROPERTY(BlueprintAssignable, Category = "GRILL DIS|DIS Receive Component|Event")
-		FReceivedSignalPDU OnReceivedSignalPDU;
-	/**
-	 * Called after Ground Clamping is performed by the component.
-	 * Passes ground clamp transforms (if clamping multiple points) as a parameter.
-	 * 
-	 * NOTE: Gets called after receiving Entity State PDUs or finishing Dead Reckoning Updates if Ground Clamping is enabled on the DISComponent.
-	 * Respective Entity State and Dead Reckoning events are called first. Implementing Ground Clamping location updates on top of these event may cause jitter in actor location.
-	 */
-	UPROPERTY(BlueprintAssignable, Category = "GRILL DIS|DIS Receive Component|Event")
-		FGroundClampingUpdate OnGroundClampingUpdate;
 
 	/**
 	 * The most recent Entity State PDU that has been received.

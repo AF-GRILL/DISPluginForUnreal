@@ -53,6 +53,7 @@ void ADISGameManager::BeginPlay()
 	GetGameInstance()->GetSubsystem<UPDUProcessor>()->OnStopFreezePDUProcessed.AddDynamic(this, &ADISGameManager::HandleStopFreezePDU);
 	GetGameInstance()->GetSubsystem<UPDUProcessor>()->OnStartResumePDUProcessed.AddDynamic(this, &ADISGameManager::HandleStartResumePDU);
 	GetGameInstance()->GetSubsystem<UPDUProcessor>()->OnElectromagneticEmissionsPDUProcessed.AddDynamic(this, &ADISGameManager::HandleElectromagneticEmissionsPDU);
+	GetGameInstance()->GetSubsystem<UPDUProcessor>()->OnDesignatorPDUProcessed.AddDynamic(this, &ADISGameManager::HandleDesignatorPDU);
 	GetGameInstance()->GetSubsystem<UPDUProcessor>()->OnSignalPDUProcessed.AddDynamic(this, &ADISGameManager::HandleSignalPDU);
 
 	GeoReferencingSystem = AGeoReferencingSystem::GetGeoReferencingSystem(Cast<UObject>(GetWorld()));
@@ -282,6 +283,21 @@ void ADISGameManager::HandleElectromagneticEmissionsPDU(FElectromagneticEmission
 		if (DISComponent != nullptr)
 		{
 			DISComponent->HandleElectromagneticEmissionsPDU(ElectromagneticEmissionsPDUIn);
+		}
+	}
+}
+
+void ADISGameManager::HandleDesignatorPDU(FDesignatorPDU DesignatorPDUIn)
+{
+	//Verify that we are the appropriate sim to handle the DesignatorPDUIn
+	if (DesignatorPDUIn.ExerciseID == ExerciseID)
+	{
+		//Get associated DISComponent and relay information
+		UDISReceiveComponent* DISComponent = GetAssociatedDISComponent(DesignatorPDUIn.DesignatingEntityID);
+
+		if (DISComponent != nullptr)
+		{
+			DISComponent->HandleDesignatorPDU(DesignatorPDUIn);
 		}
 	}
 }

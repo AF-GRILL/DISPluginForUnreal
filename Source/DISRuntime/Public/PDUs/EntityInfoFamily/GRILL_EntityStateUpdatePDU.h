@@ -57,9 +57,9 @@ struct FEntityStateUpdatePDU : public FEntityInformationFamilyPDU
 		EntityID = EntityStateUpdatePDUIn.getEntityID();
 
 		//location
-		EcefLocation[0] = EntityStateUpdatePDUIn.getEntityLocation().getX();
-		EcefLocation[1] = EntityStateUpdatePDUIn.getEntityLocation().getY();
-		EcefLocation[2] = EntityStateUpdatePDUIn.getEntityLocation().getZ();
+		EcefLocation.X = EntityStateUpdatePDUIn.getEntityLocation().getX();
+		EcefLocation.Y = EntityStateUpdatePDUIn.getEntityLocation().getY();
+		EcefLocation.Z = EntityStateUpdatePDUIn.getEntityLocation().getZ();
 
 		//rotation
 		const DIS::Orientation& rotation = EntityStateUpdatePDUIn.getEntityOrientation();
@@ -68,9 +68,9 @@ struct FEntityStateUpdatePDU : public FEntityInformationFamilyPDU
 		EntityOrientation.Pitch = rotation.getTheta();
 
 		//velocity (originally in float so this is fine)
-		EntityLinearVelocity[0] = EntityStateUpdatePDUIn.getEntityLinearVelocity().getX();
-		EntityLinearVelocity[1] = EntityStateUpdatePDUIn.getEntityLinearVelocity().getY();
-		EntityLinearVelocity[2] = EntityStateUpdatePDUIn.getEntityLinearVelocity().getZ();
+		EntityLinearVelocity.X = EntityStateUpdatePDUIn.getEntityLinearVelocity().getX();
+		EntityLinearVelocity.Y = EntityStateUpdatePDUIn.getEntityLinearVelocity().getY();
+		EntityLinearVelocity.Z = EntityStateUpdatePDUIn.getEntityLinearVelocity().getZ();
 
 		//Single Vars
 		Padding1 = EntityStateUpdatePDUIn.getPadding1();
@@ -98,9 +98,9 @@ struct FEntityStateUpdatePDU : public FEntityInformationFamilyPDU
 		EntityStateUpdatePDUOut.setEntityLinearVelocity(OutLinearVelocity);
 
 		DIS::Vector3Double OutLocation;
-		OutLocation.setX(EcefLocation[0]);
-		OutLocation.setY(EcefLocation[1]);
-		OutLocation.setZ(EcefLocation[2]);
+		OutLocation.setX(EcefLocation.X);
+		OutLocation.setY(EcefLocation.Y);
+		OutLocation.setZ(EcefLocation.Z);
 		EntityStateUpdatePDUOut.setEntityLocation(OutLocation);
 
 		DIS::Orientation OutOrientation;

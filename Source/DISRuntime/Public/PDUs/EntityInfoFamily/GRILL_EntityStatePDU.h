@@ -74,9 +74,9 @@ struct FEntityStatePDU : public FEntityInformationFamilyPDU
 		EntityID = EntityStatePDUIn.getEntityID();
 
 		//location
-		EcefLocation[0] = EntityStatePDUIn.getEntityLocation().getX();
-		EcefLocation[1] = EntityStatePDUIn.getEntityLocation().getY();
-		EcefLocation[2] = EntityStatePDUIn.getEntityLocation().getZ();
+		EcefLocation.X = EntityStatePDUIn.getEntityLocation().getX();
+		EcefLocation.Y = EntityStatePDUIn.getEntityLocation().getY();
+		EcefLocation.Z = EntityStatePDUIn.getEntityLocation().getZ();
 
 		//rotation
 		const DIS::Orientation& rotation = EntityStatePDUIn.getEntityOrientation();
@@ -85,9 +85,9 @@ struct FEntityStatePDU : public FEntityInformationFamilyPDU
 		EntityOrientation.Pitch = rotation.getTheta();
 
 		//velocity (originally in float so this is fine)
-		EntityLinearVelocity[0] = EntityStatePDUIn.getEntityLinearVelocity().getX();
-		EntityLinearVelocity[1] = EntityStatePDUIn.getEntityLinearVelocity().getY();
-		EntityLinearVelocity[2] = EntityStatePDUIn.getEntityLinearVelocity().getZ();
+		EntityLinearVelocity.X = EntityStatePDUIn.getEntityLinearVelocity().getX();
+		EntityLinearVelocity.Y = EntityStatePDUIn.getEntityLinearVelocity().getY();
+		EntityLinearVelocity.Z = EntityStatePDUIn.getEntityLinearVelocity().getZ();
 
 		//Dead reckoning
 		DeadReckoningParameters = EntityStatePDUIn.getDeadReckoningParameters();
@@ -130,9 +130,9 @@ struct FEntityStatePDU : public FEntityInformationFamilyPDU
 		EntityStatePDUOut.setEntityLinearVelocity(OutLinearVelocity);
 
 		DIS::Vector3Double OutLocation;
-		OutLocation.setX(EcefLocation[0]);
-		OutLocation.setY(EcefLocation[1]);
-		OutLocation.setZ(EcefLocation[2]);
+		OutLocation.setX(EcefLocation.X);
+		OutLocation.setY(EcefLocation.Y);
+		OutLocation.setZ(EcefLocation.Z);
 		EntityStatePDUOut.setEntityLocation(OutLocation);
 
 		DIS::Orientation OutOrientation;

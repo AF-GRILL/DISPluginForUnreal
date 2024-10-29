@@ -18,6 +18,7 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FFirePDUProcessed, FFirePDU, FirePDU
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FRemoveEntityPDUProcessed, FRemoveEntityPDU, RemoveEntityPDU);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FStartResumePDUProcessed, FStartResumePDU, StartResumePDU);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FStopFreezePDUProcessed, FStopFreezePDU, StopFreezePDU);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FDesignatorPDUProcessed, FDesignatorPDU, DesignatorPDU);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FElectromagneticEmissionsPDUProcessed, FElectromagneticEmissionsPDU, ElectromagneticEmissionsPDU);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FSignalPDUProcessed, FSignalPDU, SignalPDU);
 
@@ -91,6 +92,12 @@ public:
 	UPROPERTY(BlueprintAssignable, Category = "GRILL DIS|PDU Processor|Events")
 		FElectromagneticEmissionsPDUProcessed OnElectromagneticEmissionsPDUProcessed;
 	/**
+	 * Called after a Designator PDU is processed.
+	 * Passes the Designator PDU as a parameter.
+	 */
+	UPROPERTY(BlueprintAssignable, Category = "GRILL DIS|PDU Processor|Events")
+		FDesignatorPDUProcessed OnDesignatorPDUProcessed;
+	/**
 	 * Called after a Signal PDU is processed.
 	 * Passes the Signal PDU as a parameter.
 	 */
@@ -131,6 +138,7 @@ private:
 	const int ARTICULATION_PARAMETER_BYTES = 16;
 
 	//NOTE: Below values reflect the minimum length that their respective PDUs can be
+	const int DESIGNATOR_PDU_BYTES = 113;
 	const int DETONATION_PDU_BYTES = 104;
 	const int ENTITY_STATE_PDU_BYTES = 144;
 	const int ENTITY_STATE_UPDATE_PDU_BYTES = 72;

@@ -166,6 +166,11 @@ void UDISReceiveComponent::HandleElectromagneticEmissionsPDU(FElectromagneticEmi
 	OnReceivedElectromagneticEmissionsPDU.Broadcast(ElectromagneticEmissionsPDUIn);
 }
 
+void UDISReceiveComponent::HandleDesignatorPDU(FDesignatorPDU DesignatorPDUIn)
+{
+	OnReceivedDesignatorPDU.Broadcast(DesignatorPDUIn);
+}
+
 void UDISReceiveComponent::HandleSignalPDU(FSignalPDU SignalPDUIn)
 {
 	OnReceivedSignalPDU.Broadcast(SignalPDUIn);

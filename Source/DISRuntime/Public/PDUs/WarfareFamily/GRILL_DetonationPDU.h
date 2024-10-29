@@ -70,19 +70,19 @@ struct FDetonationPDU : public FWarfareFamilyPDU
 		EventID = DetonationPDUIn.getEventID();
 
 		//velocity
-		Velocity[0] = DetonationPDUIn.getVelocity().getX();
-		Velocity[1] = DetonationPDUIn.getVelocity().getY();
-		Velocity[2] = DetonationPDUIn.getVelocity().getZ();
+		Velocity.X = DetonationPDUIn.getVelocity().getX();
+		Velocity.Y = DetonationPDUIn.getVelocity().getY();
+		Velocity.Z = DetonationPDUIn.getVelocity().getZ();
 
 		//location
-		EcefLocation[0] = DetonationPDUIn.getLocationInWorldCoordinates().getX();
-		EcefLocation[1] = DetonationPDUIn.getLocationInWorldCoordinates().getY();
-		EcefLocation[2] = DetonationPDUIn.getLocationInWorldCoordinates().getZ();
+		EcefLocation.X = DetonationPDUIn.getLocationInWorldCoordinates().getX();
+		EcefLocation.Y = DetonationPDUIn.getLocationInWorldCoordinates().getY();
+		EcefLocation.Z = DetonationPDUIn.getLocationInWorldCoordinates().getZ();
 
 		//location
-		LocationInEntityCoords[0] = DetonationPDUIn.getLocationInEntityCoordinates().getX();
-		LocationInEntityCoords[1] = DetonationPDUIn.getLocationInEntityCoordinates().getY();
-		LocationInEntityCoords[2] = DetonationPDUIn.getLocationInEntityCoordinates().getZ();
+		LocationInEntityCoords.X = DetonationPDUIn.getLocationInEntityCoordinates().getX();
+		LocationInEntityCoords.Y = DetonationPDUIn.getLocationInEntityCoordinates().getY();
+		LocationInEntityCoords.Z = DetonationPDUIn.getLocationInEntityCoordinates().getZ();
 
 		//burst descriptor
 		BurstDescriptor = DetonationPDUIn.getBurstDescriptor();
@@ -118,9 +118,9 @@ struct FDetonationPDU : public FWarfareFamilyPDU
 		DetonationPDUOut.setVelocity(OutVelocity);
 
 		DIS::Vector3Double OutLocation;
-		OutLocation.setX(EcefLocation[0]);
-		OutLocation.setY(EcefLocation[1]);
-		OutLocation.setZ(EcefLocation[2]);
+		OutLocation.setX(EcefLocation.X);
+		OutLocation.setY(EcefLocation.Y);
+		OutLocation.setZ(EcefLocation.Z);
 		DetonationPDUOut.setLocationInWorldCoordinates(OutLocation);
 
 		DIS::Vector3Float OutLocationInEntityCoords;

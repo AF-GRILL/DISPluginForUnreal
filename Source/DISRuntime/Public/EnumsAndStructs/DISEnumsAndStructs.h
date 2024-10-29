@@ -916,11 +916,11 @@ struct FEntityType
 
 	/**
 	 * Boolean values for Entity Type wildcards.
-	 * If true, the related Entity Type value should be an exact match.
-	 * If false, the related Entity Type will be a wildcard and match all.
+	 * If true, the related Entity Type field should be an exact match.
+	 * If false, the related Entity Type field will be a wildcard and match all.
 	 */
 	UPROPERTY(EditAnywhere, Category = Wildcards, meta = (PinHiddenByDefault, InlineEditConditionToggle))
-	bool bUseSpecific_EntityKind = true;
+	bool bUseSpecific_EntityKind = true; 
 	UPROPERTY(EditAnywhere, Category = Wildcards, meta = (PinHiddenByDefault, InlineEditConditionToggle))
 	bool bUseSpecific_Domain = true;
 	UPROPERTY(EditAnywhere, Category = Wildcards, meta = (PinHiddenByDefault, InlineEditConditionToggle))
@@ -935,25 +935,25 @@ struct FEntityType
 	bool bUseSpecific_Extra = true;
 
 	/** Kind of entity */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (editcondition = "bUseSpecific_EntityKind"), Category = "GRILL DIS|Structs")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (editcondition = bUseSpecific_EntityKind), Category = "GRILL DIS|Structs")
 	uint8 EntityKind;
 	/** Domain of entity (air, surface, subsurface, space, etc) */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (editcondition = "bUseSpecific_Domain"), Category = "GRILL DIS|Structs")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (editcondition = bUseSpecific_Domain), Category = "GRILL DIS|Structs")
 	uint8 Domain;
 	/** Country to which the design of the entity is attributed */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ClampMin = "0", ClampMax = "65535", editcondition = "bUseSpecific_Country"), Category = "GRILL DIS|Structs")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ClampMin = "0", ClampMax = "65535", editcondition = bUseSpecific_Country), Category = "GRILL DIS|Structs")
 	int32 Country;
 	/** The main category that describes the entity */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (editcondition = "bUseSpecific_Category"), Category = "GRILL DIS|Structs")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (editcondition = bUseSpecific_Category), Category = "GRILL DIS|Structs")
 	uint8 Category;
 	/** The particular subcategory to which the entity belongs based on the `Category` field */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (editcondition = "bUseSpecific_Subcategory"), Category = "GRILL DIS|Structs")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (editcondition = bUseSpecific_Subcategory), Category = "GRILL DIS|Structs")
 	uint8 Subcategory;
 	/** Specific information about the entity based on `Subcategory` field */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (editcondition = "bUseSpecific_Specific"), Category = "GRILL DIS|Structs")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (editcondition = bUseSpecific_Specific), Category = "GRILL DIS|Structs")
 	uint8 Specific;
 	/** Extra information required to describe a particular entity */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (editcondition = "bUseSpecific_Extra"), Category = "GRILL DIS|Structs")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (editcondition = bUseSpecific_Extra), Category = "GRILL DIS|Structs")
 	uint8 Extra;
 
 	FEntityType()
@@ -1320,12 +1320,12 @@ struct FDeadReckoningParameters
 	{
 		DeadReckoningAlgorithm = static_cast<EDeadReckoningAlgorithm>(DeadReckoningParameter.getDeadReckoningAlgorithm());
 		OtherParameters = TArray<uint8>(reinterpret_cast<const uint8*>(DeadReckoningParameter.getOtherParameters()), 15);
-		EntityLinearAcceleration[0] = DeadReckoningParameter.getEntityLinearAcceleration().getX();
-		EntityLinearAcceleration[1] = DeadReckoningParameter.getEntityLinearAcceleration().getY();
-		EntityLinearAcceleration[2] = DeadReckoningParameter.getEntityLinearAcceleration().getZ();
-		EntityAngularVelocity[0] = DeadReckoningParameter.getEntityAngularVelocity().getX();
-		EntityAngularVelocity[1] = DeadReckoningParameter.getEntityAngularVelocity().getY();
-		EntityAngularVelocity[2] = DeadReckoningParameter.getEntityAngularVelocity().getZ();
+		EntityLinearAcceleration.X = DeadReckoningParameter.getEntityLinearAcceleration().getX();
+		EntityLinearAcceleration.Y = DeadReckoningParameter.getEntityLinearAcceleration().getY();
+		EntityLinearAcceleration.Z = DeadReckoningParameter.getEntityLinearAcceleration().getZ();
+		EntityAngularVelocity.X = DeadReckoningParameter.getEntityAngularVelocity().getX();
+		EntityAngularVelocity.Y = DeadReckoningParameter.getEntityAngularVelocity().getY();
+		EntityAngularVelocity.Z = DeadReckoningParameter.getEntityAngularVelocity().getZ();
 	}
 
 	DIS::DeadReckoningParameter ToOpenDIS() const
@@ -1851,9 +1851,9 @@ struct FElectromagneticEmissionSystemData
 		EmissionsPadding = Data.getEmissionsPadding2();
 		EmitterSystem = Data.getEmitterSystem();
 
-		Location[0] = Data.getLocation().getX();
-		Location[1] = Data.getLocation().getY();
-		Location[2] = Data.getLocation().getZ();
+		Location.X = Data.getLocation().getX();
+		Location.Y = Data.getLocation().getY();
+		Location.Z = Data.getLocation().getZ();
 
 		BeamDataRecords.Empty();
 		for (int i = 0; i < Data.getNumberOfBeams(); i++)
@@ -1872,9 +1872,9 @@ struct FElectromagneticEmissionSystemData
 		outSystemData.setEmissionsPadding2(EmissionsPadding);
 		outSystemData.setEmitterSystem(EmitterSystem.ToOpenDIS());
 
-		outSystemData.getLocation().setX(Location[0]);
-		outSystemData.getLocation().setY(Location[1]);
-		outSystemData.getLocation().setZ(Location[2]);
+		outSystemData.getLocation().setX(Location.X);
+		outSystemData.getLocation().setY(Location.Y);
+		outSystemData.getLocation().setZ(Location.Z);
 
 		std::vector<DIS::ElectromagneticEmissionBeamData> outBeamData;
 		for (FElectromagneticEmissionBeamData Param : BeamDataRecords)

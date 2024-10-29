@@ -187,6 +187,24 @@ void UPDUProcessor::ProcessDISPacket(const TArray<uint8>& InData)
 
 		return;
 	}
+	case EPDUType::Designator:
+	{
+		if (bytesArrayLength != DESIGNATOR_PDU_BYTES)
+		{
+			UE_LOG(LogPDUProcessor, Error, TEXT("Received Designator PDU packet with an invalid length! Ignoring the PDU."));
+			return;
+		}
+
+		DIS::DesignatorPdu receivedPDU;
+		receivedPDU.unmarshal(ds);
+
+		FDesignatorPDU pdu;
+		pdu.SetupFromOpenDIS(receivedPDU);
+
+		OnDesignatorPDUProcessed.Broadcast(pdu);
+
+		return;
+	}
 	case EPDUType::Signal:
 	{
 		if (!CheckSignalPDUProperLength(InData))

@@ -76,14 +76,14 @@ struct FFirePDU : public FWarfareFamilyPDU
 		MunitionEntityID.Entity = FirePDUIn.getMunitionID().getEntity();
 
 		//velocity
-		Velocity[0] = FirePDUIn.getVelocity().getX();
-		Velocity[1] = FirePDUIn.getVelocity().getY();
-		Velocity[2] = FirePDUIn.getVelocity().getZ();
+		Velocity.X = FirePDUIn.getVelocity().getX();
+		Velocity.Y = FirePDUIn.getVelocity().getY();
+		Velocity.Z = FirePDUIn.getVelocity().getZ();
 
 		//location
-		EcefLocation[0] = FirePDUIn.getLocationInWorldCoordinates().getX();
-		EcefLocation[1] = FirePDUIn.getLocationInWorldCoordinates().getY();
-		EcefLocation[2] = FirePDUIn.getLocationInWorldCoordinates().getZ();
+		EcefLocation.X = FirePDUIn.getLocationInWorldCoordinates().getX();
+		EcefLocation.Y = FirePDUIn.getLocationInWorldCoordinates().getY();
+		EcefLocation.Z = FirePDUIn.getLocationInWorldCoordinates().getZ();
 
 		//event id
 		EventID = FirePDUIn.getEventID();
@@ -112,9 +112,9 @@ struct FFirePDU : public FWarfareFamilyPDU
 		FirePDUOut.setVelocity(OutVelocity);
 
 		DIS::Vector3Double OutLocation;
-		OutLocation.setX(EcefLocation[0]);
-		OutLocation.setY(EcefLocation[1]);
-		OutLocation.setZ(EcefLocation[2]);
+		OutLocation.setX(EcefLocation.X);
+		OutLocation.setY(EcefLocation.Y);
+		OutLocation.setZ(EcefLocation.Z);
 		FirePDUOut.setLocationInWorldCoordinates(OutLocation);
 
 		FirePDUOut.setEventID(EventID.ToOpenDIS());
