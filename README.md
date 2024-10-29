@@ -29,15 +29,16 @@
 # Implemented DIS PDUs
 
 The GRILL DIS for Unreal plugin currently supports the below PDUs:
+- Designator
+- Detonation
+- Electromagnetic Emissions
 - Entity State
 - Entity State Update
-- Remove Entity
 - Fire
-- Detonate
+- Remove Entity
+- Signal
 - Start Resume
 - Stop Freeze
-- Signal
-- Electromagnetic Emissions
 
 If additional PDU support is desired a few steps need to be taken:
 1. Make a new Unreal Engine C++ class to contain the PDU information
@@ -202,6 +203,7 @@ _**Additional info for all of these topics can be found in their respective sect
 - Contains event bindings for:
     - Receiving each type of DIS Entity PDU currently implemented.
     - Dead reckoning update
+    - Ground clamping update
 	
 ![DISReceiveComponentEvents](Resources/ReadMeImages/DISReceiveComponentEvents.png)
 	
