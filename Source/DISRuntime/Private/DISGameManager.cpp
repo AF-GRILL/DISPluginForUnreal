@@ -83,15 +83,31 @@ void ADISGameManager::BeginPlay()
 		{
 			for (const FEntityType& EntityType : DISMapping.AssociatedDISEnumerations)
 			{
-				//Check to see if there is an associated actor for the entity type already
-				TSoftClassPtr<AActor>* associatedSoftClassReference = DISClassMappings.Find(EntityType);
-
-				if (associatedSoftClassReference != nullptr && *associatedSoftClassReference != nullptr)
+				//Store wildcards and non-wildcards separately				
+				if (EntityType.HasWildcards())
 				{
-					UE_LOG(LogDISGameManager, Warning, TEXT("A DIS Enumeration mapping already exists for %s and is linked to %s. This enumeration will now point to: %s"), *EntityType.ToString(), *associatedSoftClassReference->GetAssetName(), *DISMapping.DISEntity.GetAssetName());
-				}
+					//Check to see if there is an associated actor for the wildcard already
+					TSoftClassPtr<AActor>* existingWildcardReference = WildcardMappings.Find(EntityType);
 
-				DISClassMappings.Add(EntityType, DISMapping.DISEntity);
+					if (existingWildcardReference != nullptr && *existingWildcardReference != nullptr)
+					{
+						UE_LOG(LogDISGameManager, Warning, TEXT("A wildcard mapping already exists for %s and is currently linked to %s. This wildcard will now point to: %s"), *EntityType.ToString(), *existingWildcardReference->GetAssetName(), *DISMapping.DISEntity.GetAssetName());
+					}
+
+					WildcardMappings.Add(EntityType, DISMapping.DISEntity);
+				}
+				else
+				{
+					//Check to see if there is an associated actor for the entity type already
+					TSoftClassPtr<AActor>* associatedSoftClassReference = DISClassMappings.Find(EntityType);
+
+					if (associatedSoftClassReference != nullptr && *associatedSoftClassReference != nullptr)
+					{
+						UE_LOG(LogDISGameManager, Warning, TEXT("A DIS Enumeration mapping already exists for %s and is linked to %s. This enumeration will now point to: %s"), *EntityType.ToString(), *associatedSoftClassReference->GetAssetName(), *DISMapping.DISEntity.GetAssetName());
+					}
+
+					DISClassMappings.Add(EntityType, DISMapping.DISEntity);
+				}
 			}
 		}
 	}
@@ -325,19 +341,25 @@ void ADISGameManager::SpawnNewEntityFromEntityState(FEntityStatePDU EntityStateP
 	//If an actor was not found, check to see if there is a wildcard mapping -- else, load the found actor
 	if (associatedSoftClassReference == nullptr)
 	{
-		TMap<FEntityType, TSoftClassPtr<AActor>> WildcardMappings;
-		for (const TPair<FEntityType, TSoftClassPtr<AActor>>& Pair : DISClassMappings)
+		TMap<FEntityType, TSoftClassPtr<AActor>> FilledWildcardMappings;
+
+		for (const TPair<FEntityType, TSoftClassPtr<AActor>>& Pair : WildcardMappings)
 		{
-			FEntityType Key = Pair.Key;
 			FEntityType FilledKey = FEntityType(Pair.Key).FillWildcards(EntityStatePDUIn.EntityType);
-			if (!(Key == FilledKey))
+
+			//Check to see if there is an associated actor for the wildcard already
+			TSoftClassPtr<AActor>* existingWildcardReference = FilledWildcardMappings.Find(FilledKey);
+
+			if (existingWildcardReference != nullptr && *existingWildcardReference != nullptr)
 			{
-				Key = FilledKey;
-				WildcardMappings.Add(Key, Pair.Value);
+				UE_LOG(LogDISGameManager, Warning, TEXT("Multiple wildcards found that can match %s and is currently linked to %s. This wildcard will now point to: %s"), *EntityStatePDUIn.EntityType.ToString(), *existingWildcardReference->GetAssetName(), *Pair.Value.GetAssetName());
 			}
+
+			FilledWildcardMappings.Add(FilledKey, Pair.Value);
 		}
 
-		auto NewSoftClassRef = WildcardMappings.Find(EntityStatePDUIn.EntityType);
+		//If a wildcard matches, load the associated class
+		auto NewSoftClassRef = FilledWildcardMappings.Find(EntityStatePDUIn.EntityType);
 		if (NewSoftClassRef != nullptr) 
 		{
 			associatedClass = NewSoftClassRef->LoadSynchronous();

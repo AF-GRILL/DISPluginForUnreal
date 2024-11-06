@@ -201,7 +201,12 @@ protected:
 
 	UFUNCTION()
 		void HandleOnDISEntityDestroyed(AActor* DestroyedActor);
-	
+
+	/**
+	 * The mapping between DIS Wildcards and corresponding entity actors.
+	 */
+	UPROPERTY(BlueprintReadOnly, Category = "GRILL DIS|Game Manager|Structs")
+		TMap<FEntityType, TSoftClassPtr<AActor>> WildcardMappings;
 	/**
 	 * The mapping between DIS Enumerations and corresponding entity classes.
 	 */

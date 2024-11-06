@@ -1006,35 +1006,49 @@ struct FEntityType
 		Extra = EntityTypeInBytes[0];
 	}
 
+	bool HasWildcards() const
+	{
+		return !bUseSpecific_EntityKind || !bUseSpecific_Domain || !bUseSpecific_Country || !bUseSpecific_Category 
+			|| !bUseSpecific_Subcategory || !bUseSpecific_Specific || !bUseSpecific_Extra;
+	}
+
 	FEntityType FillWildcards(const FEntityType Other)
 	{
+		//Fill wildcard fields and invert wildcard booleans
 		if (!bUseSpecific_EntityKind)
 		{
 			EntityKind = Other.EntityKind;
+			bUseSpecific_EntityKind = !bUseSpecific_EntityKind;
 		}
 		if (!bUseSpecific_Domain)
 		{
 			Domain = Other.Domain;
+			bUseSpecific_Domain = !bUseSpecific_Domain;
 		}
 		if (!bUseSpecific_Country)
 		{
 			Country = Other.Country;
+			bUseSpecific_Country = !bUseSpecific_Country;
 		}
 		if (!bUseSpecific_Category)
 		{
 			Category = Other.Category;
+			bUseSpecific_Category = !bUseSpecific_Category;
 		}
 		if (!bUseSpecific_Subcategory)
 		{
 			Subcategory = Other.Subcategory;
+			bUseSpecific_Subcategory = !bUseSpecific_Subcategory;
 		}
 		if (!bUseSpecific_Specific)
 		{
 			Specific = Other.Specific;
+			bUseSpecific_Specific = !bUseSpecific_Specific;
 		}
 		if (!bUseSpecific_Extra)
 		{
 			Extra = Other.Extra;
+			bUseSpecific_Extra = !bUseSpecific_Extra;
 		}
 
 		return FEntityType(*this);
@@ -1042,13 +1056,14 @@ struct FEntityType
 
 	bool operator== (const FEntityType& Other) const
 	{
-		return EntityKind == Other.EntityKind
-			&& Domain == Other.Domain
-			&& Country == Other.Country
-			&& Category == Other.Category
-			&& Subcategory == Other.Subcategory
-			&& Specific == Other.Specific
-			&& Extra == Other.Extra;
+		//Compare each field individually. All fields need to be equal to their respective fields.
+		return EntityTypeFieldEqualTo(EntityKind, Other.EntityKind, bUseSpecific_EntityKind, Other.bUseSpecific_EntityKind)
+			&& EntityTypeFieldEqualTo(Domain, Other.Domain, bUseSpecific_Domain, Other.bUseSpecific_Domain)
+			&& EntityTypeFieldEqualTo(Country, Other.Country, bUseSpecific_Country, Other.bUseSpecific_Country)
+			&& EntityTypeFieldEqualTo(Category, Other.Category, bUseSpecific_Category, Other.bUseSpecific_Category)
+			&& EntityTypeFieldEqualTo(Subcategory, Other.Subcategory, bUseSpecific_Subcategory, Other.bUseSpecific_Subcategory)
+			&& EntityTypeFieldEqualTo(Specific, Other.Specific, bUseSpecific_Specific, Other.bUseSpecific_Specific)
+			&& EntityTypeFieldEqualTo(Extra, Other.Extra, bUseSpecific_Extra, Other.bUseSpecific_Extra);
 	}
 
 	bool operator!= (const FEntityType& Other) const
@@ -1058,8 +1073,65 @@ struct FEntityType
 
 	bool operator< (const FEntityType& Other) const
 	{
-		const bool bIsLessThan = ToUInt64() < Other.ToUInt64();
+		bool bIsLessThan = false;
+
+		//Compare each field individually. If the fields are equal, move to the next field. We can stop comparing once a non-equal field is found. Compare fields starting with most significant
+		//Entity Kind
+		if (!EntityTypeFieldEqualTo(EntityKind, Other.EntityKind, bUseSpecific_EntityKind, Other.bUseSpecific_EntityKind))
+		{
+			bIsLessThan = EntityTypeFieldLessThan(EntityKind, Other.EntityKind, bUseSpecific_EntityKind, Other.bUseSpecific_EntityKind);
+		}
+		//Domain
+		else if (!EntityTypeFieldEqualTo(Domain, Other.Domain, bUseSpecific_Domain, Other.bUseSpecific_Domain))
+		{
+			bIsLessThan = EntityTypeFieldLessThan(Domain, Other.Domain, bUseSpecific_Domain, Other.bUseSpecific_Domain);
+		}
+		//Country
+		else if (!EntityTypeFieldEqualTo(Country, Other.Country, bUseSpecific_Country, Other.bUseSpecific_Country))
+		{
+			bIsLessThan = EntityTypeFieldLessThan(Country, Other.Country, bUseSpecific_Country, Other.bUseSpecific_Country);
+		}
+		//Category
+		else if (!EntityTypeFieldEqualTo(Category, Other.Category, bUseSpecific_Category, Other.bUseSpecific_Category))
+		{
+			bIsLessThan = EntityTypeFieldLessThan(Category, Other.Category, bUseSpecific_Category, Other.bUseSpecific_Category);
+		}
+		//Subcategory
+		else if (!EntityTypeFieldEqualTo(Subcategory, Other.Subcategory, bUseSpecific_Subcategory, Other.bUseSpecific_Subcategory))
+		{
+			bIsLessThan = EntityTypeFieldLessThan(Subcategory, Other.Subcategory, bUseSpecific_Subcategory, Other.bUseSpecific_Subcategory);
+		}
+		//Specific
+		else if (!EntityTypeFieldEqualTo(Specific, Other.Specific, bUseSpecific_Specific, Other.bUseSpecific_Specific))
+		{
+			bIsLessThan = EntityTypeFieldLessThan(Specific, Other.Specific, bUseSpecific_Specific, Other.bUseSpecific_Specific);
+		}
+		//Extra
+		else if (!EntityTypeFieldEqualTo(Extra, Other.Extra, bUseSpecific_Extra, Other.bUseSpecific_Extra))
+		{
+			bIsLessThan = EntityTypeFieldLessThan(Extra, Other.Extra, bUseSpecific_Extra, Other.bUseSpecific_Extra);
+		}
+
+		//Otherwise all are equal
 		return bIsLessThan;
+	}
+
+	bool EntityTypeFieldLessThan(int32 lhs, int32 rhs, bool lhsUseSpecific, bool rhsUseSpecific) const
+	{
+		//Only less than if both specific values and lhs < rhs OR lhs is wildcard and rhs is specific
+		return (lhsUseSpecific && rhsUseSpecific && lhs < rhs) || (!lhsUseSpecific && rhsUseSpecific);
+	}
+
+	bool EntityTypeFieldGreaterThan(int32 lhs, int32 rhs, bool lhsUseSpecific, bool rhsUseSpecific) const
+	{
+		//Only greater than if both specific values and lhs > rhs OR lhs is specific and rhs is wildcard
+		return (lhsUseSpecific && rhsUseSpecific && lhs > rhs) || (lhsUseSpecific && !rhsUseSpecific);
+	}
+
+	bool EntityTypeFieldEqualTo(int32 lhs, int32 rhs, bool lhsUseSpecific, bool rhsUseSpecific) const
+	{
+		//Only greater than if both specific values and lhs > rhs OR lhs and rhs are both wildcard
+		return (lhsUseSpecific && rhsUseSpecific && lhs == rhs) || (!lhsUseSpecific && !rhsUseSpecific);
 	}
 
 	bool operator> (const FEntityType& Other) const
@@ -1079,31 +1151,29 @@ struct FEntityType
 
 	friend uint32 GetTypeHash(const FEntityType& Other)
 	{
-		const FString EntityTypeString = FString::Printf(TEXT("%d.%d.%d.%d.%d.%d.%d"),
-			Other.EntityKind,
-			Other.Domain,
-			Other.Country,
-			Other.Category,
-			Other.Subcategory,
-			Other.Specific,
-			Other.Extra
-		);
+		const FString EntityTypeString = Other.ToString();
 		return GetTypeHash(EntityTypeString);
 	}
 
+	//Returns a string representation of the EntityType. If wildcards are used, then an '*' is placed in that field.
 	FString ToString() const
 	{
-		return FString::FromInt(EntityKind) + "." + FString::FromInt(Domain) + '.' + FString::FromInt(Country) + "." +
-			FString::FromInt(Category) + "." + FString::FromInt(Subcategory) + '.' + FString::FromInt(Specific) + "." + FString::FromInt(Extra);
+		return (bUseSpecific_EntityKind ? FString::FromInt(EntityKind) : "*") + "." 
+			+ (bUseSpecific_Domain ? FString::FromInt(Domain) : "*") + "."
+			+ (bUseSpecific_Country ? FString::FromInt(Country) : "*") + "."
+			+ (bUseSpecific_Category ? FString::FromInt(Category) : "*") + "."
+			+ (bUseSpecific_Subcategory ? FString::FromInt(Subcategory) : "*") + "."
+			+ (bUseSpecific_Specific ? FString::FromInt(Specific) : "*") + "."
+			+ (bUseSpecific_Extra ? FString::FromInt(Extra) : "*");
 	}
 
-	uint64 ToUInt64() const
+	/*uint64 ToUInt64() const
 	{
 		const uint64 BitString = ((static_cast<uint64>(Extra) & 0xFF) << 0) | ((static_cast<uint64>(Specific) & 0xFF) << 8) | ((static_cast<uint64>(Subcategory) & 0xFF) << 16) |
-			((static_cast<uint64>(Category) & 0xFF) << 24) | ((static_cast<uint64>(Country) & 0xFF) << 32) | ((static_cast<uint64>(Domain) & 0xFF) << 48) | ((static_cast<uint64>(EntityKind) & 0xFF) << 56);
+			((static_cast<uint64>(Category) & 0xFF) << 24) | ((static_cast<uint64>(Country) & 0xFFFF) << 32) | ((static_cast<uint64>(Domain) & 0xFF) << 48) | ((static_cast<uint64>(EntityKind) & 0xFF) << 56);
 
 		return BitString;
-	}
+	}*/
 
 	double ToDouble() const
 	{
@@ -1122,11 +1192,11 @@ struct FEntityType
 		return EntityTypeAsDouble;
 	}
 
-	FString ToBitString() const
+	/*FString ToBitString() const
 	{
 		uint64 BitString = ToUInt64();
 		return BytesToHex(reinterpret_cast<uint8*>(&BitString), 8);
-	}
+	}*/
 
 	DIS::EntityType ToOpenDIS() const
 	{
