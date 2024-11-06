@@ -1167,13 +1167,13 @@ struct FEntityType
 			+ (bUseSpecific_Extra ? FString::FromInt(Extra) : "*");
 	}
 
-	/*uint64 ToUInt64() const
+	uint64 ToUInt64() const
 	{
 		const uint64 BitString = ((static_cast<uint64>(Extra) & 0xFF) << 0) | ((static_cast<uint64>(Specific) & 0xFF) << 8) | ((static_cast<uint64>(Subcategory) & 0xFF) << 16) |
 			((static_cast<uint64>(Category) & 0xFF) << 24) | ((static_cast<uint64>(Country) & 0xFFFF) << 32) | ((static_cast<uint64>(Domain) & 0xFF) << 48) | ((static_cast<uint64>(EntityKind) & 0xFF) << 56);
 
 		return BitString;
-	}*/
+	}
 
 	double ToDouble() const
 	{
@@ -1192,11 +1192,11 @@ struct FEntityType
 		return EntityTypeAsDouble;
 	}
 
-	/*FString ToBitString() const
+	FString ToBitString() const
 	{
 		uint64 BitString = ToUInt64();
 		return BytesToHex(reinterpret_cast<uint8*>(&BitString), 8);
-	}*/
+	}
 
 	DIS::EntityType ToOpenDIS() const
 	{
