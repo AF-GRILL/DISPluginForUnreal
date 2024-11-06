@@ -205,17 +205,17 @@ protected:
 	/**
 	 * The mapping between DIS Wildcards and corresponding entity actors.
 	 */
-	UPROPERTY(BlueprintReadOnly, Category = "GRILL DIS|Game Manager|Structs")
+	UPROPERTY(BlueprintReadOnly, Category = "GRILL DIS|Game Manager")
 		TMap<FEntityType, TSoftClassPtr<AActor>> WildcardMappings;
 	/**
 	 * The mapping between DIS Enumerations and corresponding entity classes.
 	 */
-	UPROPERTY(BlueprintReadOnly, Category = "GRILL DIS|Game Manager|Structs")
+	UPROPERTY(BlueprintReadOnly, Category = "GRILL DIS|Game Manager")
 		TMap<FEntityType, TSoftClassPtr<AActor>> DISClassMappings;
 	/**
 	 * The mapping between DIS Entity IDs and corresponding entity actors.
 	 */
-	UPROPERTY(BlueprintReadOnly, Category = "GRILL DIS|Game Manager|Structs")
+	UPROPERTY(BlueprintReadOnly, Category = "GRILL DIS|Game Manager")
 		TMap<FEntityID, AActor*> DISActorMappings;
 
 	//Whether or not to auto connect receive sockets
