@@ -58,9 +58,12 @@ struct FDesignatorPDU : public FDistributedEmissionsFamilyPDU
 		DesignatorCode = 0;
 		DesignatorPower = 0;
 		DesignatorWavelength = 0;
+		DesignatorSpotWrtDesignated = FVector(0, 0, 0);
+		DesignatorSpotLocation = FVector(0, 0, 0);
 		DeadReckoningAlgorithm = EDeadReckoningAlgorithm::Static;
 		Padding1 = 0;
 		Padding2 = 0;
+		EntityLinearAcceleration = FVector(0, 0, 0);
 	}
 
 	virtual ~FDesignatorPDU() {}
