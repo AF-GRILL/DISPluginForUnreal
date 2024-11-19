@@ -41,10 +41,10 @@ struct FDesignatorPDU : public FDistributedEmissionsFamilyPDU
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|Structs|PDUs|Designator")
 	EDeadReckoningAlgorithm DeadReckoningAlgorithm;
 	/** Padding */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|Structs|PDUs|Designator")
+	UPROPERTY()
 	int32 Padding1;
 	/** Padding */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|Structs|PDUs|Designator")
+	UPROPERTY()
 	uint8 Padding2;
 	/** This field shall specify the designator spot's linear acceleration. */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GRILL DIS|Structs|PDUs|Designator")
