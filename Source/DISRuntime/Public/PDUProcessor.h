@@ -138,7 +138,7 @@ private:
 	const int ARTICULATION_PARAMETER_BYTES = 16;
 
 	//NOTE: Below values reflect the minimum length that their respective PDUs can be
-	const int DESIGNATOR_PDU_BYTES = 113;
+	const int DESIGNATOR_PDU_BYTES = 88;
 	const int DETONATION_PDU_BYTES = 104;
 	const int ENTITY_STATE_PDU_BYTES = 144;
 	const int ENTITY_STATE_UPDATE_PDU_BYTES = 72;

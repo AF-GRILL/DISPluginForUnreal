@@ -105,4 +105,10 @@ public:
 	{
 		return DistributedEmissionsFamilyPDUIn.ToBytes();
 	}
+
+	UFUNCTION(BlueprintPure, Category = "GRILL DIS|PDU Conversions")
+	static TArray<uint8> ConvertDesignatorPDUToBytes(FDesignatorPDU DesignatorPDUIn)
+	{
+		return DesignatorPDUIn.ToBytes();
+	}
 };
