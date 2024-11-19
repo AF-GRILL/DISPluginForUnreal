@@ -1,6 +1,6 @@
 # Changelog
 
-## Beta 0.10.0 (untagged)
+## Beta 0.10.0
 
 - Fixed rotation issues when sending an entity that is far away from the Unreal Engine origin.
 - Implemented wildcards for Entity Types.
