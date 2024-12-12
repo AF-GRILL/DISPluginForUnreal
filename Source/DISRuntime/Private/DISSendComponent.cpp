@@ -229,28 +229,43 @@ FEntityStatePDU UDISSendComponent::FormEntityStatePDU()
 	return newEntityStatePDU;
 }
 
-bool UDISSendComponent::CheckDeadReckoningThreshold()
+bool UDISSendComponent::CheckDeadReckoningThresholds()
 {
 	bool outsideThreshold = false;
 
 	if (UDeadReckoning_BPFL::DeadReckoning(MostRecentEntityStatePDU, DeltaTimeSinceLastPDU, MostRecentDeadReckonedEntityStatePDU))
 	{
-		//Get the actual position of the entity
-		FVector ecefLocation;
-		UDIS_BPFL::GetEcefXYZFromUnrealLocation(GetOwner()->GetActorLocation(), GeoReferencingSystem, ecefLocation);
-
-		//Get the position difference along each axis. Values should be in ECEF.
-		bool xPosOutsideThreshold = abs(ecefLocation.X - MostRecentDeadReckonedEntityStatePDU.EcefLocation.X) > DeadReckoningPositionThresholdMeters;
-		bool yPosOutsideThreshold = abs(ecefLocation.Y - MostRecentDeadReckonedEntityStatePDU.EcefLocation.Y) > DeadReckoningPositionThresholdMeters;
-		bool zPosOutsideThreshold = abs(ecefLocation.Z - MostRecentDeadReckonedEntityStatePDU.EcefLocation.Z) > DeadReckoningPositionThresholdMeters;
-
-		//Check if the position difference is beyond the position threshold in any axis
-		if (xPosOutsideThreshold || yPosOutsideThreshold || zPosOutsideThreshold || CheckOrientationQuaternionThreshold())
+		//Check if the ECEF position threshold or the orientation threshold has been exceeded
+		if (CheckEcefPositionThreshold(MostRecentDeadReckonedEntityStatePDU) || CheckOrientationQuaternionThreshold())
 		{
 			outsideThreshold = true;
 		}
 	}
 
+	return outsideThreshold;
+}
+
+bool UDISSendComponent::CheckEcefPositionThreshold(FEntityStatePDU DeadReckonedPDU)
+{
+	bool outsideThreshold = false;
+
+	//Get the actual position of the entity
+	FVector actualEcefLocation;
+	UDIS_BPFL::GetEcefXYZFromUnrealLocation(GetOwner()->GetActorLocation(), GeoReferencingSystem, actualEcefLocation);
+
+	//If Dead Reckoning algorithm is set to static, compare actual location to the last location that was sent out in a PDU. Otherwise, continue with where DR thinks entity is at
+	FVector ecefLocationToCompareTo = (DeadReckoningAlgorithm == EDeadReckoningAlgorithm::Static) ? MostRecentEntityStatePDU.EcefLocation : DeadReckonedPDU.EcefLocation;
+
+	//Get the position difference along each axis. Values should be in ECEF.
+	bool xPosOutsideThreshold = abs(actualEcefLocation.X - ecefLocationToCompareTo.X) > DeadReckoningPositionThresholdMeters;
+	bool yPosOutsideThreshold = abs(actualEcefLocation.Y - ecefLocationToCompareTo.Y) > DeadReckoningPositionThresholdMeters;
+	bool zPosOutsideThreshold = abs(actualEcefLocation.Z - ecefLocationToCompareTo.Z) > DeadReckoningPositionThresholdMeters;
+
+	//Check if the position difference is beyond the position threshold in any axis
+	if (xPosOutsideThreshold || yPosOutsideThreshold || zPosOutsideThreshold)
+	{
+		outsideThreshold = true;
+	}
 	return outsideThreshold;
 }
 
@@ -261,18 +276,25 @@ bool UDISSendComponent::CheckOrientationQuaternionThreshold()
 	glm::dvec3 AngularVelocityVector = glm::dvec3(MostRecentEntityStatePDU.DeadReckoningParameters.EntityAngularVelocity.X,
 		MostRecentEntityStatePDU.DeadReckoningParameters.EntityAngularVelocity.Y, MostRecentEntityStatePDU.DeadReckoningParameters.EntityAngularVelocity.Z);
 
-	//Get the entity orientation quaternion
+	//Get the entity orientation quaternion from the last entity state update
 	FQuat entityOrientationQuaternion = UDeadReckoning_BPFL::GetEntityOrientationQuaternion(MostRecentEntityStatePDU.EntityOrientation.Yaw, MostRecentEntityStatePDU.EntityOrientation.Pitch, MostRecentEntityStatePDU.EntityOrientation.Roll);
 	//Get the entity dead reckoning quaternion
 	FQuat deadReckoningQuaternion = UDeadReckoning_BPFL::CreateDeadReckoningQuaternion(AngularVelocityVector, DeltaTimeSinceLastPDU);
 	//Calculate the new orientation quaternion
 	FQuat DR_OrientationQuaternion = entityOrientationQuaternion * deadReckoningQuaternion;
 
+	//If negative, flip it
+	if (DR_OrientationQuaternion.W < 0)
+	{
+		DR_OrientationQuaternion = DR_OrientationQuaternion.Inverse();
+		DR_OrientationQuaternion.W *= -1;
+	}
+
 	FQuat actualOrientationQuaternion;
 
 	if (IsValid(GeoReferencingSystem))
 	{
-		//Calculate the orientation of the entity in Psi, Theta, Phi
+		//Calculate the current orientation of the entity in Psi, Theta, Phi
 		FGeographicCoordinates latLonAltDegreesMeters;
 		FHeadingPitchRoll headingPitchRollDegrees;
 		FPsiThetaPhi psiThetaPhiRadians;
@@ -280,6 +302,7 @@ bool UDISSendComponent::CheckOrientationQuaternionThreshold()
 		UDIS_BPFL::GetLatLonAltitudeFromUnrealLocation(GetOwner()->GetActorLocation(), GeoReferencingSystem, latLonAltDegreesMeters);
 		UDIS_BPFL::GetHeadingPitchRollFromUnrealRotation(GetOwner()->GetActorRotation(), GetOwner()->GetActorLocation(), GeoReferencingSystem, headingPitchRollDegrees);
 		UDIS_BPFL::CalculatePsiThetaPhiRadiansFromHeadingPitchRollDegreesAtLatLon(headingPitchRollDegrees, latLonAltDegreesMeters, psiThetaPhiRadians);
+
 		// Get the entity's current orientation quaternion
 		actualOrientationQuaternion = UDeadReckoning_BPFL::GetEntityOrientationQuaternion(psiThetaPhiRadians.Psi, psiThetaPhiRadians.Theta, psiThetaPhiRadians.Phi);
 	}
@@ -306,9 +329,9 @@ bool UDISSendComponent::CheckOrientationMatrixThreshold()
 	glm::dvec3 AngularVelocityVector = glm::dvec3(MostRecentEntityStatePDU.DeadReckoningParameters.EntityAngularVelocity.X,
 		MostRecentEntityStatePDU.DeadReckoningParameters.EntityAngularVelocity.Y, MostRecentEntityStatePDU.DeadReckoningParameters.EntityAngularVelocity.Z);
 
-	// Get the entity's current orientation matrix
+	//Get the entity orientation matrix from the last entity state update
 	auto OrientationMatrix = UDeadReckoning_BPFL::GetEntityOrientationMatrix(MostRecentEntityStatePDU.EntityOrientation.Yaw, MostRecentEntityStatePDU.EntityOrientation.Pitch, MostRecentEntityStatePDU.EntityOrientation.Roll);
-	// Get the change in rotation for this time step
+	//Get the entity dead reckoning matrix
 	const auto DeadReckoningMatrix = UDeadReckoning_BPFL::CreateDeadReckoningMatrix(AngularVelocityVector, DeltaTimeSinceLastPDU);
 	// Calculate the new orientation matrix
 	auto DR_OrientationMatrix = DeadReckoningMatrix * OrientationMatrix;
@@ -317,7 +340,7 @@ bool UDISSendComponent::CheckOrientationMatrixThreshold()
 
 	if (IsValid(GeoReferencingSystem))
 	{
-		//Calculate the orientation of the entity in Psi, Theta, Phi
+		//Calculate the current orientation of the entity in Psi, Theta, Phi
 		FGeographicCoordinates latLonAltDegreesMeters;
 		FHeadingPitchRoll headingPitchRollDegrees;
 		FPsiThetaPhi psiThetaPhiRadians;
@@ -325,6 +348,7 @@ bool UDISSendComponent::CheckOrientationMatrixThreshold()
 		UDIS_BPFL::GetLatLonAltitudeFromUnrealLocation(GetOwner()->GetActorLocation(), GeoReferencingSystem, latLonAltDegreesMeters);
 		UDIS_BPFL::GetHeadingPitchRollFromUnrealRotation(GetOwner()->GetActorRotation(), GetOwner()->GetActorLocation(), GeoReferencingSystem, headingPitchRollDegrees);
 		UDIS_BPFL::CalculatePsiThetaPhiRadiansFromHeadingPitchRollDegreesAtLatLon(headingPitchRollDegrees, latLonAltDegreesMeters, psiThetaPhiRadians);
+
 		// Get the entity's current orientation matrix
 		ActualOrientationMatrix = UDeadReckoning_BPFL::GetEntityOrientationMatrix(psiThetaPhiRadians.Psi, psiThetaPhiRadians.Theta, psiThetaPhiRadians.Phi);
 	}
@@ -351,7 +375,7 @@ bool UDISSendComponent::SendEntityStatePDU()
 	bool sentUpdate = false;
 
 	//Verify a new Entity State or Entity State Update PDU should be sent
-	if ((EntityStatePDUSendingMode == EEntityStateSendingMode::EntityStatePDU || EntityStatePDUSendingMode == EEntityStateSendingMode::EntityStateUpdatePDU) && (DeltaTimeSinceLastPDU > DISHeartbeatSeconds || CheckDeadReckoningThreshold()))
+	if ((EntityStatePDUSendingMode == EEntityStateSendingMode::EntityStatePDU || EntityStatePDUSendingMode == EEntityStateSendingMode::EntityStateUpdatePDU) && (DeltaTimeSinceLastPDU > DISHeartbeatSeconds || CheckDeadReckoningThresholds()))
 	{
 		MostRecentEntityStatePDU = FormEntityStatePDU();
 		MostRecentDeadReckonedEntityStatePDU = MostRecentEntityStatePDU;

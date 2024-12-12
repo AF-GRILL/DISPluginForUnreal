@@ -264,10 +264,19 @@ FQuat UDeadReckoning_BPFL::CreateDeadReckoningQuaternion(glm::dvec3 AngularVeloc
 
 	FQuat deadReckoningQuaternion = FQuat();
 
-	deadReckoningQuaternion.W = glm::cos(beta / 2);
-	deadReckoningQuaternion.X = unitVector.x * glm::sin(beta / 2);
-	deadReckoningQuaternion.Y = unitVector.y * glm::sin(beta / 2);
-	deadReckoningQuaternion.Z = unitVector.z * glm::sin(beta / 2);
+	double betaHalved = beta / 2;
+
+	deadReckoningQuaternion.W = glm::cos(betaHalved);
+	deadReckoningQuaternion.X = unitVector.x * glm::sin(betaHalved);
+	deadReckoningQuaternion.Y = unitVector.y * glm::sin(betaHalved);
+	deadReckoningQuaternion.Z = unitVector.z * glm::sin(betaHalved);
+
+	//If negative, flip it
+	if (deadReckoningQuaternion.W < 0)
+	{
+		deadReckoningQuaternion = deadReckoningQuaternion.Inverse();
+		deadReckoningQuaternion.W *= -1;
+	}
 
 	return deadReckoningQuaternion;
 }
@@ -300,10 +309,17 @@ FQuat UDeadReckoning_BPFL::GetEntityOrientationQuaternion(double PsiRadians, dou
 	double sr = glm::sin(PhiRadians / 2);
 
 	FQuat entityQuaternion = FQuat();
-	entityQuaternion.W = cr * cp * cy + sr * sp * sy;
-	entityQuaternion.X = sr * cp * cy - cr * sp * sy;
-	entityQuaternion.Y = cr * sp * cy + sr * cp * sy;
-	entityQuaternion.Z = cr * cp * sy - sr * sp * cy;
+	entityQuaternion.W = cy * cp * cr + sy * sp * sr;
+	entityQuaternion.X = cy * cp * sr - sy * sp * cr;
+	entityQuaternion.Y = cy * sp * cr + sy * cp * sr;
+	entityQuaternion.Z = sy * cp * cr - cy * sp * sr;
+
+	//If negative, flip it
+	if (entityQuaternion.W < 0)
+	{
+		entityQuaternion = entityQuaternion.Inverse();
+		entityQuaternion.W *= -1;
+	}
 
 	return entityQuaternion;
 }
