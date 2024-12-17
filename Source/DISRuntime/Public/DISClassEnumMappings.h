@@ -16,7 +16,7 @@ struct FDISClassEnumStruct
 	UPROPERTY(EditAnywhere, Category = "GRILL DIS|Structs")
 		FString FriendlyName;
 
-	UPROPERTY(EditAnywhere, meta = (MustImplement = "DISInterface"), Category = "GRILL DIS|Structs")
+	UPROPERTY(EditAnywhere, meta = (MustImplement = "/Script/DISRuntime.DISInterface"), Category = "GRILL DIS|Structs")
 		TSoftClassPtr<AActor> DISEntity;
 
 	UPROPERTY(EditAnywhere, Category = "GRILL DIS|Structs")
