@@ -35,8 +35,6 @@ void UDISSendComponent::BeginPlay()
 	LastCalculatedUnrealLocation = GetOwner()->GetActorLocation();
 	LastCalculatedUnrealRotation = GetOwner()->GetActorRotation();
 
-	TimeOfLastParametersCalculation = GetOwner()->GetGameTimeSinceCreation();
-
 	//Form Entity State PDU packets
 	MostRecentEntityStatePDU = FormEntityStatePDU();
 	MostRecentDeadReckonedEntityStatePDU = MostRecentEntityStatePDU;
@@ -46,30 +44,6 @@ void UDISSendComponent::BeginPlay()
 	{
 		UDPSubsystem->EmitBytes(UPDUConversions_BPFL::ConvertEntityStatePDUToBytes(MostRecentEntityStatePDU));
 	}
-
-	GetWorld()->GetTimerManager().SetTimer(UpdateEntityStateCalculationsHandle, this, &UDISSendComponent::UpdateEntityStateCalculations, EntityStateCalculationRate, true);
-}
-
-void UDISSendComponent::UpdateEntityStateCalculations()
-{
-	double deltaTime = GetOwner()->GetGameTimeSinceCreation() - TimeOfLastParametersCalculation;
-
-	//Update previous velocity, rotation, and location regardless of if an Entity State PDU was sent out.		
-	LastCalculatedAngularVelocity = CalculateAngularVelocity();
-
-	CalculateECEFLinearVelocityAndAcceleration(LastCalculatedECEFLinearVelocity, LastCalculatedECEFLinearAcceleration);
-	CalculateBodyLinearVelocityAndAcceleration(LastCalculatedAngularVelocity, LastCalculatedBodyLinearVelocity, LastCalculatedBodyLinearAcceleration);
-
-	if (deltaTime > 0)
-	{
-		//Divide location offset by 100 to convert to meters
-		LastCalculatedUnrealLinearVelocity = (GetOwner()->GetActorLocation() - LastCalculatedUnrealLocation) / (deltaTime * 100);
-	}
-
-	LastCalculatedUnrealLocation = GetOwner()->GetActorLocation();
-	LastCalculatedUnrealRotation = GetOwner()->GetActorRotation();
-
-	TimeOfLastParametersCalculation = GetOwner()->GetGameTimeSinceCreation();
 }
 
 // Called every frame
@@ -78,6 +52,12 @@ void UDISSendComponent::TickComponent(float DeltaTime, ELevelTick TickType, FAct
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
 	DeltaTimeSinceLastPDU += DeltaTime;
+	DeltaTimeSinceLastCalculationUpdate += DeltaTime;
+
+	if (DeltaTimeSinceLastCalculationUpdate > EntityStateCalculationRate)
+	{
+		UpdateEntityStateCalculations();
+	}
 
 	if (EntityStatePDUSendingMode != EEntityStateSendingMode::None)
 	{
@@ -106,9 +86,6 @@ void UDISSendComponent::EndPlay(const EEndPlayReason::Type EndPlayReason)
 	}
 
 	EmitAppropriatePDU(finalESPDU);
-
-	//Ensure the Update Send Entity State Calculations timer is cleared by using the timer handle
-	GetWorld()->GetTimerManager().ClearTimer(UpdateEntityStateCalculationsHandle);
 
 	Super::EndPlay(EndPlayReason);
 }
@@ -389,32 +366,43 @@ bool UDISSendComponent::SendEntityStatePDU()
 	return sentUpdate;
 }
 
+void UDISSendComponent::UpdateEntityStateCalculations()
+{
+	//Only update calculations if time has passed since the last calculation
+	if (DeltaTimeSinceLastCalculationUpdate > 0)
+	{
+		//Update previous velocity, rotation, and location regardless of if an Entity State PDU was sent out.		
+		LastCalculatedAngularVelocity = CalculateAngularVelocity();
+
+		CalculateECEFLinearVelocityAndAcceleration(LastCalculatedECEFLinearVelocity, LastCalculatedECEFLinearAcceleration);
+		CalculateBodyLinearVelocityAndAcceleration(LastCalculatedAngularVelocity, LastCalculatedBodyLinearVelocity, LastCalculatedBodyLinearAcceleration);
+
+		//Divide location offset by 100 to convert to meters
+		LastCalculatedUnrealLinearVelocity = (GetOwner()->GetActorLocation() - LastCalculatedUnrealLocation) / (DeltaTimeSinceLastCalculationUpdate * 100.);
+
+		LastCalculatedUnrealLocation = GetOwner()->GetActorLocation();
+		LastCalculatedUnrealRotation = GetOwner()->GetActorRotation();
+
+		DeltaTimeSinceLastCalculationUpdate = 0;
+	}
+}
+
 void UDISSendComponent::CalculateECEFLinearVelocityAndAcceleration(FVector& ECEFLinearVelocity, FVector& ECEFLinearAcceleration)
 {
-	double timeSinceLastCalc = GetOwner()->GetGameTimeSinceCreation() - TimeOfLastParametersCalculation;
-
 	//If delta time is greater than zero, calculate new values. Otherwise use previous calculations
-	if (timeSinceLastCalc > 0)
+	if (DeltaTimeSinceLastCalculationUpdate > 0)
 	{
-		FVector curLoc = GetOwner()->GetActorLocation();
-		//Divide location offset by 100 to convert to meters
-		FVector curUnrealLinearVelocity = (curLoc - LastCalculatedUnrealLocation) / (timeSinceLastCalc * 100);
+		FVector curECEFLocation;
+		FVector lastECEFLocation;
+		UDIS_BPFL::GetEcefXYZFromUnrealLocation(GetOwner()->GetActorLocation(), GeoReferencingSystem, curECEFLocation);
+		UDIS_BPFL::GetEcefXYZFromUnrealLocation(LastCalculatedUnrealLocation, GeoReferencingSystem, lastECEFLocation);
 
-		FVector originECEF;
-		FVector curLinVelECEF;
-		FVector oldLinVelECEF;
-		UDIS_BPFL::GetEcefXYZFromUnrealLocation(FVector::ZeroVector, GeoReferencingSystem, originECEF);
-		UDIS_BPFL::GetEcefXYZFromUnrealLocation(curUnrealLinearVelocity * 100, GeoReferencingSystem, curLinVelECEF);
-		UDIS_BPFL::GetEcefXYZFromUnrealLocation(LastCalculatedUnrealLinearVelocity * 100, GeoReferencingSystem, oldLinVelECEF);
-
-		//Convert linear velocity vectors to be in ECEF coordinates --- UE origin may not be Earth center and may lie rotated on Earth
-		ECEFLinearVelocity = curLinVelECEF - originECEF;
-		FVector prevECEFLinearVelocity = oldLinVelECEF - originECEF;
-		ECEFLinearAcceleration = (ECEFLinearVelocity - prevECEFLinearVelocity) / timeSinceLastCalc;
+		FVector lastECEFLinVel = LastCalculatedECEFLinearVelocity;
+		ECEFLinearVelocity = (curECEFLocation - lastECEFLocation) / DeltaTimeSinceLastCalculationUpdate;
+		ECEFLinearAcceleration = (ECEFLinearVelocity - lastECEFLinVel) / DeltaTimeSinceLastCalculationUpdate;
 	}
 	else
 	{
-		//Convert linear velocity vectors to be in ECEF coordinates --- UE origin may not be Earth center and may lie rotated on Earth
 		ECEFLinearVelocity = LastCalculatedECEFLinearVelocity;
 		ECEFLinearAcceleration = LastCalculatedECEFLinearAcceleration;
 	}
@@ -422,19 +410,16 @@ void UDISSendComponent::CalculateECEFLinearVelocityAndAcceleration(FVector& ECEF
 
 void UDISSendComponent::CalculateBodyLinearVelocityAndAcceleration(FVector AngularVelocity, FVector& BodyLinearVelocity, FVector& BodyLinearAcceleration)
 {
-	double timeSinceLastCalc = GetOwner()->GetGameTimeSinceCreation() - TimeOfLastParametersCalculation;
-
 	//If delta time greater than zero, calculate new values. Otherwise use previous calculations
-	if (timeSinceLastCalc > 0)
+	if (DeltaTimeSinceLastCalculationUpdate > 0)
 	{
-		FVector curLoc = GetOwner()->GetActorLocation();
 		//Divide location offset by 100 to convert to meters
-		FVector curUnrealLinearVelocity = (curLoc - LastCalculatedUnrealLocation) / (timeSinceLastCalc * 100);
+		FVector curUnrealLinearVelocity = (GetOwner()->GetActorLocation() - LastCalculatedUnrealLocation) / (DeltaTimeSinceLastCalculationUpdate * 100);
 
 		//Convert linear velocity vectors to be in body space --- Use inverse UE rotations to convert vectors into appropriate DIS body space
 		BodyLinearVelocity = UKismetMathLibrary::GreaterGreater_VectorRotator(curUnrealLinearVelocity, GetOwner()->GetActorRotation().GetInverse()) * FVector(1, 1, -1);
 		FVector prevVelBodySpace = UKismetMathLibrary::GreaterGreater_VectorRotator(LastCalculatedUnrealLinearVelocity, LastCalculatedUnrealRotation.GetInverse()) * FVector(1, 1, -1);
-		BodyLinearAcceleration = (BodyLinearVelocity - prevVelBodySpace) / timeSinceLastCalc;
+		BodyLinearAcceleration = (BodyLinearVelocity - prevVelBodySpace) / DeltaTimeSinceLastCalculationUpdate;
 
 		//Calculate the centripetal acceleration in body space
 		glm::dvec3 dvecAngularVelocity = glm::dvec3(AngularVelocity.X, AngularVelocity.Y, AngularVelocity.Z);
@@ -447,7 +432,6 @@ void UDISSendComponent::CalculateBodyLinearVelocityAndAcceleration(FVector Angul
 	}
 	else
 	{
-		//Convert linear velocity vectors to be in body space --- Use inverse UE rotations to convert vectors into appropriate DIS body space
 		BodyLinearVelocity = LastCalculatedBodyLinearVelocity;
 		BodyLinearAcceleration = LastCalculatedBodyLinearAcceleration;
 	}
@@ -456,9 +440,8 @@ void UDISSendComponent::CalculateBodyLinearVelocityAndAcceleration(FVector Angul
 FVector UDISSendComponent::CalculateAngularVelocity()
 {
 	FVector angularVelocity = LastCalculatedAngularVelocity;
-	double timeSinceLastCalc = GetOwner()->GetGameTimeSinceCreation() - TimeOfLastParametersCalculation;
 
-	if (timeSinceLastCalc > 0)
+	if (DeltaTimeSinceLastCalculationUpdate > 0)
 	{
 		//Convert the rotators to quaternions
 		FQuat oldQuat = LastCalculatedUnrealRotation.Quaternion();
@@ -480,7 +463,7 @@ FVector UDISSendComponent::CalculateAngularVelocity()
 		double rotationAngle;
 		rotDiff.ToAxisAndAngle(rotationAxis, rotationAngle);
 
-		angularVelocity = (rotationAngle * rotationAxis) / timeSinceLastCalc;
+		angularVelocity = (rotationAngle * rotationAxis) / DeltaTimeSinceLastCalculationUpdate;
 		//Invert X and Y axis
 		angularVelocity *= FVector(-1, -1, 1);
 	}

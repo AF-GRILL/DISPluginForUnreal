@@ -76,9 +76,10 @@ public:
 	 * Converts DIS X, Y, Z coordinates (ECEF) to Latitude, Longitude, and Altitude (LLA) all in double (64-bit) precision
 	 * @param Ecef The ECEF location
 	 * @param OutLatLonAltDegressMeters The converted latitude in degrees, longitude in degrees, and altitude in meters
+	 * @return Returns whether or not the calculation was successful. Will only be unsuccessful if the given ECEF coordinates result in a NaN calculation.
 	 */
 	UFUNCTION(BlueprintPure, Category = "GRILL DIS|Unit Conversions")
-		static void CalculateLatLonAltitudeFromEcefXYZ(const FVector Ecef, FGeographicCoordinates& OutLatLonAltDegressMeters);
+		static bool CalculateLatLonAltitudeFromEcefXYZ(const FVector Ecef, FGeographicCoordinates& OutLatLonAltDegressMeters);
 
 	/**
 	 * Converts Latitude, Longitude, and Altitude (LLA) to DIS X, Y, Z coordinates (ECEF) all in double (64-bit) precision

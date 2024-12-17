@@ -169,11 +169,11 @@ public:
 		EEntityStateSendingMode EntityStatePDUSendingMode;
 
 	/**
-	 * The rate at which the timer that calculates the current linear velocity, linear acceleration, and angular acceleration of the entity gets executed.
+	 * The rate at which the current linear velocity, linear acceleration, and angular acceleration of the entity gets calculated. The closer to 0, the more accurate the results.
 	 * The values calculated by this timer get utilized when forming an Entity State PDU.
 	 */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "GRILL DIS|DIS Send Component|DIS Settings", Meta = (UIMin = 0.01, ClampMin = 0.01))
-		float EntityStateCalculationRate = 0.1f;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "GRILL DIS|DIS Send Component|DIS Settings", Meta = (UIMin = 0, ClampMin = 0))
+		double EntityStateCalculationRate = 0;
 
 	/**
 	 * The dead reckoning algorithm to use. Specifies the dynamic changes to the entities appearance attributes.
@@ -224,10 +224,8 @@ protected:
 	bool EmitAppropriatePDU(FEntityStatePDU pduToSend);
 
 private:
-	float DeltaTimeSinceLastPDU = 0;
-
-	FTimerHandle UpdateEntityStateCalculationsHandle;
-	float TimeOfLastParametersCalculation;
+	double DeltaTimeSinceLastPDU = 0;
+	double DeltaTimeSinceLastCalculationUpdate = 0;
 
 	FVector LastCalculatedUnrealLocation;
 	FRotator LastCalculatedUnrealRotation;

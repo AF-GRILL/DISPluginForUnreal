@@ -6,13 +6,13 @@
 
 DEFINE_LOG_CATEGORY(LogDIS_BPFL);
 
-void UDIS_BPFL::CalculateLatLonAltitudeFromEcefXYZ(const FVector Ecef, FGeographicCoordinates& OutLatLonAltDegreesMeters)
+bool UDIS_BPFL::CalculateLatLonAltitudeFromEcefXYZ(const FVector Ecef, FGeographicCoordinates& OutLatLonAltDegreesMeters)
 {
 	constexpr double earthEquitorialRadiusMeters = 6378137;
 	constexpr double earthPolarRadiusMeters = 6356752.3142;
 
-	const double earthEquitorialRadiusMetersSquared = FMath::Square(earthEquitorialRadiusMeters);
-	const double earthPolarRadiusMetersSquared = FMath::Square(earthPolarRadiusMeters);
+	constexpr double earthEquitorialRadiusMetersSquared = FMath::Square(earthEquitorialRadiusMeters);
+	constexpr double earthPolarRadiusMetersSquared = FMath::Square(earthPolarRadiusMeters);
 
 	double eSquared = (earthEquitorialRadiusMetersSquared - earthPolarRadiusMetersSquared) / earthEquitorialRadiusMetersSquared;
 	double ePrimeSquared = (earthEquitorialRadiusMetersSquared - earthPolarRadiusMetersSquared) / earthPolarRadiusMetersSquared;
@@ -23,6 +23,13 @@ void UDIS_BPFL::CalculateLatLonAltitudeFromEcefXYZ(const FVector Ecef, FGeograph
 	double c = (FMath::Square(eSquared) * F * FMath::Square(p)) / FMath::Pow(G, 3);
 
 	double s = FMath::Pow(1 + c + FMath::Sqrt(FMath::Square(c) + 2 * c), 1. / 3.);
+
+	if (isnan(s))
+	{
+		UE_LOG(LogDIS_BPFL, Warning, TEXT("Invalid calculation when converting ECEF to LLA! Given ECEF coordinates resulted in NaN calculation. Returning 0, 0, 0."));
+		return false;
+	}
+
 	double k = s + 1 + 1 / s;
 	double P = F / (3 * FMath::Square(k) * FMath::Square(G));
 	double Q = FMath::Sqrt(1 + 2 * FMath::Square(eSquared) * P);
@@ -35,6 +42,8 @@ void UDIS_BPFL::CalculateLatLonAltitudeFromEcefXYZ(const FVector Ecef, FGeograph
 	OutLatLonAltDegreesMeters.Altitude = U * (1 - earthPolarRadiusMetersSquared / (earthEquitorialRadiusMeters * V));
 	OutLatLonAltDegreesMeters.Latitude = glm::degrees(FMath::Atan((Ecef.Z + ePrimeSquared * zNot) / p));
 	OutLatLonAltDegreesMeters.Longitude = glm::degrees(FMath::Atan2(Ecef.Y, Ecef.X));
+
+	return true;
 }
 
 void UDIS_BPFL::CalculateEcefXYZFromLatLonAltitude(FGeographicCoordinates LatLonAltDegreesMeters, FVector& OutEcef)

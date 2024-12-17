@@ -117,8 +117,9 @@ private:
 	 * @param BodyAngularVelocityVector The initial angular velocity in body coordinates
 	 * @param EntityOrientation The orientation of the entity (Psi[Yaw]/Theta[Pitch]/Phi[Roll]) in radians
 	 * @param DeltaTime The time increment for dead reckoning calculation
+	 * @param IncludeAcceleration Whether or not acceleration should be included in the body position calculation. Acceleration is typically not used for FPB and RPB dead reckoning formulas.
 	 */
-	static glm::dvec3 GetEntityBodyDeadReckonedPosition(glm::dvec3 InitialPositionVector, glm::dvec3 BodyVelocityVector, glm::dvec3 BodyLinearAccelerationVector, glm::dvec3 BodyAngularVelocityVector, glm::dvec3 EntityOrientation, double DeltaTime);
+	static glm::dvec3 GetEntityBodyDeadReckonedPosition(glm::dvec3 InitialPositionVector, glm::dvec3 BodyVelocityVector, glm::dvec3 BodyLinearAccelerationVector, glm::dvec3 BodyAngularVelocityVector, glm::dvec3 EntityOrientation, double DeltaTime, bool IncludeAcceleration);
 
 	/**
 	 * Calculates the new orientation vector using the given velocity, acceleration, and time increment
