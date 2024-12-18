@@ -54,10 +54,7 @@ void UDISSendComponent::TickComponent(float DeltaTime, ELevelTick TickType, FAct
 	DeltaTimeSinceLastPDU += DeltaTime;
 	DeltaTimeSinceLastCalculationUpdate += DeltaTime;
 
-	if (DeltaTimeSinceLastCalculationUpdate > EntityStateCalculationRate)
-	{
-		UpdateEntityStateCalculations();
-	}
+	UpdateEntityStateCalculations();
 
 	if (EntityStatePDUSendingMode != EEntityStateSendingMode::None)
 	{
