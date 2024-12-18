@@ -72,7 +72,7 @@ public:
 	 * Checks whether or not the ECEF position threshold between the actual position and Dead Reckoning position has been exceeded.
 	*/
 	UFUNCTION(BlueprintCallable, Category = "GRILL DIS|DIS Send Component")
-		bool CheckEcefPositionThreshold(FEntityStatePDU DeadReckonedPDU);
+		bool CheckEcefPositionThreshold();
 
 	/**
 	 * Checks whether or not the orientation threshold between the actual orientation and Dead Reckoning orientation has been exceeded. Utilizes quaternions to calculate it.

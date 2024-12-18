@@ -210,7 +210,7 @@ bool UDISSendComponent::CheckDeadReckoningThresholds()
 	if (UDeadReckoning_BPFL::DeadReckoning(MostRecentEntityStatePDU, DeltaTimeSinceLastPDU, MostRecentDeadReckonedEntityStatePDU))
 	{
 		//Check if the ECEF position threshold or the orientation threshold has been exceeded
-		if (CheckEcefPositionThreshold(MostRecentDeadReckonedEntityStatePDU) || CheckOrientationQuaternionThreshold())
+		if (CheckEcefPositionThreshold() || CheckOrientationQuaternionThreshold())
 		{
 			outsideThreshold = true;
 		}
@@ -219,7 +219,7 @@ bool UDISSendComponent::CheckDeadReckoningThresholds()
 	return outsideThreshold;
 }
 
-bool UDISSendComponent::CheckEcefPositionThreshold(FEntityStatePDU DeadReckonedPDU)
+bool UDISSendComponent::CheckEcefPositionThreshold()
 {
 	bool outsideThreshold = false;
 
@@ -228,7 +228,7 @@ bool UDISSendComponent::CheckEcefPositionThreshold(FEntityStatePDU DeadReckonedP
 	UDIS_BPFL::GetEcefXYZFromUnrealLocation(GetOwner()->GetActorLocation(), GeoReferencingSystem, actualEcefLocation);
 
 	//If Dead Reckoning algorithm is set to static, compare actual location to the last location that was sent out in a PDU. Otherwise, continue with where DR thinks entity is at
-	FVector ecefLocationToCompareTo = (DeadReckoningAlgorithm == EDeadReckoningAlgorithm::Static) ? MostRecentEntityStatePDU.EcefLocation : DeadReckonedPDU.EcefLocation;
+	FVector ecefLocationToCompareTo = (DeadReckoningAlgorithm == EDeadReckoningAlgorithm::Static) ? MostRecentEntityStatePDU.EcefLocation : MostRecentDeadReckonedEntityStatePDU.EcefLocation;
 
 	//Get the position difference along each axis. Values should be in ECEF.
 	bool xPosOutsideThreshold = abs(actualEcefLocation.X - ecefLocationToCompareTo.X) > DeadReckoningPositionThresholdMeters;
