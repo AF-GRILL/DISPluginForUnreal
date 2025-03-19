@@ -2,6 +2,7 @@
 
 #include "PDUProcessor.h"
 #include "UDPSubsystem.h"
+#include <stdexcept>
 #include "Engine/GameInstance.h"
 #include "Subsystems/SubsystemCollection.h"
 
@@ -45,264 +46,203 @@ void UPDUProcessor::ProcessDISPacket(const TArray<uint8>& InData)
 	{
 	case EPDUType::EntityState:
 	{
-		if (!CheckPDUProperLengthWithArticulationParams(bytesArrayLength, ENTITY_STATE_PDU_BYTES))
+		try
+		{
+			DIS::EntityStatePdu receivedESPDU;
+			receivedESPDU.unmarshal(ds);
+
+			FEntityStatePDU entityStatePDU;
+			entityStatePDU.SetupFromOpenDIS(receivedESPDU);
+
+			OnEntityStatePDUProcessed.Broadcast(entityStatePDU);
+
+			return;
+		}
+		catch ([[maybe_unused]] const std::out_of_range& ex)
 		{
 			UE_LOG(LogPDUProcessor, Error, TEXT("Received Entity State PDU packet with an invalid length! Ignoring the PDU."));
 			return;
 		}
-
-		DIS::EntityStatePdu receivedESPDU;
-		receivedESPDU.unmarshal(ds);
-
-		FEntityStatePDU entityStatePDU;
-		entityStatePDU.SetupFromOpenDIS(receivedESPDU);
-
-		OnEntityStatePDUProcessed.Broadcast(entityStatePDU);
-
-		return;
 	}
 	case EPDUType::Fire:
 	{
-		if (bytesArrayLength != FIRE_PDU_BYTES)
+		try
+		{
+			DIS::FirePdu receivedFirePDU;
+			receivedFirePDU.unmarshal(ds);
+
+			FFirePDU firePDU;
+			firePDU.SetupFromOpenDIS(receivedFirePDU);
+
+			OnFirePDUProcessed.Broadcast(firePDU);
+
+			return;
+		}
+		catch ([[maybe_unused]] const std::out_of_range& ex)
 		{
 			UE_LOG(LogPDUProcessor, Error, TEXT("Received Fire PDU packet with an invalid length! Ignoring the PDU."));
 			return;
 		}
-
-		DIS::FirePdu receivedFirePDU;
-		receivedFirePDU.unmarshal(ds);
-
-		FFirePDU firePDU;
-		firePDU.SetupFromOpenDIS(receivedFirePDU);
-
-		OnFirePDUProcessed.Broadcast(firePDU);
-
-		return;
 	}
 	case EPDUType::Detonation:
 	{
-		if (!CheckPDUProperLengthWithArticulationParams(bytesArrayLength, DETONATION_PDU_BYTES))
+		try
+		{
+			DIS::DetonationPdu receivedDetonationPDU;
+			receivedDetonationPDU.unmarshal(ds);
+
+			FDetonationPDU detonationPDU;
+			detonationPDU.SetupFromOpenDIS(receivedDetonationPDU);
+
+			OnDetonationPDUProcessed.Broadcast(detonationPDU);
+
+			return;
+		}
+		catch ([[maybe_unused]] const std::out_of_range& ex)
 		{
 			UE_LOG(LogPDUProcessor, Error, TEXT("Received Detonation PDU packet with an invalid length! Ignoring the PDU."));
 			return;
 		}
-
-		DIS::DetonationPdu receivedDetonationPDU;
-		receivedDetonationPDU.unmarshal(ds);
-
-		FDetonationPDU detonationPDU;
-		detonationPDU.SetupFromOpenDIS(receivedDetonationPDU);
-
-		OnDetonationPDUProcessed.Broadcast(detonationPDU);
-
-		return;
 	}
 	case EPDUType::RemoveEntity:
 	{
-		if (bytesArrayLength != REMOVE_ENTITY_PDU_BYTES)
+		try
+		{
+			DIS::RemoveEntityPdu receivedRemoveEntityPDU;
+			receivedRemoveEntityPDU.unmarshal(ds);
+
+			FRemoveEntityPDU removeEntityPDU;
+			removeEntityPDU.SetupFromOpenDIS(receivedRemoveEntityPDU);
+
+			OnRemoveEntityPDUProcessed.Broadcast(removeEntityPDU);
+
+			return;
+		}
+		catch ([[maybe_unused]] const std::out_of_range& ex)
 		{
 			UE_LOG(LogPDUProcessor, Error, TEXT("Received Remove Entity PDU packet with an invalid length! Ignoring the PDU."));
 			return;
 		}
-
-		DIS::RemoveEntityPdu receivedRemoveEntityPDU;
-		receivedRemoveEntityPDU.unmarshal(ds);
-
-		FRemoveEntityPDU removeEntityPDU;
-		removeEntityPDU.SetupFromOpenDIS(receivedRemoveEntityPDU);
-
-		OnRemoveEntityPDUProcessed.Broadcast(removeEntityPDU);
-
-		return;
 	}
 	case EPDUType::Start_Resume:
 	{
-		if (bytesArrayLength != START_RESUME_PDU_BYTES)
+		try
+		{
+			DIS::StartResumePdu receivedStartResumePDU;
+			receivedStartResumePDU.unmarshal(ds);
+
+			FStartResumePDU StartResumePDU;
+			StartResumePDU.SetupFromOpenDIS(receivedStartResumePDU);
+
+			OnStartResumePDUProcessed.Broadcast(StartResumePDU);
+
+			return;
+		}
+		catch ([[maybe_unused]] const std::out_of_range& ex)
 		{
 			UE_LOG(LogPDUProcessor, Error, TEXT("Received Start Resume PDU packet with an invalid length! Ignoring the PDU."));
 			return;
 		}
-
-		DIS::StartResumePdu receivedStartResumePDU;
-		receivedStartResumePDU.unmarshal(ds);
-
-		FStartResumePDU StartResumePDU;
-		StartResumePDU.SetupFromOpenDIS(receivedStartResumePDU);
-
-		OnStartResumePDUProcessed.Broadcast(StartResumePDU);
-
-		return;
 	}
 	case EPDUType::Stop_Freeze:
 	{
-		if (bytesArrayLength != STOP_FREEZE_PDU_BYTES)
+		try
+		{
+			DIS::StopFreezePdu receivedStopFreezePDU;
+			receivedStopFreezePDU.unmarshal(ds);
+
+			FStopFreezePDU StopFreezePDU;
+			StopFreezePDU.SetupFromOpenDIS(receivedStopFreezePDU);
+
+			OnStopFreezePDUProcessed.Broadcast(StopFreezePDU);
+
+			return;
+		}
+		catch ([[maybe_unused]] const std::out_of_range& ex)
 		{
 			UE_LOG(LogPDUProcessor, Error, TEXT("Received Stop Freeze PDU packet with an invalid length! Ignoring the PDU."));
 			return;
 		}
-
-		DIS::StopFreezePdu receivedStopFreezePDU;
-		receivedStopFreezePDU.unmarshal(ds);
-
-		FStopFreezePDU StopFreezePDU;
-		StopFreezePDU.SetupFromOpenDIS(receivedStopFreezePDU);
-
-		OnStopFreezePDUProcessed.Broadcast(StopFreezePDU);
-
-		return;
 	}
 	case EPDUType::EntityStateUpdate:
 	{
-		if (!CheckPDUProperLengthWithArticulationParams(bytesArrayLength, ENTITY_STATE_UPDATE_PDU_BYTES))
+		try
+		{
+			DIS::EntityStateUpdatePdu receivedESUPDU;
+			receivedESUPDU.unmarshal(ds);
+
+			FEntityStateUpdatePDU entityStateUpdatePDU;
+			entityStateUpdatePDU.SetupFromOpenDIS(receivedESUPDU);
+
+			OnEntityStateUpdatePDUProcessed.Broadcast(entityStateUpdatePDU);
+
+			return;
+		}
+		catch ([[maybe_unused]] const std::out_of_range& ex)
 		{
 			UE_LOG(LogPDUProcessor, Error, TEXT("Received Entity State Update PDU packet with an invalid length! Ignoring the PDU."));
 			return;
 		}
-
-		DIS::EntityStateUpdatePdu receivedESUPDU;
-		receivedESUPDU.unmarshal(ds);
-
-		FEntityStateUpdatePDU entityStateUpdatePDU;
-		entityStateUpdatePDU.SetupFromOpenDIS(receivedESUPDU);
-
-		OnEntityStateUpdatePDUProcessed.Broadcast(entityStateUpdatePDU);
-
-		return;
 	}
 	case EPDUType::ElectromagneticEmission:
 	{
-		if (!CheckElectromagneticEmissionPDUProperLength(InData))
+		try
+		{
+			DIS::ElectromagneticEmissionsPdu receivedPDU;
+			receivedPDU.unmarshal(ds);
+
+			FElectromagneticEmissionsPDU pdu;
+			pdu.SetupFromOpenDIS(receivedPDU);
+
+			OnElectromagneticEmissionsPDUProcessed.Broadcast(pdu);
+
+			return;
+		}
+		catch ([[maybe_unused]] const std::out_of_range& ex)
 		{
 			UE_LOG(LogPDUProcessor, Error, TEXT("Received Electromagnetic Emission PDU packet with an invalid length! Ignoring the PDU."));
 			return;
 		}
-
-		DIS::ElectromagneticEmissionsPdu receivedPDU;
-		receivedPDU.unmarshal(ds);
-
-		FElectromagneticEmissionsPDU pdu;
-		pdu.SetupFromOpenDIS(receivedPDU);
-
-		OnElectromagneticEmissionsPDUProcessed.Broadcast(pdu);
-
-		return;
 	}
 	case EPDUType::Designator:
 	{
-		if (bytesArrayLength != DESIGNATOR_PDU_BYTES)
+		try
+		{
+			DIS::DesignatorPdu receivedPDU;
+			receivedPDU.unmarshal(ds);
+
+			FDesignatorPDU pdu;
+			pdu.SetupFromOpenDIS(receivedPDU);
+
+			OnDesignatorPDUProcessed.Broadcast(pdu);
+
+			return;
+		}
+		catch ([[maybe_unused]] const std::out_of_range& ex)
 		{
 			UE_LOG(LogPDUProcessor, Error, TEXT("Received Designator PDU packet with an invalid length! Ignoring the PDU."));
 			return;
 		}
-
-		DIS::DesignatorPdu receivedPDU;
-		receivedPDU.unmarshal(ds);
-
-		FDesignatorPDU pdu;
-		pdu.SetupFromOpenDIS(receivedPDU);
-
-		OnDesignatorPDUProcessed.Broadcast(pdu);
-
-		return;
 	}
 	case EPDUType::Signal:
 	{
-		if (!CheckSignalPDUProperLength(InData))
+		try
+		{
+			DIS::SignalPdu receivedPDU;
+			receivedPDU.unmarshal(ds);
+
+			FSignalPDU pdu;
+			pdu.SetupFromOpenDIS(receivedPDU);
+
+			OnSignalPDUProcessed.Broadcast(pdu);
+
+			return;
+		}
+		catch ([[maybe_unused]] const std::out_of_range& ex)
 		{
 			UE_LOG(LogPDUProcessor, Error, TEXT("Received Signal PDU packet with an invalid length! Ignoring the PDU."));
 			return;
 		}
-
-		DIS::SignalPdu receivedPDU;
-		receivedPDU.unmarshal(ds);
-
-		FSignalPDU pdu;
-		pdu.SetupFromOpenDIS(receivedPDU);
-
-		OnSignalPDUProcessed.Broadcast(pdu);
-
-		return;
 	}
 	}
-}
-
-bool UPDUProcessor::CheckPDUProperLengthWithArticulationParams(int BytesArrayLength, int PDULengthWithoutArticulationParams)
-{
-	//Verify that any extra byte length on a PDU is due to articulation parameters
-	int extraBytes = BytesArrayLength - PDULengthWithoutArticulationParams;
-	int articulationParamAmount = extraBytes / ARTICULATION_PARAMETER_BYTES;
-	return (articulationParamAmount * ARTICULATION_PARAMETER_BYTES) == extraBytes;
-}
-
-bool UPDUProcessor::CheckElectromagneticEmissionPDUProperLength(const TArray<uint8>& InData)
-{
-	int bytesArrayLength = InData.Num();
-
-	//Check array length before accessing
-	if (bytesArrayLength < 25)
-	{
-		return false;
-	}
-
-	//Get the number of systems in the PDU
-	const int numberOfSystems = static_cast<int>(InData[25]);
-	const int lastIndexIfNoEmitterData = 27;
-	int currentIndex = lastIndexIfNoEmitterData;
-
-	for (int i = 0; i < numberOfSystems; i++)
-	{
-		//Increment to get the number of beams in the current system
-		currentIndex += 2;
-
-		//Check array length before accessing
-		if (bytesArrayLength < currentIndex)
-		{
-			return false;
-		}
-
-		int numberOfBeams = static_cast<int>(InData[currentIndex]);
-
-		//Increment to get to the end of the emitter system data
-		currentIndex += 18;
-
-		for (int j = 0; j < numberOfBeams; j++)
-		{
-			//Increment to get the number of targets
-			currentIndex += 46;
-
-			//Check array length before accessing
-			if (bytesArrayLength < currentIndex)
-			{
-				return false;
-			}
-
-			int numberOfTargets = static_cast<int>(InData[currentIndex]);
-
-			//Increment to get to the end of the beam data
-			currentIndex += 6;
-			//Skip over number of targets
-			currentIndex += 8 * numberOfTargets;
-		}
-	}
-
-	//Doing currentIndex + 1 to convert from an array index
-	return (currentIndex + 1) == bytesArrayLength;
-}
-
-bool UPDUProcessor::CheckSignalPDUProperLength(const TArray<uint8>& InData)
-{
-	int bytesArrayLength = InData.Num();
-
-	//Check array length before accessing
-	if (bytesArrayLength < 29)
-	{
-		return false;
-	}
-
-	//Get the data length in bytes
-	const int dataLength = static_cast<int>(InData[28] << 8 | (InData[29])) / 8;
-	//Get padding needed to round data length up to the closest multiple of 4 bytes
-	const int paddingSize = ceil(dataLength / 4.f) * 4 - dataLength;
-
-	return (SIGNAL_PDU_BYTES + dataLength + paddingSize) == bytesArrayLength;
 }
