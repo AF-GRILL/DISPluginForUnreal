@@ -12,7 +12,9 @@ public class DISRuntime : ModuleRules
 		
 	public DISRuntime(ReadOnlyTargetRules Target) : base(Target)
 	{
-		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;		
+		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
+
+		bEnableExceptions = true;
 
 		PublicDependencyModuleNames.AddRange(
 			new string[]
