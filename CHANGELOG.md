@@ -1,5 +1,11 @@
 # Changelog
 
+## Beta 0.11.0
+
+- Fix issues with Quaternion dead reckoning threshold calculations in the DIS Send Component.
+- Remove EntityStateCalculationRate from DIS Send as linear vel, acc, and angular vel calculations are most accurate when performed every frame. When not done every frame they become erroneous.
+- Replace checking PDU length with try catch statements that catch out of range exceptions.
+
 ## Beta 0.10.0
 
 - Fixed rotation issues when sending an entity that is far away from the Unreal Engine origin.
