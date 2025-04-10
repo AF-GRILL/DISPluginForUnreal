@@ -155,7 +155,7 @@ public:
 		static void CalculateLatLonFromNorthEastDownVectors(FNorthEastDown NorthEastDownVectors, FGeographicCoordinates& LatLonAltDegreesMeters);
 
 	/**
-	* Gets the rotational offset between the Unreal Origin NED vectors and the given destination NED vectors
+	* Gets the rotational offset between the two given NED vectors
 	* @param StartNEDVectors The North, East, Down vectors of the starting location
 	* @param DestinationNEDVectors The North, East, Down vectors of the destination location
 	* @param RollOffset The Unreal Engine Roll offset in degrees to go from the origin to the destination
