@@ -713,6 +713,12 @@ struct FClockTime
 		TimePastHour = 0;
 	}
 
+	FClockTime(int32 Hour, int64 TimePastHour)
+	{
+		this->Hour = Hour;
+		this->TimePastHour = TimePastHour;
+	}
+
 	DIS::ClockTime ToOpenDIS() const
 	{
 		DIS::ClockTime OutClockTime;
@@ -748,6 +754,14 @@ struct FTimestamp
 		Minutes = 0;
 		Seconds = 0;
 		Milliseconds = 0;
+	}
+
+	FTimestamp(ETimestampFormat Format, int32 Minutes, int32 Seconds, int32 Milliseconds)
+	{
+		this->TimestampFormat = TimestampFormat;
+		this->Minutes = Minutes;
+		this->Seconds = Seconds;
+		this->Milliseconds = Milliseconds;
 	}
 
 	FTimestamp(unsigned int Timestamp)

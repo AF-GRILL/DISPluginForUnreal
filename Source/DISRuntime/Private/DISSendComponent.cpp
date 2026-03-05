@@ -200,6 +200,14 @@ FEntityStatePDU UDISSendComponent::FormEntityStatePDU()
 
 	newEntityStatePDU.DeadReckoningParameters.OtherParameters = UDeadReckoning_BPFL::FormOtherParameters(DeadReckoningAlgorithm, newEntityStatePDU.EntityOrientation, newEntityStatePDU.EcefLocation);
 
+	float currentGameTime = GetWorld()->GetTimeSeconds();
+	float totalSeconds;
+	float milliseconds = std::modf(currentGameTime, &totalSeconds) * 1000;
+	int minutes = ((int)totalSeconds / 60) % 60;
+	int seconds = (int)totalSeconds % 60;
+	newEntityStatePDU.Timestamp = FTimestamp(ETimestampFormat::Relative, minutes, seconds, milliseconds);
+	UE_LOG(LogDISSendComponent, Warning, TEXT("Wold Time %f"), currentGameTime);
+
 	return newEntityStatePDU;
 }
 
