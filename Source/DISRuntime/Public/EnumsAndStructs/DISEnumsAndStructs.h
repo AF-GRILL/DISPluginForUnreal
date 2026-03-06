@@ -758,7 +758,7 @@ struct FTimestamp
 
 	FTimestamp(ETimestampFormat Format, int32 Minutes, int32 Seconds, int32 Milliseconds)
 	{
-		this->TimestampFormat = TimestampFormat;
+		this->TimestampFormat = Format;
 		this->Minutes = Minutes;
 		this->Seconds = Seconds;
 		this->Milliseconds = Milliseconds;
