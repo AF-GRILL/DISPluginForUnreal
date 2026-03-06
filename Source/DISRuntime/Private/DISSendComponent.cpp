@@ -206,7 +206,6 @@ FEntityStatePDU UDISSendComponent::FormEntityStatePDU()
 	int minutes = ((int)totalSeconds / 60) % 60;
 	int seconds = (int)totalSeconds % 60;
 	newEntityStatePDU.Timestamp = FTimestamp(ETimestampFormat::Relative, minutes, seconds, milliseconds);
-	UE_LOG(LogDISSendComponent, Warning, TEXT("Wold Time %f"), currentGameTime);
 
 	return newEntityStatePDU;
 }
