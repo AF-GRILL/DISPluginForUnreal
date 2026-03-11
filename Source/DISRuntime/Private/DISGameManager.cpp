@@ -45,16 +45,19 @@ void ADISGameManager::BeginPlay()
 {
 	Super::BeginPlay();
 
-	GetGameInstance()->GetSubsystem<UPDUProcessor>()->OnEntityStatePDUProcessed.AddDynamic(this, &ADISGameManager::HandleEntityStatePDU);
-	GetGameInstance()->GetSubsystem<UPDUProcessor>()->OnEntityStateUpdatePDUProcessed.AddDynamic(this, &ADISGameManager::HandleEntityStateUpdatePDU);
-	GetGameInstance()->GetSubsystem<UPDUProcessor>()->OnFirePDUProcessed.AddDynamic(this, &ADISGameManager::HandleFirePDU);
-	GetGameInstance()->GetSubsystem<UPDUProcessor>()->OnDetonationPDUProcessed.AddDynamic(this, &ADISGameManager::HandleDetonationPDU);
-	GetGameInstance()->GetSubsystem<UPDUProcessor>()->OnRemoveEntityPDUProcessed.AddDynamic(this, &ADISGameManager::HandleRemoveEntityPDU);
-	GetGameInstance()->GetSubsystem<UPDUProcessor>()->OnStopFreezePDUProcessed.AddDynamic(this, &ADISGameManager::HandleStopFreezePDU);
-	GetGameInstance()->GetSubsystem<UPDUProcessor>()->OnStartResumePDUProcessed.AddDynamic(this, &ADISGameManager::HandleStartResumePDU);
-	GetGameInstance()->GetSubsystem<UPDUProcessor>()->OnElectromagneticEmissionsPDUProcessed.AddDynamic(this, &ADISGameManager::HandleElectromagneticEmissionsPDU);
-	GetGameInstance()->GetSubsystem<UPDUProcessor>()->OnDesignatorPDUProcessed.AddDynamic(this, &ADISGameManager::HandleDesignatorPDU);
-	GetGameInstance()->GetSubsystem<UPDUProcessor>()->OnSignalPDUProcessed.AddDynamic(this, &ADISGameManager::HandleSignalPDU);
+	UPDUProcessor* pduProcessor = GetGameInstance()->GetSubsystem<UPDUProcessor>();
+	UUDPSubsystem* udpSubsystem = GetGameInstance()->GetSubsystem<UUDPSubsystem>();
+
+	pduProcessor->OnEntityStatePDUProcessed.AddDynamic(this, &ADISGameManager::HandleEntityStatePDU);
+	pduProcessor->OnEntityStateUpdatePDUProcessed.AddDynamic(this, &ADISGameManager::HandleEntityStateUpdatePDU);
+	pduProcessor->OnFirePDUProcessed.AddDynamic(this, &ADISGameManager::HandleFirePDU);
+	pduProcessor->OnDetonationPDUProcessed.AddDynamic(this, &ADISGameManager::HandleDetonationPDU);
+	pduProcessor->OnRemoveEntityPDUProcessed.AddDynamic(this, &ADISGameManager::HandleRemoveEntityPDU);
+	pduProcessor->OnStopFreezePDUProcessed.AddDynamic(this, &ADISGameManager::HandleStopFreezePDU);
+	pduProcessor->OnStartResumePDUProcessed.AddDynamic(this, &ADISGameManager::HandleStartResumePDU);
+	pduProcessor->OnElectromagneticEmissionsPDUProcessed.AddDynamic(this, &ADISGameManager::HandleElectromagneticEmissionsPDU);
+	pduProcessor->OnDesignatorPDUProcessed.AddDynamic(this, &ADISGameManager::HandleDesignatorPDU);
+	pduProcessor->OnSignalPDUProcessed.AddDynamic(this, &ADISGameManager::HandleSignalPDU);
 
 	GeoReferencingSystem = AGeoReferencingSystem::GetGeoReferencingSystem(Cast<UObject>(GetWorld()));
 
@@ -64,7 +67,7 @@ void ADISGameManager::BeginPlay()
 		for (const FReceiveSocketInfo& socket : ReceiveSocketsToSetup)
 		{
 			int SocketID;
-			GetGameInstance()->GetSubsystem<UUDPSubsystem>()->OpenReceiveSocket(socket.SocketSettings, SocketID, socket.IpAddress, socket.Port);
+			udpSubsystem->OpenReceiveSocket(socket.SocketSettings, SocketID, socket.IpAddress, socket.Port);
 		}
 	}
 	if (AutoConnectSendAddresses)
@@ -72,7 +75,7 @@ void ADISGameManager::BeginPlay()
 		for (const FSendSocketInfo& socket : SendSocketsToSetup)
 		{
 			int SocketID;
-			GetGameInstance()->GetSubsystem<UUDPSubsystem>()->OpenSendSocket(socket.SocketSettings, SocketID, socket.IpAddress, socket.Port);
+			udpSubsystem->OpenSendSocket(socket.SocketSettings, SocketID, socket.IpAddress, socket.Port);
 		}
 	}
 
