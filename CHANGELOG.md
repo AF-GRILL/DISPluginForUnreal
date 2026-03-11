@@ -1,5 +1,9 @@
 # Changelog
 
+## Beta 0.11.1
+
+- Add setting of timestamp in FormEntityStatePDU in DISSendComponent
+
 ## Beta 0.11.0
 
 - Fix issues with Quaternion dead reckoning threshold calculations in the DIS Send Component.
