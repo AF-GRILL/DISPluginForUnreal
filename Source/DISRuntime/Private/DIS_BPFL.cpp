@@ -6,6 +6,35 @@
 
 DEFINE_LOG_CATEGORY(LogDIS_BPFL);
 
+FString UDIS_BPFL::GetCurrentPlatformName()
+{
+#if PLATFORM_WINDOWS
+	return TEXT("Windows");
+#elif PLATFORM_MAC
+	return TEXT("Mac");
+#else
+	return FPlatformProperties::PlatformName();
+#endif
+}
+
+bool UDIS_BPFL::IsRunningOnWindows()
+{
+#if PLATFORM_WINDOWS
+	return true;
+#else
+	return false;
+#endif
+}
+
+bool UDIS_BPFL::IsRunningOnMac()
+{
+#if PLATFORM_MAC
+	return true;
+#else
+	return false;
+#endif
+}
+
 bool UDIS_BPFL::CalculateLatLonAltitudeFromEcefXYZ(const FVector Ecef, FGeographicCoordinates& OutLatLonAltDegreesMeters)
 {
 	constexpr double earthEquitorialRadiusMeters = 6378137;

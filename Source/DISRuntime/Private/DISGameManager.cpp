@@ -3,8 +3,11 @@
 #include "DISGameManager.h"
 #include "Kismet/GameplayStatics.h"
 #include "DIS_BPFL.h"
+#include "DISSendComponent.h"
+#include "DISReceiveComponent.h"
 #include "Engine/Engine.h"
 #include "Engine/GameInstance.h"
+#include "EngineUtils.h"
 #include "PDUProcessor.h"
 
 DEFINE_LOG_CATEGORY(LogDISGameManager);
@@ -115,6 +118,8 @@ void ADISGameManager::BeginPlay()
 	{
 		UE_LOG(LogDISGameManager, Error, TEXT("No DIS Class Enum Mapping has been set within the DIS Game Manager actor!"));
 	}
+
+	RefreshLocalSendOnlyEntityIDs();
 }
 
 void ADISGameManager::Tick(float DeltaTime)
@@ -155,6 +160,8 @@ void ADISGameManager::HandleOnDISEntityDestroyed(AActor* DestroyedActor)
 		anyRemoved = RemoveDISEntityFromMap(DISComponent->EntityID);
 	}
 
+	RefreshLocalSendOnlyEntityIDs();
+
 	if (!anyRemoved)
 	{
 		UE_LOG(LogDISGameManager, Error, TEXT("Failed to remove %s from the Entity Map!"), *DestroyedActor->GetName());
@@ -165,6 +172,11 @@ void ADISGameManager::HandleEntityStatePDU(FEntityStatePDU EntityStatePDUIn)
 {
 	if (EntityStatePDUIn.ExerciseID == ExerciseID)
 	{
+		if (ShouldIgnoreLocallySentEntityStatePDU(EntityStatePDUIn))
+		{
+			return;
+		}
+
 		//Find associated actor in the DISActorMappings map -- If actor does not exist spawn one
 		auto associatedActor = DISActorMappings.Find(EntityStatePDUIn.EntityID);
 		if (associatedActor != nullptr && *associatedActor != nullptr)
@@ -188,6 +200,58 @@ void ADISGameManager::HandleEntityStatePDU(FEntityStatePDU EntityStatePDUIn)
 
 			SpawnNewEntityFromEntityState(EntityStatePDUIn);
 		}
+	}
+}
+
+bool ADISGameManager::ShouldIgnoreLocallySentEntityStatePDU(const FEntityStatePDU& EntityStatePDUIn) const
+{
+	if (EntityStatePDUIn.EntityID.Site != SiteID || EntityStatePDUIn.EntityID.Application != ApplicationID)
+	{
+		return false;
+	}
+
+	if (LocalSendOnlyEntityIDs.Contains(EntityStatePDUIn.EntityID.Entity))
+	{
+		return true;
+	}
+
+	ADISGameManager* MutableThis = const_cast<ADISGameManager*>(this);
+	MutableThis->RefreshLocalSendOnlyEntityIDs();
+
+	return LocalSendOnlyEntityIDs.Contains(EntityStatePDUIn.EntityID.Entity);
+}
+
+void ADISGameManager::RefreshLocalSendOnlyEntityIDs()
+{
+	LocalSendOnlyEntityIDs.Reset();
+
+	UWorld* World = GetWorld();
+	if (World == nullptr)
+	{
+		return;
+	}
+
+	for (TActorIterator<AActor> ActorIt(World); ActorIt; ++ActorIt)
+	{
+		AActor* Actor = *ActorIt;
+		if (!IsValid(Actor))
+		{
+			continue;
+		}
+
+		UDISSendComponent* SendComponent = Actor->FindComponentByClass<UDISSendComponent>();
+		if (SendComponent == nullptr)
+		{
+			continue;
+		}
+
+		UDISReceiveComponent* ReceiveComponent = Actor->FindComponentByClass<UDISReceiveComponent>();
+		if (ReceiveComponent != nullptr)
+		{
+			continue;
+		}
+
+		LocalSendOnlyEntityIDs.Add(SendComponent->EntityID);
 	}
 }
 

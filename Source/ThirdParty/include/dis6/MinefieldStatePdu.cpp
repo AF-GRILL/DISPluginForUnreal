@@ -134,17 +134,17 @@ void MinefieldStatePdu::setProtocolMode(unsigned short pX)
     _protocolMode = pX;
 }
 
-std::vector<Point>& MinefieldStatePdu::getPerimeterPoints() 
+std::vector<DIS::Point>& MinefieldStatePdu::getPerimeterPoints() 
 {
     return _perimeterPoints;
 }
 
-const std::vector<Point>& MinefieldStatePdu::getPerimeterPoints() const
+const std::vector<DIS::Point>& MinefieldStatePdu::getPerimeterPoints() const
 {
     return _perimeterPoints;
 }
 
-void MinefieldStatePdu::setPerimeterPoints(const std::vector<Point>& pX)
+void MinefieldStatePdu::setPerimeterPoints(const std::vector<DIS::Point>& pX)
 {
      _perimeterPoints = pX;
 }
@@ -180,7 +180,7 @@ void MinefieldStatePdu::marshal(DataStream& dataStream) const
 
      for(size_t idx = 0; idx < _perimeterPoints.size(); idx++)
      {
-        Point x = _perimeterPoints[idx];
+        DIS::Point x = _perimeterPoints[idx];
         x.marshal(dataStream);
      }
 
@@ -210,7 +210,7 @@ void MinefieldStatePdu::unmarshal(DataStream& dataStream)
      _perimeterPoints.clear();
      for(size_t idx = 0; idx < _numberOfPerimeterPoints; idx++)
      {
-        Point x;
+        DIS::Point x;
         x.unmarshal(dataStream);
         _perimeterPoints.push_back(x);
      }
@@ -273,7 +273,7 @@ int MinefieldStatePdu::getMarshalledSize() const
 
    for(unsigned long long idx=0; idx < _perimeterPoints.size(); idx++)
    {
-        Point listElement = _perimeterPoints[idx];
+        DIS::Point listElement = _perimeterPoints[idx];
         marshalSize = marshalSize + listElement.getMarshalledSize();
     }
 

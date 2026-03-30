@@ -3,50 +3,50 @@
 using namespace DIS;
 
 
-Point::Point():
+DIS::Point::Point():
    _x(0.0), 
    _y(0.0)
 {
 }
 
-Point::~Point()
+DIS::Point::~Point()
 {
 }
 
-float Point::getX() const
+float DIS::Point::getX() const
 {
     return _x;
 }
 
-void Point::setX(float pX)
+void DIS::Point::setX(float pX)
 {
     _x = pX;
 }
 
-float Point::getY() const
+float DIS::Point::getY() const
 {
     return _y;
 }
 
-void Point::setY(float pX)
+void DIS::Point::setY(float pX)
 {
     _y = pX;
 }
 
-void Point::marshal(DataStream& dataStream) const
+void DIS::Point::marshal(DataStream& dataStream) const
 {
     dataStream << _x;
     dataStream << _y;
 }
 
-void Point::unmarshal(DataStream& dataStream)
+void DIS::Point::unmarshal(DataStream& dataStream)
 {
     dataStream >> _x;
     dataStream >> _y;
 }
 
 
-bool Point::operator ==(const Point& rhs) const
+bool DIS::Point::operator ==(const DIS::Point& rhs) const
  {
      bool ivarsEqual = true;
 
@@ -56,7 +56,7 @@ bool Point::operator ==(const Point& rhs) const
     return ivarsEqual;
  }
 
-int Point::getMarshalledSize() const
+int DIS::Point::getMarshalledSize() const
 {
    int marshalSize = 0;
 

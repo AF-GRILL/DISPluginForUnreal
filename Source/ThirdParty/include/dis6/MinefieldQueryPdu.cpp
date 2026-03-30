@@ -107,17 +107,17 @@ void MinefieldQueryPdu::setRequestedMineType(const EntityType &pX)
     _requestedMineType = pX;
 }
 
-std::vector<Point>& MinefieldQueryPdu::getRequestedPerimeterPoints() 
+std::vector<DIS::Point>& MinefieldQueryPdu::getRequestedPerimeterPoints() 
 {
     return _requestedPerimeterPoints;
 }
 
-const std::vector<Point>& MinefieldQueryPdu::getRequestedPerimeterPoints() const
+const std::vector<DIS::Point>& MinefieldQueryPdu::getRequestedPerimeterPoints() const
 {
     return _requestedPerimeterPoints;
 }
 
-void MinefieldQueryPdu::setRequestedPerimeterPoints(const std::vector<Point>& pX)
+void MinefieldQueryPdu::setRequestedPerimeterPoints(const std::vector<DIS::Point>& pX)
 {
      _requestedPerimeterPoints = pX;
 }
@@ -151,7 +151,7 @@ void MinefieldQueryPdu::marshal(DataStream& dataStream) const
 
      for(size_t idx = 0; idx < _requestedPerimeterPoints.size(); idx++)
      {
-        Point x = _requestedPerimeterPoints[idx];
+        DIS::Point x = _requestedPerimeterPoints[idx];
         x.marshal(dataStream);
      }
 
@@ -179,7 +179,7 @@ void MinefieldQueryPdu::unmarshal(DataStream& dataStream)
      _requestedPerimeterPoints.clear();
      for(size_t idx = 0; idx < _numberOfPerimeterPoints; idx++)
      {
-        Point x;
+        DIS::Point x;
         x.unmarshal(dataStream);
         _requestedPerimeterPoints.push_back(x);
      }
@@ -238,7 +238,7 @@ int MinefieldQueryPdu::getMarshalledSize() const
 
    for(unsigned long long idx=0; idx < _requestedPerimeterPoints.size(); idx++)
    {
-        Point listElement = _requestedPerimeterPoints[idx];
+        DIS::Point listElement = _requestedPerimeterPoints[idx];
         marshalSize = marshalSize + listElement.getMarshalledSize();
     }
 

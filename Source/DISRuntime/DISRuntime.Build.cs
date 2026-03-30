@@ -1,5 +1,3 @@
-// Copyright 2022 Gaming Research Integration for Learning Lab. All Rights Reserved.
-
 using UnrealBuildTool;
 using System.IO;
 
@@ -15,6 +13,7 @@ public class DISRuntime : ModuleRules
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 
 		bEnableExceptions = true;
+		bUseUnity = false;
 
 		PublicDependencyModuleNames.AddRange(
 			new string[]
@@ -36,14 +35,16 @@ public class DISRuntime : ModuleRules
 				"SlateCore"
 			}
 			);
-		
-        string BinaryPath = Path.Combine(ThirdPartyPath, "Binaries");
-		string WinPath = Path.Combine(BinaryPath, "Win64");
-        PublicSystemLibraryPaths.Add(WinPath);
-        PublicAdditionalLibraries.Add(Path.Combine(WinPath, "OpenDIS6.lib"));
-        PublicIncludePaths.Add(Path.Combine(ThirdPartyPath, "include"));
-		
-		PublicDelayLoadDLLs.Add("OpenDIS6.dll");
-		RuntimeDependencies.Add(Path.Combine(WinPath, "OpenDIS6.dll"));
+
+		PublicIncludePaths.Add(Path.Combine(ThirdPartyPath, "include"));
+		PublicDefinitions.Add("OPENDIS6_STATIC_DEFINE=1");
+		PublicDefinitions.Add("OPENDIS7_STATIC_DEFINE=1");
+		PublicDefinitions.Add("GRILL_DIS_SUPPORTS_WIN64=1");
+		PublicDefinitions.Add("GRILL_DIS_SUPPORTS_MAC=1");
+
+		if (Target.Platform != UnrealTargetPlatform.Win64 && Target.Platform != UnrealTargetPlatform.Mac)
+		{
+			throw new BuildException("GRILL DIS for Unreal currently supports Win64 and Mac.");
+		}
 	}
 }
