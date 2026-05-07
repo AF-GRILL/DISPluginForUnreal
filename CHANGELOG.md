@@ -3,6 +3,7 @@
 ## Beta 0.11.1
 
 - Add setting of timestamp in FormEntityStatePDU in DISSendComponent
+- Update FTimestamp to handle Microseconds. Increment timestamp in returned DeadReckonedEntityPDU in UDeadReckoning_BPFL::DeadReckoning based on DeltaTime
 
 ## Beta 0.11.0
 
