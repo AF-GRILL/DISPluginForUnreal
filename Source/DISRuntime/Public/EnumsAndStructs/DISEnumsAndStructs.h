@@ -747,6 +747,9 @@ struct FTimestamp
 	//The milliseconds that have elapsed since the beginning of the current second
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ClampMin = "0", ClampMax = "999"), Category = "GRILL DIS|Structs")
 	int32 Milliseconds;
+	//The microseconds that have elapsed since the beginning of the current millisecond
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ClampMin = "0", ClampMax = "999"), Category = "GRILL DIS|Structs")
+	int32 Microseconds;
 
 	FTimestamp()
 	{
@@ -754,14 +757,18 @@ struct FTimestamp
 		Minutes = 0;
 		Seconds = 0;
 		Milliseconds = 0;
+		Microseconds = 0;
 	}
 
-	FTimestamp(ETimestampFormat Format, int32 Minutes, int32 Seconds, int32 Milliseconds)
+	FTimestamp(ETimestampFormat Format, int32 Minutes, int32 Seconds, int32 Milliseconds, int32 Microseconds)
 	{
 		this->TimestampFormat = Format;
 		this->Minutes = Minutes;
 		this->Seconds = Seconds;
 		this->Milliseconds = Milliseconds;
+		this->Microseconds = Microseconds;
+
+		ClampValues();
 	}
 
 	FTimestamp(unsigned int Timestamp)
@@ -769,17 +776,46 @@ struct FTimestamp
 		TimestampFormat = static_cast<ETimestampFormat>(Timestamp % 2);
 
 		//Take off format for conversion
-		float time = (Timestamp >> 1) * timeConversion;
+		double time = (Timestamp >> 1) * timeConversion;
 		double timeSeconds;
-		//Format data into minutes, seconds, milliseconds
-		Milliseconds = modf(time, &timeSeconds) * 1000;
-		Seconds = (int)timeSeconds % 60;
-		Minutes = timeSeconds / 60;
+		//Format data into minutes, seconds, milliseconds, microseconds
+		double fractional = FMath::Modf(time, &timeSeconds) * 1000;
+		Microseconds = FMath::RoundToInt(FMath::Frac(fractional) * 1000);
+		Milliseconds = (int32)fractional;
+		Seconds = (int32)timeSeconds % 60;
+		Minutes = (int32)timeSeconds / 60;
+
+		ClampValues();
+	}
+
+	static FTimestamp GenerateRelativeTimestamp(double WorldTimeSeconds)
+	{
+		double totalSeconds;
+		double fractional = FMath::Modf(WorldTimeSeconds, &totalSeconds) * 1000;
+		int32 microseconds = FMath::RoundToInt(FMath::Frac(fractional) * 1000);
+		int32 milliseconds = (int32)fractional;
+		int32 minutes = (int32)totalSeconds / 60;
+		int32 seconds = (int32)totalSeconds % 60;
+
+		return FTimestamp(ETimestampFormat::Relative, minutes, seconds, milliseconds, microseconds);
+	}
+
+	void IncrementTimestamp(double SecondsToIncrement)
+	{
+		double totalSeconds;
+		double fractional = FMath::Modf(SecondsToIncrement, &totalSeconds) * 1000;
+		Microseconds += FMath::RoundToInt(FMath::Frac(fractional) * 1000);
+		Milliseconds += (int32)fractional;
+
+		Seconds += (int32)totalSeconds;
+
+		ClampValues();
 	}
 
 	unsigned int ToOpenDIS() const
 	{
-		float timeSeconds = Milliseconds / 1000.f + Seconds + Minutes * 60;
+		double timeSeconds = Microseconds / 1000000.0 + Milliseconds / 1000.0
+			+ Seconds + Minutes * 60;
 
 		unsigned int timestamp = timeSeconds / timeConversion;
 		//Add in timestamp format
@@ -789,7 +825,27 @@ struct FTimestamp
 	}
 
 private:
-	float timeConversion = (3600.f / pow(2, 31));
+	static constexpr double timeConversion = 3600.0 / 2147483648.0;
+
+	void ClampValues()
+	{
+		if (Microseconds >= 1000)
+		{
+			Milliseconds += Microseconds / 1000;
+			Microseconds %= 1000;
+		}
+		if (Milliseconds >= 1000)
+		{
+			Seconds += Milliseconds / 1000;
+			Milliseconds %= 1000;
+		}
+		if (Seconds >= 60)
+		{
+			Minutes += Seconds / 60;
+			Seconds %= 60;
+		}
+		Minutes %= 60;
+	}
 };
 
 USTRUCT(BlueprintType)

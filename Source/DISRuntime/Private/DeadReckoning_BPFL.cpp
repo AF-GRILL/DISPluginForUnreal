@@ -388,6 +388,7 @@ glm::dvec3 UDeadReckoning_BPFL::GetEntityBodyDeadReckonedPosition(const glm::dve
 bool UDeadReckoning_BPFL::DeadReckoning(FEntityStatePDU EntityPDUToDeadReckon, float DeltaTime, FEntityStatePDU& DeadReckonedEntityPDU)
 {
 	DeadReckonedEntityPDU = EntityPDUToDeadReckon;
+	DeadReckonedEntityPDU.Timestamp.IncrementTimestamp(DeltaTime);
 	bool bSupported = true;
 
 	//If the entity is frozen, don't update dead reckoning
