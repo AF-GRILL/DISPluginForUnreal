@@ -50,10 +50,8 @@ struct FSignalPDU : public FRadioCommunicationsFamilyPDU
 		Samples = SignalPDUIn.getSamples();
 
 		Data.Empty();
-		for (int i = 0; i < SignalPDUIn.getDataLength(); i++)
-		{
-			Data.Add(SignalPDUIn.getData()[i]);
-		}
+		const std::vector<uint8_t>& inData = SignalPDUIn.getData();
+		Data.Append(inData.data(), static_cast<int32>(inData.size()));
 	}
 
 	void ToOpenDIS(DIS::SignalPdu& SignalPDUOut)
@@ -71,6 +69,7 @@ struct FSignalPDU : public FRadioCommunicationsFamilyPDU
 			outData.push_back(param);
 		}
 		SignalPDUOut.setData(outData);
+		SignalPDUOut.setDataLength(static_cast<short>(Data.Num() * 8));
 	}
 
 	virtual TArray<uint8> ToBytes() override
