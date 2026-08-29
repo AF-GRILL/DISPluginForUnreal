@@ -8,7 +8,7 @@
 // the class member, DataStream::BufferType is causing warnign 4251.
 // disable it until a proper fix is found, as instructed from the enlightening article:
 // http://www.unknownroad.com/rtfm/VisualStudio/warningC4251.html
-#if _MSC_VER
+#if defined(_MSC_VER)
 #pragma warning( push )
 #pragma warning( disable : 4251 )
 #endif
@@ -146,7 +146,7 @@ namespace DIS
    };
 }
 
-#if _MSC_VER
+#if defined(_MSC_VER)
 #pragma warning( pop )
 #endif
 

@@ -274,9 +274,11 @@ bool UDISReceiveComponent::GroundClamping_Implementation()
 				GetOwner()->SetActorLocationAndRotation(clampLocation, clampRotation);
 			}
 			OnGroundClampingUpdate.Broadcast(allClampTransforms);
+			return true;
 		}
 
-		return true;
+		// No valid ground hit was found, so allow callers to fall back to the raw DIS transform.
+		return false;
 	}
 	else
 	{

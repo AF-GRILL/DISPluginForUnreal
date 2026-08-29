@@ -235,7 +235,10 @@ protected:
 
 
 private:
+	bool ShouldIgnoreLocallySentEntityStatePDU(const FEntityStatePDU& EntityStatePDUIn) const;
+	void RefreshLocalSendOnlyEntityIDs();
 	void SpawnNewEntityFromEntityState(FEntityStatePDU EntityStatePDUIn);
 	UDISReceiveComponent* GetAssociatedDISComponent(FEntityID EntityIDIn);
 	AGeoReferencingSystem* GeoReferencingSystem;
+	TSet<int32> LocalSendOnlyEntityIDs;
 };

@@ -61,6 +61,24 @@ private:
 
 public:
 	/**
+	 * Returns the current runtime platform that the DIS plugin is executing on.
+	 */
+	UFUNCTION(BlueprintPure, Category = "GRILL DIS|Platform")
+		static FString GetCurrentPlatformName();
+
+	/**
+	 * Returns whether the current runtime platform is Windows.
+	 */
+	UFUNCTION(BlueprintPure, Category = "GRILL DIS|Platform")
+		static bool IsRunningOnWindows();
+
+	/**
+	 * Returns whether the current runtime platform is macOS.
+	 */
+	UFUNCTION(BlueprintPure, Category = "GRILL DIS|Platform")
+		static bool IsRunningOnMac();
+
+	/**
 	 * Creates a 4x4 n^x matrix used for creating a rotation matrix
 	 * @param NVector A 3x1 vector representing the axis of rotation
 	 */

@@ -2,6 +2,20 @@
 #ifndef OPENDIS6_EXPORT_H
 #define OPENDIS6_EXPORT_H
 
+#if defined(_MSC_VER)
+#  define OPENDIS6_DECL_EXPORT __declspec(dllexport)
+#  define OPENDIS6_DECL_IMPORT __declspec(dllimport)
+#  define OPENDIS6_DECL_DEPRECATED __declspec(deprecated)
+#elif defined(__GNUC__) || defined(__clang__)
+#  define OPENDIS6_DECL_EXPORT __attribute__((visibility("default")))
+#  define OPENDIS6_DECL_IMPORT __attribute__((visibility("default")))
+#  define OPENDIS6_DECL_DEPRECATED __attribute__((deprecated))
+#else
+#  define OPENDIS6_DECL_EXPORT
+#  define OPENDIS6_DECL_IMPORT
+#  define OPENDIS6_DECL_DEPRECATED
+#endif
+
 #ifdef OPENDIS6_STATIC_DEFINE
 #  define OPENDIS6_EXPORT
 #  define OPENDIS6_NO_EXPORT
@@ -9,10 +23,10 @@
 #  ifndef OPENDIS6_EXPORT
 #    ifdef OpenDIS6_EXPORTS
         /* We are building this library */
-#      define OPENDIS6_EXPORT __declspec(dllexport)
+#      define OPENDIS6_EXPORT OPENDIS6_DECL_EXPORT
 #    else
         /* We are using this library */
-#      define OPENDIS6_EXPORT __declspec(dllimport)
+#      define OPENDIS6_EXPORT OPENDIS6_DECL_IMPORT
 #    endif
 #  endif
 
@@ -22,7 +36,7 @@
 #endif
 
 #ifndef OPENDIS6_DEPRECATED
-#  define OPENDIS6_DEPRECATED __declspec(deprecated)
+#  define OPENDIS6_DEPRECATED OPENDIS6_DECL_DEPRECATED
 #endif
 
 #ifndef OPENDIS6_DEPRECATED_EXPORT
